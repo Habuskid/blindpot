@@ -66,7 +66,9 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         // Add tickets to the draw
         draw.addMember(from, amount);
 
-        return FHE.asEbool(true);
+        ebool ret = FHE.asEbool(true);
+        FHE.allowTransient(ret, msg.sender);
+        return ret;
     }
 
     /**
@@ -106,7 +108,8 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
             ebool isWinner = FHE.eq(winnerHandle, FHE.asEaddress(memberUser));
             euint64 winnings = FHE.select(isWinner, FHE.asEuint64(uint64(mockPot)), FHE.asEuint64(0));
             userWinnings[currentDrawId][memberUser] = winnings;
-            // Let the user decrypt their own winnings handle later
+            // Allow this contract and the member to decrypt
+            FHE.allowThis(winnings);
             FHE.allow(winnings, memberUser);
         }
     }

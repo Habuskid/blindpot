@@ -26,24 +26,29 @@ contract BlindDraw is ZamaEthereumConfig {
             totalTickets = FHE.asEuint64(0);
         }
         totalTickets = FHE.add(totalTickets, _balance);
+        FHE.allowThis(totalTickets);
 
         for (uint i = 0; i < members.length; i++) {
             if (members[i].user == _user) {
                 members[i].balance = FHE.add(members[i].balance, _balance);
+                FHE.allowThis(members[i].balance);
                 FHE.allow(members[i].balance, _user);
                 return;
             }
         }
         members.push(Member(_user, _balance));
+        FHE.allowThis(members[members.length - 1].balance);
         FHE.allow(members[members.length - 1].balance, _user);
     }
 
     function removeMember(address _user, euint64 _balanceToRemove) public {
         totalTickets = FHE.sub(totalTickets, _balanceToRemove);
+        FHE.allowThis(totalTickets);
 
         for (uint i = 0; i < members.length; i++) {
             if (members[i].user == _user) {
                 members[i].balance = FHE.sub(members[i].balance, _balanceToRemove);
+                FHE.allowThis(members[i].balance);
                 FHE.allow(members[i].balance, _user);
                 break;
             }
@@ -80,7 +85,7 @@ contract BlindDraw is ZamaEthereumConfig {
         return members[index].user;
     }
 
-    // Weighted selection loop benchmarking
+    // Weighted selection loop
     function drawWinner(uint256 maxMembers) public returns (eaddress) {
         require(members.length <= maxMembers, "Too many members");
         require(FHE.isInitialized(totalTickets), "No tickets");

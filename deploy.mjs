@@ -3,6 +3,28 @@ import { privateKeyToAccount } from 'viem/accounts';
 import { sepolia } from 'viem/chains';
 import fs from 'fs';
 
+// Simple .env parser
+function loadEnv() {
+    if (fs.existsSync('.env')) {
+        const lines = fs.readFileSync('.env', 'utf8').split('\n');
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            const idx = trimmed.indexOf('=');
+            if (idx > 0) {
+                const key = trimmed.slice(0, idx).trim();
+                let val = trimmed.slice(idx + 1).trim();
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                    val = val.slice(1, -1);
+                }
+                process.env[key] = val;
+            }
+        }
+    }
+}
+
+loadEnv();
+
 const privateKey = process.env.PRIVATE_KEY;
 const rpcUrl = process.env.RPC_URL;
 const cUSDCMock = "0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639";
@@ -36,7 +58,7 @@ async function main() {
             args: [cUSDCMock],
         });
         console.log(`Deployment Transaction Hash: ${hash}`);
-        console.log("Waiting for confirmation...");
+        console.log("Waiting for confirmation on Sepolia...");
         
         const receipt = await client.waitForTransactionReceipt({ hash });
         console.log(`\n🎉 BlindpotVault successfully deployed to: ${receipt.contractAddress}`);
@@ -49,8 +71,7 @@ async function main() {
             `vault: "${receipt.contractAddress}"`
         );
         fs.writeFileSync(configPath, configContent);
-        console.log(`✅ Automatically updated sdk/src/config.ts with the new vault address!`);
-        console.log("You can now run 'npm run dev' to test the app.");
+        console.log(`✅ Automatically updated sdk/src/config.ts with the new vault address: ${receipt.contractAddress}`);
     } catch (e) {
         console.error("Deployment failed:", e);
     }
