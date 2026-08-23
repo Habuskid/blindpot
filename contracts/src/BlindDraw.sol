@@ -47,9 +47,11 @@ contract BlindDraw is ZamaEthereumConfig {
 
         for (uint i = 0; i < members.length; i++) {
             if (members[i].user == _user) {
-                members[i].balance = FHE.sub(members[i].balance, _balanceToRemove);
-                FHE.allowThis(members[i].balance);
-                FHE.allow(members[i].balance, _user);
+                // Swap with last element and pop to keep array compact
+                if (i != members.length - 1) {
+                    members[i] = members[members.length - 1];
+                }
+                members.pop();
                 break;
             }
         }
@@ -88,6 +90,7 @@ contract BlindDraw is ZamaEthereumConfig {
     // Weighted selection loop
     function drawWinner(uint256 maxMembers) public returns (eaddress) {
         require(members.length <= maxMembers, "Too many members");
+        require(members.length > 0, "No members");
         require(FHE.isInitialized(totalTickets), "No tickets");
 
         // R is drawn uniformly from [0, 2**32)

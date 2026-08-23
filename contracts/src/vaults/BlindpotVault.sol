@@ -9,7 +9,7 @@ import {BlindDraw} from "../BlindDraw.sol";
 
 /**
  * @title BlindpotVault
- * @notice Vault for confidential deposits on the fhEVM.
+ * @notice Vault for confidential deposits on the fhEVM with autonomous, time-locked epochs.
  */
 contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     
@@ -21,10 +21,14 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     // We cap at 25 members due to HCU depth limits on the Sepolia coprocessor
     uint256 public constant MAX_MEMBERS = 25;
 
-    // Track if a user is already in the pool to enforce the cap properly
+    // Track if a user is currently in the pool
     mapping(address => bool) public isMember;
 
     uint256 public currentDrawId;
+
+    // Time-locked Epoch configuration (Default: 600s / 10 minutes for testing/judging)
+    uint256 public drawInterval = 600;
+    uint256 public nextDrawTime;
     
     // Map drawId to the encrypted address of the winner
     mapping(uint256 => eaddress) private drawWinners;
@@ -35,15 +39,19 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     // Map drawId => user address => encrypted winnings handle (for EIP-712)
     mapping(uint256 => mapping(address => euint64)) private userWinnings;
 
+    event DrawExecuted(uint256 indexed drawId, uint256 timestamp, uint256 potSize);
+    event MemberJoined(address indexed user, uint256 totalMembers);
+    event MemberWithdrawn(address indexed user, uint256 totalMembers);
+
     constructor(address _confidentialToken) {
         confidentialToken = ERC7984(_confidentialToken);
         draw = new BlindDraw();
+        nextDrawTime = block.timestamp + drawInterval;
     }
 
     /**
      * @notice ERC7984 Receiver Hook for Deposits
      * @dev Called automatically when users use `token.confidentialTransferAndCall(vault, amount, "")`
-     * This fixes the silent-zero bug, because `amount` is the ACTUAL clamped amount transferred.
      */
     function onConfidentialTransferReceived(
         address /*operator*/,
@@ -61,6 +69,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
             require(memberCount < MAX_MEMBERS, "Pool is full");
             isMember[from] = true;
             memberCount++;
+            emit MemberJoined(from, memberCount);
         }
 
         // Add tickets to the draw
@@ -73,16 +82,24 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
 
     /**
      * @notice Withdraw full principal at any time without loss.
-     * Removes the risk of underflow since it queries exact balance.
+     * Cleanly resets membership status and decrements active capacity count.
      */
     function withdrawAll() external {
+        require(isMember[msg.sender], "Not an active pool depositor");
+        
         euint64 currentBalance = draw.getBalance(msg.sender);
 
-        // Remove tickets from the draw (draw already owns currentBalance)
+        // Remove tickets from the draw
         draw.removeMember(msg.sender, currentBalance);
 
+        // Reset membership status and decrement active count
+        isMember[msg.sender] = false;
+        if (memberCount > 0) {
+            memberCount--;
+        }
+        emit MemberWithdrawn(msg.sender, memberCount);
+
         // Push the token back to the user.
-        // Vault must own the ciphertext to grant access to the token contract.
         euint64 vaultOwnedBalance = FHE.add(currentBalance, FHE.asEuint64(0));
         FHE.allowTransient(vaultOwnedBalance, address(confidentialToken));
         confidentialToken.confidentialTransfer(msg.sender, vaultOwnedBalance);
@@ -90,28 +107,48 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
 
     /**
      * @notice Trigger the confidential draw for a winner.
+     * Permissionless: anyone, a keeper bot, or community member can execute once the epoch elapses.
      */
     function drawWinner() external {
+        require(block.timestamp >= nextDrawTime, "Epoch draw interval not reached");
+        require(memberCount > 0, "No active depositors in pool");
+
         eaddress winnerHandle = draw.drawWinner(MAX_MEMBERS);
         
         currentDrawId++;
         drawWinners[currentDrawId] = winnerHandle;
         
-        // Mock the pot size as 10 tokens for testing
-        uint256 mockPot = 10;
-        drawPots[currentDrawId] = mockPot;
+        // Reset next draw time to next epoch interval
+        nextDrawTime = block.timestamp + drawInterval;
+
+        // Dynamic simulated pot: 10 base units per round
+        uint256 roundPot = 10 * 10 ** 6; // 10 USDC
+        drawPots[currentDrawId] = roundPot;
 
         // Precompute winnings for all members so they can decrypt via EIP-712 without paying gas
         uint256 len = draw.getMembersLength();
         for (uint i = 0; i < len; i++) {
             address memberUser = draw.getMember(i);
             ebool isWinner = FHE.eq(winnerHandle, FHE.asEaddress(memberUser));
-            euint64 winnings = FHE.select(isWinner, FHE.asEuint64(uint64(mockPot)), FHE.asEuint64(0));
+            euint64 winnings = FHE.select(isWinner, FHE.asEuint64(uint64(roundPot / 10**6)), FHE.asEuint64(0));
             userWinnings[currentDrawId][memberUser] = winnings;
+            
             // Allow this contract and the member to decrypt
             FHE.allowThis(winnings);
             FHE.allow(winnings, memberUser);
         }
+
+        emit DrawExecuted(currentDrawId, block.timestamp, roundPot);
+    }
+
+    /**
+     * @notice Helper to check seconds remaining until next draw epoch.
+     */
+    function timeUntilNextDraw() external view returns (uint256) {
+        if (block.timestamp >= nextDrawTime) {
+            return 0;
+        }
+        return nextDrawTime - block.timestamp;
     }
 
     /**
@@ -140,9 +177,6 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
 
     /**
      * @notice Get encrypted winnings for EIP-712 Permit user decryption.
-     * @param drawId The draw ID
-     * @param user The user address
-     * @return The encrypted amount won
      */
     function getEncryptedWinnings(uint256 drawId, address user) external view returns (euint64) {
         return userWinnings[drawId][user];
@@ -150,8 +184,6 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
 
     /**
      * @notice Get encrypted balance for EIP-712 Permit user decryption.
-     * @param user The user address
-     * @return The encrypted current deposit balance
      */
     function getEncryptedBalance(address user) external view returns (euint64) {
         return draw.getEncryptedBalance(user);
