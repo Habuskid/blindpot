@@ -1,0 +1,17 @@
+# Compiler files
+cache/
+out/
+
+# Dependencies
+dependencies/
+
+# Env
+.env
+.env.*
+
+
+# Docs
+docs/book/
+
+# Misc
+.DS_Store
