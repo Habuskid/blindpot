@@ -1,4 +1,5 @@
 import { useWriteContract } from "wagmi";
+import { sepolia } from "wagmi/chains";
 import { type Address } from "viem";
 
 const vaultAbi = [
@@ -16,10 +17,11 @@ export function useWithdraw() {
 
   const withdraw = async (vaultAddress: Address) => {
     const tx = await writeContractAsync({
+      chainId: sepolia.id,
       address: vaultAddress,
       abi: vaultAbi,
       functionName: "withdrawAll",
-    } as any);
+    });
     return tx;
   };
 
