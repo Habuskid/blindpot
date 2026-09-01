@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useAccount, useReadContract } from 'wagmi';
 import { Navbar } from '../components/Navbar';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 import { addresses } from '../../sdk/src/config';
 import type { PoolRecord } from '../../lib/db';
 
@@ -72,7 +73,7 @@ export default function PoolsDirectoryPage() {
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 1;
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
@@ -186,6 +187,6 @@ export default function PoolsDirectoryPage() {
         </div>
       </footer>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

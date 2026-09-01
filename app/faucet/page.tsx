@@ -6,7 +6,7 @@ import { useAccount, useWriteContract, useChainId, useSwitchChain, usePublicClie
 import { sepolia } from 'wagmi/chains';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const mockErc20Abi = [
   {
@@ -87,7 +87,7 @@ export default function BlindpotFaucet() {
   };
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
@@ -105,15 +105,6 @@ export default function BlindpotFaucet() {
               Mint official test USDC tokens directly on-chain on <strong>Ethereum Sepolia Testnet</strong> (Chain ID 11155111).
             </p>
           </div>
-
-          {!isConnected ? (
-            <WalletGate
-              title="Faucet Authentication Required"
-              description="To mint 1,000 test USDC directly to your wallet address on Ethereum Sepolia, please connect your Web3 wallet."
-              actionName="Connect Wallet to Mint Tokens"
-            />
-          ) : (
-            <>
               {isWrongNetwork && (
                 <div className="bg-error-container border-2 border-error text-error p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
                   <div className="flex items-center gap-1.5">
@@ -255,8 +246,6 @@ export default function BlindpotFaucet() {
                   </ul>
                 </div>
               </div>
-            </>
-          )}
         </div>
       </main>
 
@@ -270,6 +259,6 @@ export default function BlindpotFaucet() {
         </div>
       </footer>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

@@ -9,7 +9,7 @@ import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const vaultAbi = [
   {
@@ -292,7 +292,7 @@ export default function BlindpotDashboard() {
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
@@ -313,60 +313,16 @@ export default function BlindpotDashboard() {
           </div>
         )}
 
-        {/* WALLET SECURITY GATE IF NOT CONNECTED */}
-        {!isConnected ? (
-          <>
-            <WalletGate
-              title="Dashboard Access Restricted"
-              description="To view your active pool enrollment, decrypt your deposit balance, or claim epoch winnings, please connect your Web3 wallet."
-              actionName="Connect Wallet to View Dashboard"
-            />
-
-            {/* LIVE PROTOCOL METRICS SUMMARY */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
-              <div className="border-2 border-primary bg-surface p-5 flex flex-col justify-between hard-shadow-sm">
-                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Pool Capacity</div>
-                <div className="font-value-mono text-2xl font-bold text-primary mt-2">
-                  {displayMembers} <span className="text-sm font-normal text-on-surface-variant">/ 25</span>
-                </div>
-                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
-                  Active Depositors On-Chain
-                </div>
+        {/* Top Header Card: Balance & Decrypt */}
+        <div className="border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary flex flex-col gap-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-primary pb-5">
+            <div>
+              <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-secondary inline-block"></span>
+                Confidential Savings Account
               </div>
-
-              <div className="border-2 border-primary bg-surface p-5 flex flex-col justify-between hard-shadow-sm">
-                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Current Round</div>
-                <div className="font-value-mono text-2xl font-bold text-primary mt-2">
-                  #{displayDrawId}
-                </div>
-                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
-                  Autonomous fhEVM Epoch
-                </div>
-              </div>
-
-              <div className="border-2 border-primary bg-surface p-5 flex flex-col justify-between hard-shadow-sm">
-                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Next Epoch Draw</div>
-                <div className="font-value-mono text-2xl font-bold text-secondary mt-2">
-                  {formatCountdown(secondsRemaining)}
-                </div>
-                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
-                  Continuous Time-Lock
-                </div>
-              </div>
+              <h1 className="font-headline-md text-2xl uppercase font-bold m-0 mt-0.5">Your Deposit Balance</h1>
             </div>
-          </>
-        ) : (
-          <>
-            {/* Top Header Card: Balance & Decrypt */}
-            <div className="border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary flex flex-col gap-6">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b-2 border-primary pb-5">
-                <div>
-                  <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-secondary inline-block"></span>
-                    Confidential Savings Account
-                  </div>
-                  <h1 className="font-headline-md text-2xl uppercase font-bold m-0 mt-0.5">Your Deposit Balance</h1>
-                </div>
 
                 {/* REDACTED DOSSIER BAR VS DECRYPTED BALANCE */}
                 <div className="flex items-center gap-3">
@@ -755,9 +711,7 @@ export default function BlindpotDashboard() {
                 </div>
               )}
             </div>
-          </>
-        )}
-      </main>
+        </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
         <div className="font-label-mono text-xs font-bold uppercase">
@@ -769,6 +723,6 @@ export default function BlindpotDashboard() {
         </div>
       </footer>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }

@@ -8,7 +8,7 @@ import { sepolia } from 'wagmi/chains';
 import { useDeposit } from '../../sdk/src/deposit';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -251,18 +251,11 @@ export default function BlindpotDepositFlow() {
   const needsApproval = currentAllowance < Number(wrapAmount);
 
   return (
-    <>
+    <ProtectedRoute>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="w-full max-w-xl px-margin-mobile relative z-10 mx-auto pt-24 pb-28 flex flex-col items-center">
-        {!isConnected ? (
-          <WalletGate
-            title="Deposit Terminal Locked"
-            description="To wrap tokens and execute confidential FHE deposits into the Blindpot Vault, please connect your Web3 wallet."
-            actionName="Connect Wallet to Deposit"
-          />
-        ) : (
           <div className="bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col w-full">
             <header className="flex justify-between items-center border-b-2 border-primary pb-4 mb-6">
               <div>
@@ -510,8 +503,7 @@ export default function BlindpotDepositFlow() {
               </div>
             )}
           </div>
-        )}
-      </main>
+        </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
         <div className="font-label-mono text-xs font-bold uppercase">
@@ -523,6 +515,6 @@ export default function BlindpotDepositFlow() {
         </div>
       </footer>
       </div>
-    </>
+    </ProtectedRoute>
   );
 }
