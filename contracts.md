@@ -17,7 +17,7 @@
   convenience — write FHE-native assertions instead, even if slower to
   write.
 - Never change the pool member cap without re-running the gas benchmark test
-  and updating the number in `docs/ARCHITECTURE.md`.
+  and updating the number in `ARCHITECTURE.md`.
 - Never merge a change to `BlindpotVault.sol`'s withdraw function without a
   passing test proving withdraw still succeeds mid-draw.
 

@@ -18,30 +18,28 @@ Deadline: September 5, 23:59 AOE.
 - Contracts: Solidity, Foundry, patterns from zama-ai/fhevm-hardhat-template
 - Confidential tokens: ERC-7984 (OpenZeppelin confidential-contracts)
 - SDK: TypeScript wrapper around @zama-fhe/relayer-sdk
-- Frontend: Next.js, raw print-brutalist design system (docs/BRAND.md)
+- Frontend: Next.js, raw print-brutalist design system (BRAND.md)
 
 ## Repo layout
 
 ```
 blindpot/
 ├── contracts/
-│   ├── core/       BlindDraw.sol, TicketTiers.sol
-│   ├── vaults/      BlindpotVault.sol, BlindpotFactory.sol
-│   ├── tokens/      TestToken.sol (+ OZ ERC7984ERC20Wrapper)
-│   ├── yield/       IYieldSource.sol, MockYieldSource.sol
-│   └── test/
-├── sdk/src/         deposit.ts, withdraw.ts, claim.ts, getMyBalance.ts
-├── app/             reference frontend (Next.js)
-├── .agents/rules/   contracts.md, frontend.md, sdk.md
-└── docs/            SPEC.md, ARCHITECTURE.md, CONFIDENTIALITY.md, BRAND.md, AUDIT.md, UI-PROMPTS.md
+│   ├── src/         BlindDraw.sol, vaults/BlindpotVault.sol
+│   └── test/        HCUBenchmark.t.sol, BlindDraw.t.sol
+├── sdk/src/         deposit.ts, withdraw.ts, claim.ts, getMyBalance.ts, getMyWinnings.ts, config.ts
+├── scripts/         keeper.mjs, benchmark.mjs
+├── app/             reference frontend (Next.js 16)
+├── SPEC.md, ARCHITECTURE.md, CONFIDENTIALITY.md, BRAND.md, AUDIT.md, SECURITY.md, LOGS.md
+└── contracts.md, frontend.md, sdk.md
 ```
 
 ## Start every session by reading
 
 1. `LOGS.md` — check the feature manifest for what's done/pending, and read
    the most recent session-log entries for context on what just happened.
-2. `docs/SPEC.md` — the actual judged requirements. Don't drift from these.
-3. `docs/ARCHITECTURE.md` — before touching contract structure or adding a
+2. `SPEC.md` — the actual judged requirements. Don't drift from these.
+3. `ARCHITECTURE.md` — before touching contract structure or adding a
    new contract.
 
 ## End every session by
@@ -62,7 +60,7 @@ against a refactor silently dropping a working feature.
 - Winner selection uses `FHE.randEuint` only. No off-chain RNG, no
   pseudo-random fallback, ever — this is a judged requirement.
 - Before adding a contract, dependency, or pattern not already described in
-  `docs/ARCHITECTURE.md`, check `docs/SPEC.md` — new scope needs to map to
+  `ARCHITECTURE.md`, check `SPEC.md` — new scope needs to map to
   something actually required or already on the roadmap.
 - Check `SECURITY.md` before writing anything involving `FHE.allow` / ACL
   grants — this is the most common FHE smart-contract bug class, and

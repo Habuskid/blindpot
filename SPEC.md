@@ -37,5 +37,5 @@ Deposit → Hold (encrypted) → Win (draw) → Claim (EIP-712 decrypt) → With
 
 ## What "documenting leakage" means for this project
 
-See `docs/CONFIDENTIALITY.md` — this is a judged line item, not optional
+See `CONFIDENTIALITY.md` — this is a judged line item, not optional
 polish.

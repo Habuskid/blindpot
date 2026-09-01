@@ -11,8 +11,8 @@ than a savings product.
 ## Mark
 
 A ring (the pot / coin / porthole) containing three redaction bars, two
-silver and one brass. Full rationale, scale test, and exportable SVG:
-`docs/brand-sheet.html`.
+silver and one brass. Logo asset: `public/logo.png`. Design system token specifications:
+`bureau_document_system/DESIGN.md`.
 
 ## Palette
 
@@ -34,8 +34,8 @@ silver and one brass. Full rationale, scale test, and exportable SVG:
 
 Raw print/document brutalism — redacted dossier, ledger paper, stamps. Not
 playful neubrutalist SaaS (pastel blocks, comic shadows) — that's its own
-generic cluster now. Full page-by-page prompt kit for UI generation:
-`docs/UI-PROMPTS.md`.
+generic cluster now. Source design specifications:
+`bureau_document_system/DESIGN.md`.
 
 ## Signature interaction
 

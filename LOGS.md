@@ -10,7 +10,7 @@ never delete a past entry.
 
 Status values: `not started` / `in progress` / `done` / `verified on Sepolia`
 
-### Core cycle (from docs/SPEC.md)
+### Core cycle (from SPEC.md)
 
 - [x] verified on Sepolia — Deposit: ERC-20 approval → wrap → confidential deposit (tx: 0x2044d068...)
 - [x] verified on Sepolia — Hold: encrypted balance accounting, no observer can see individual balances

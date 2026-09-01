@@ -14,12 +14,12 @@ real funds.
   A missing or overly broad grant doesn't throw an error — it silently either
   blocks a legitimate decrypt or leaks a ciphertext to someone who shouldn't
   have access. Every function touching an encrypted value is checked against
-  `docs/AUDIT.md`'s ACL checklist before merge.
+  `AUDIT.md`'s ACL checklist before merge.
 - Encrypted inputs (`einput` + proof) are single-use by design. Contracts
   must never accept a replayed ciphertext/proof pair as fresh input.
 - `FHE.randEuint` depends on the protocol's on-chain PRNG state; it cannot be
   called via `eth_call` and must always run inside a real transaction — see
-  `docs/ARCHITECTURE.md` for how the draw is triggered.
+  `ARCHITECTURE.md` for how the draw is triggered.
 
 ## Known, accepted limitations (v1)
 
@@ -27,18 +27,17 @@ real funds.
   Someone could technically time a deposit right before a draw snapshot.
   This doesn't reveal any balance, but it's a real, documented gaming
   vector, stated plainly rather than glossed over.
-- **Member cap of ~50 per pool** — a gas/complexity tradeoff, not a security
+- **Member cap of N=25 per pool** — a gas/depth coprocessor constraint, not a security
   flaw, but listed here because it constrains scale. See
-  `docs/ARCHITECTURE.md`'s roadmap for the planned fix.
+  `ARCHITECTURE.md`'s roadmap for the planned fix.
 - Aggregate pool size may be publicly inferable, depending on the confidential
   token's total-supply exposure. Flagged, not yet resolved — see
-  `docs/CONFIDENTIALITY.md`.
+  `CONFIDENTIALITY.md`.
 
-## Standard contract risks (checked in docs/AUDIT.md)
+## Standard contract risks (checked in AUDIT.md)
 
 Reentrancy on withdraw/claim, access control on admin/keeper functions,
-integer bounds on ticket-tier thresholds, front-running of the draw-trigger
-transaction.
+front-running of the draw-trigger transaction.
 
 ## Reporting a vulnerability
 

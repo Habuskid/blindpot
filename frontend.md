@@ -1,7 +1,6 @@
 # Frontend rules
 
-Design system source of truth: `docs/BRAND.md`.
-Full page-by-page spec: `docs/UI-PROMPTS.md`.
+Design system source of truth: `BRAND.md` and `bureau_document_system/DESIGN.md`.
 
 ## Deny rules
 
@@ -13,11 +12,11 @@ Full page-by-page spec: `docs/UI-PROMPTS.md`.
 - No generic crypto iconography — no coins, rockets, or padlocks-with-sparkles.
 - Never fill a button solid unless it's the claim screen's primary action —
   every other button stays outlined. If a second filled button shows up,
-  stop and check `docs/BRAND.md` before shipping it.
+  stop and check `BRAND.md` before shipping it.
 
 ## Required pattern
 
 Any place a monetary value renders, it defaults to the redaction-bar element
-(see `docs/BRAND.md`) until the user has explicitly decrypted it in that
+(see `BRAND.md`) until the user has explicitly decrypted it in that
 session. Never render a real number before that decrypt action has happened
 — build the redacted state first, even during development with test data.
