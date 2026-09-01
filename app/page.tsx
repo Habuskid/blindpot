@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAccount, useConnect, useReadContract } from 'wagmi';
 import { injected } from 'wagmi/connectors';
 import { addresses } from '../sdk/src/config';
-import { Navbar } from './components/Navbar';
+import { LandingNavbar } from './components/LandingNavbar';
 
 const vaultAbi = [
   {
@@ -59,13 +59,6 @@ export default function BlindpotLandingPage() {
   const displayMembers = memberCount !== undefined ? Number(memberCount) : 0;
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
 
-  // Auto-redirect connected wallets directly to dashboard
-  useEffect(() => {
-    if (isConnected) {
-      router.push('/dashboard');
-    }
-  }, [isConnected, router]);
-
   useEffect(() => {
     if (nextDrawTimeRaw === undefined) return;
     const target = Number(nextDrawTimeRaw);
@@ -88,7 +81,7 @@ export default function BlindpotLandingPage() {
 
   return (
     <>
-      <Navbar />
+      <LandingNavbar />
 
       <main className="flex-grow pt-[72px] flex flex-col">
         {/* HERO SECTION */}

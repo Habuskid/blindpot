@@ -9,7 +9,7 @@ import { useWithdraw } from '../../sdk/src/withdraw';
 import { useGetMyBalance } from '../../sdk/src/getMyBalance';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { ProtectedRoute } from '../components/ProtectedRoute';
+import { WalletGate } from '../components/WalletGate';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -82,13 +82,18 @@ export default function BlindpotWithdrawFlow() {
   };
 
   return (
-    <ProtectedRoute>
+    <>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="w-full max-w-lg px-margin-mobile relative z-10 mx-auto pt-24 pb-28 flex flex-col items-center">
-          <div className="bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col w-full">
-            <header className="flex justify-between items-center border-b-2 border-primary pb-4 mb-6">
+          <WalletGate
+            title="Withdrawal Terminal Locked"
+            description="Connect your Web3 wallet to decrypt your active principal and execute a guaranteed 100% no-loss withdrawal from the Blindpot Vault."
+            actionName="Connect Wallet to Withdraw"
+          >
+            <div className="bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col w-full">
+              <header className="flex justify-between items-center border-b-2 border-primary pb-4 mb-6">
               <div>
                 <div className="font-label-mono text-xs uppercase text-on-surface-variant">Exit Protocol</div>
                 <h1 className="font-headline-md text-xl uppercase font-bold m-0">Withdraw Principal</h1>
@@ -190,6 +195,7 @@ export default function BlindpotWithdrawFlow() {
               )}
             </button>
           </div>
+          </WalletGate>
         </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
@@ -202,6 +208,6 @@ export default function BlindpotWithdrawFlow() {
         </div>
       </footer>
       </div>
-    </ProtectedRoute>
+    </>
   );
 }

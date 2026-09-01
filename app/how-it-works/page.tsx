@@ -2,24 +2,12 @@
 
 import React, { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAccount } from 'wagmi';
-import { Navbar } from '../components/Navbar';
+import { LandingNavbar } from '../components/LandingNavbar';
 
 export default function BlindpotHowItWorks() {
-  const router = useRouter();
-  const { isConnected } = useAccount();
-
-  // Auto-redirect connected wallets directly to dashboard
-  useEffect(() => {
-    if (isConnected) {
-      router.push('/dashboard');
-    }
-  }, [isConnected, router]);
-
   return (
     <>
-      <Navbar />
+      <LandingNavbar />
 
       <main className="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop pt-24 pb-20">
         <header className="mb-12 border-b-2 border-primary pb-6">

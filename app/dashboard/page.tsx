@@ -9,7 +9,7 @@ import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { ProtectedRoute } from '../components/ProtectedRoute';
+import { WalletGate } from '../components/WalletGate';
 
 const vaultAbi = [
   {
@@ -292,11 +292,16 @@ export default function BlindpotDashboard() {
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
   return (
-    <ProtectedRoute>
+    <>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="w-full max-w-4xl px-margin-mobile md:px-margin-desktop relative z-10 flex flex-col pt-24 md:pt-28 pb-32 mx-auto">
+        <WalletGate
+          title="Dashboard Access Restricted"
+          description="Connect your Web3 wallet to inspect your confidential deposit balance, decrypt sealed tickets, and claim draw winnings."
+          actionName="Connect Wallet to View Dashboard"
+        >
         {/* Network Mismatch Guard */}
         {isWrongNetwork && (
           <div className="w-full bg-error-container border-2 border-error text-error p-3.5 mb-6 flex justify-between items-center text-xs font-mono">
@@ -711,6 +716,7 @@ export default function BlindpotDashboard() {
                 </div>
               )}
             </div>
+          </WalletGate>
         </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
@@ -723,6 +729,6 @@ export default function BlindpotDashboard() {
         </div>
       </footer>
       </div>
-    </ProtectedRoute>
+    </>
   );
 }

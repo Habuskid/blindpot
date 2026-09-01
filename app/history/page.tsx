@@ -7,7 +7,6 @@ import { injected } from 'wagmi/connectors';
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { ProtectedRoute } from '../components/ProtectedRoute';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -75,7 +74,7 @@ export default function BlindpotDrawHistory() {
   };
 
   return (
-    <ProtectedRoute>
+    <>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
@@ -185,6 +184,6 @@ export default function BlindpotDrawHistory() {
         </div>
       </footer>
       </div>
-    </ProtectedRoute>
+    </>
   );
 }
