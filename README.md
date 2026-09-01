@@ -1,157 +1,192 @@
-# Blindpot Protocol
+# Blindpot
 
-> **Confidential, No-Loss Prize Savings on the Zama FHEVM**  
-> *Built for Zama Developer Program Mainnet Season 4 — Bounty Track*
-
-Blindpot is a decentralized, no-loss savings protocol built on Ethereum Sepolia using Zama's Fully Homomorphic Encryption Virtual Machine (fhEVM) and ERC-7984 confidential token standard.
-
-Deposit into a shared pool. Your deposit amount, balance, and odds remain encrypted on-chain from the moment they land—never visible to third parties, observers, or protocol operators. At the end of each epoch, the pool's accrued prize pot is awarded to a participant selected via on-chain FHE randomness (`FHE.randEuint32`) weighted by deposit size, computed entirely over encrypted balances. Winner identity and prize claims remain permanently sealed on-chain. You can withdraw 100% of your initial deposited principal at any time with zero fee and zero penalty.
+> **Confidential, no-loss prize savings on the Zama fhEVM.**  
+> *Built for the Zama Developer Program — Mainnet Season 4, Bounty Track.*
 
 ---
 
-## Verified Deployments (Ethereum Sepolia - Chain ID 11155111)
+## Table of contents
 
-| Contract | Address | Explorer |
-| :--- | :--- | :--- |
-| **`BlindpotVault`** | `0xe936872f7558fd545bfc072fcf9f321c8d5965c4` | [Etherscan](https://sepolia.etherscan.io/address/0xe936872f7558fd545bfc072fcf9f321c8d5965c4) |
-| **`cUSDCMock` (ERC-7984)** | `0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639` | [Etherscan](https://sepolia.etherscan.io/address/0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639) |
-| **`Underlying USDC` (ERC-20)** | `0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF` | [Etherscan](https://sepolia.etherscan.io/address/0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF) |
+- [The problem](#the-problem)
+- [The solution](#the-solution)
+- [Live deployment](#live-deployment)
+- [Architecture](#architecture)
+- [How the confidential draw works](#how-the-confidential-draw-works)
+- [Confidentiality design — what's encrypted, what's public](#confidentiality-design--whats-encrypted-whats-public)
+- [Trust model](#trust-model)
+- [Tech stack](#tech-stack)
+- [Quickstart](#quickstart)
+- [Roadmap](#roadmap)
+- [Security](#security)
 
 ---
 
-## Core Protocol Architecture
+## The problem
 
+Prize-linked savings — pool deposits, award the pooled yield to one random depositor, return everyone's principal in full — is a real, proven savings mechanism. Products built on exactly this pattern already run at national scale: UK Premium Bonds, US credit-union "Save to Win" accounts. A probabilistic upside gets people who won't respond to plain interest to actually save consistently, with zero principal risk.
+
+On-chain versions of this exist — PoolTogether being the best known — but they run on transparent ledgers, which means every deposit is public. Not "someone deposited," but exactly how much, from which address, updated in real time. That's not a hypothetical privacy concern; it's the literal current state of the product. It exposes individual depositors' wealth, lets anyone copy or front-run large depositors' behavior, and — more consequentially — it locks the entire mechanism out of institutional use. No credit union, fintech, or DAO treasury will run its balance sheet through a system where the exact number is posted publicly for competitors to read.
+
+---
+
+## The solution
+
+Blindpot rebuilds the same mechanic with deposits, balances, and winnings encrypted on-chain from the moment they land, using Zama's fhEVM. Not hidden by a frontend — actually encrypted in contract storage, computed on directly via fully homomorphic encryption, so no observer (including this app) can read an individual balance. 
+
+Winner selection runs entirely over encrypted balances, weighted by deposit size, using on-chain FHE randomness. Principal is withdrawable in full, at any time, no lock, no fee — that guarantee doesn't bend for any reason.
+
+---
+
+## Live deployment
+
+| Parameter | Value |
+| :--- | :--- |
+| **Network** | Ethereum Sepolia (Chain ID `11155111`) |
+| **`BlindpotVault`** | [`0xe936872f7558fd545bfc072fcf9f321c8d5965c4`](https://sepolia.etherscan.io/address/0xe936872f7558fd545bfc072fcf9f321c8d5965c4) |
+| **`cUSDCMock` (ERC-7984)** | [`0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639`](https://sepolia.etherscan.io/address/0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639) |
+| **`Underlying USDC` (ERC-20)** | [`0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF`](https://sepolia.etherscan.io/address/0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF) |
+
+*Test tokens are available from the in-app faucet (`/faucet`) — no external dependency, no other chain's testnet USDC required.*
+
+---
+
+## Architecture
+
+`BlindDraw.sol` is deliberately decoupled from vault logic — it's the reusable primitive (confidential, deposit-weighted random selection over a bounded encrypted set), importable by any future Zama builder who needs the same capability for a raffle, reward distribution, or airdrop, without inheriting Blindpot's savings-specific vault code.
+
+```mermaid
+flowchart TD
+    A["User wallet"] -->|"approve + wrap USDC"| B["cUSDCMock — ERC-7984"]
+    B -->|"confidential deposit"| C["BlindpotVault.sol"]
+    C -->|"imports"| D["BlindDraw.sol — core primitive"]
+    D -->|"FHE.randEuint32 + fixed-point<br/>proportional scaling"| E["Encrypted, deposit-weighted<br/>winner selection"]
+    E -->|"FHE.select — sealed"| C
+    C -->|"withdraw — full principal, any time"| A
+    C -->|"claim — EIP-712 user decryption"| A
+    F["Keeper daemon<br/>(scripts/keeper.mjs)"] -->|"triggers drawWinner()<br/>on epoch expiry"| C
+
+    style D fill:#C9A15A,stroke:#0F0F12,color:#0F0F12
 ```
-┌──────────────────────────┐      ┌──────────────────────────┐      ┌──────────────────────────┐
-│ 1. Wrap & Shield (ERC20) │ ───► │ 2. Confidential Deposit  │ ───► │ 3. Autonomous Epoch Draw │
-│    Approve & Wrap USDC   │      │    TransferAndCall Hook  │      │    FHE.randEuint32 Draw  │
-└──────────────────────────┘      └──────────────────────────┘      └────────────┬─────────────┘
-                                                                                 │
-┌──────────────────────────┐      ┌──────────────────────────┐                   │
-│ 5. Guaranteed Withdrawal │ ◄─── │ 4. Blinded Claim         │ ◄─────────────────┘
-│    100% Principal Return │      │    FHE.select Transfer   │
-└──────────────────────────┘      └──────────────────────────┘
+
+### Repo structure
+
+```text
+contracts/
+├── src/
+│   ├── BlindDraw.sol               # Reusable confidential weighted-selection primitive
+│   └── vaults/BlindpotVault.sol   # Deposit / withdraw / claim / epoch draw
+└── test/
+    ├── BlindDraw.t.sol
+    └── HCUBenchmark.t.sol          # Reproducible Foundry HCU & gas benchmark
+sdk/src/
+    ├── deposit.ts, withdraw.ts, claim.ts
+    ├── getMyBalance.ts, getMyWinnings.ts
+    └── config.ts
+app/                                # Reference frontend (Next.js 16 App Router)
+scripts/
+    ├── keeper.mjs                  # Autonomous permissionless epoch-draw trigger
+    └── benchmark.mjs               # Reproducible HCU & gas report
 ```
 
-### 1. Confidential Deposit (`BlindpotVault.sol`)
-Users wrap test USDC into confidential ERC-7984 `cUSDC` and call `confidentialTransferAndCall(vault, amount, "")`. The vault's `onConfidentialTransferReceived` callback registers the user and transfers encrypted tickets to `BlindDraw.sol` with zero plaintext leakage on block explorers.
+---
 
-### 2. Proportional Fixed-Point Selection (`BlindDraw.sol`)
-Winner selection draws uniform 32-bit random entropy $R \leftarrow \text{FHE.randEuint32()}$ and scales it proportionally across the encrypted total tickets using fixed-point fractional multiplication:
-$$\text{drawnTicket} = \left\lfloor \frac{R \cdot \text{totalTickets}}{2^{32}} \right\rfloor$$
-Because the divisor $2^{32}$ is a plaintext constant, `FHE.div` executes natively in FHEVM. This eliminates the power-of-2 modulo gap, modulo bias, and rollover rounds entirely.
+## How the confidential draw works
 
-### 3. Sealed Winner Identity & Blinded Claims
-* **Sealed Identity**: `drawWinner()` stores the winner as an encrypted handle `eaddress winnerHandle`. The `DrawExecuted` event emits only `(drawId, timestamp, roundPot)`. Winner identity is never decrypted on-chain.
-* **Blinded Claims**: `claimWinnings(drawId)` computes `safeAmountToPay = FHE.select(canClaim, amountToPay, 0)` and transfers funds confidentially. Third-party observers watching the transaction cannot distinguish between a winning claim and a non-winning claim.
+Weighted random selection over encrypted balances has no cheap way to compute a `rand % totalTickets` on-chain — `FHE.rem` only accepts a plaintext divisor, so an encrypted total can't be the modulus directly. Instead of normalizing pools to an awkward power-of-2 ticket count, Blindpot uses fixed-point proportional scaling:
 
-### 4. Autonomous Time-Locked Epochs & Keeper
-Draws are governed by permissionless time-locked epochs (`drawInterval = 600s`, `nextDrawTime`). A dedicated background daemon (`scripts/keeper.mjs`) automatically triggers `drawWinner()` as soon as an epoch matures.
+$$\text{drawnTicket} = \left\lfloor \frac{R \cdot \text{totalTickets}}{2^{32}} \right\rfloor \quad \text{where } R \leftarrow \text{FHE.randEuint32()}$$
 
-### 5. Gasless EIP-712 User Decryption
-Individual depositors decrypt their private balance and round win status off-chain through gasless EIP-712 KMS permits without spending gas or revealing values on-chain.
+Since $R$ is uniformly distributed across $[0, 2^{32})$, this maps the random draw continuously and without bias into $[0, \text{totalTickets}-1]$ — no modulo gap, no rejection sampling, no rollover rounds where nobody wins. Every draw lands on an active member.
+
+Winner identity is never emitted or stored in plaintext. `claimWinnings()` uses `FHE.select` so a transaction claiming zero and a transaction claiming a real prize are indistinguishable to any outside observer — only the winner ever learns they won, by successfully decrypting a nonzero amount via their own EIP-712 permit.
+
+### Pool size cap & HCU benchmarking
+
+Each pool is capped at $N = 25$ members for v1. This is a measured constraint, not a guess — the selection loop's sequential FHE dependency chain hits Zama's `maxHCUDepthPerTx` (5,000,000 HCU) before it hits the separate, larger `maxHCUPerTx` total-volume cap (20,000,000 HCU):
+
+| $N$ | Gas | Sequential HCU Depth | Limit Status & Methodology |
+| :---: | :---: | :---: | :--- |
+| **10** | ~2.1M | ~900k | **PASS** — Measured (Foundry / Sepolia) |
+| **25** | ~4.2M | ~2.8M | **PASS** — Measured (Current protocol cap) |
+| **50** | >8.5M | >5.5M | **REVERTS** — Extrapolated (Exceeds `maxHCUDepthPerTx`) |
+
+*Removing this cap requires an $O(\log n)$ selection scheme (segment-tree or Merkle ticket ranges) instead of the current linear scan — tracked as a v3 roadmap item, not hidden.*
 
 ---
 
-## Capacity Limits & HCU Benchmarking
+## Confidentiality design — what's encrypted, what's public
 
-The Zama FHEVM coprocessor enforces two distinct per-transaction compute caps:
-1. `maxHCUPerTx` = **20,000,000 HCU** (Total compute volume cap).
-2. `maxHCUDepthPerTx` = **5,000,000 HCU** (Longest sequential dependency chain cap).
+| Stays encrypted, always | Necessarily public |
+| :--- | :--- |
+| Individual deposit amounts and pool share | Draw timing / block number — inherent to any on-chain tx |
+| Every balance, winning or losing, permanently | `roundPot` (aggregate prize total) — emitted intentionally, same category as public pool TVL |
+| Winner's identity — never emitted, only self-discovered via a successful claim | Aggregate pool size, if the confidential token's total supply is public |
+| Exact prize amount, until the winner personally decrypts it | Active depositor count (`memberCount`), to enforce coprocessor depth capacity |
 
-Because `BlindDraw.sol` computes prefix sums iteratively over active member balances (`currentCumulative = FHE.add(currentCumulative, m.balance)`), each iteration $i$ is sequentially dependent on iteration $i-1$. Thus, the **sequential depth cap (`maxHCUDepthPerTx` = 5,000,000 HCU)** is the binding constraint that governs pool capacity.
-
-| Active Members ($N$) | Gas Estimate | Sequential FHE Ops | Total HCU Volume | Sequential HCU Depth | Limit Status & Methodology |
-| :---: | :---: | :---: | :---: | :---: | :--- |
-| **$N = 10$** | ~2,100,000 | 60 ops | ~1.2M HCU | ~900k HCU | **PASS** — Measured (Foundry / Sepolia) |
-| **$N = 25$** | ~4,200,000 | 190 ops | ~3.8M HCU | ~2.8M HCU | **PASS** — Measured (Optimal Protocol Cap) |
-| **$N = 50$** | > 8,500,000 | 400 ops | ~8.2M HCU | > 5.5M HCU | **REVERTS** — Extrapolated (`HCUTransactionDepthLimitExceeded`) |
-
-*Reproducible benchmark test suite committed at [`contracts/test/HCUBenchmark.t.sol`](contracts/test/HCUBenchmark.t.sol) and [`scripts/benchmark.mjs`](scripts/benchmark.mjs).*
+### On verifiability
+Because winner identity is fully sealed rather than published at draw time, no external party can independently reconstruct who won from event logs alone. Fairness instead rests on the FHE coprocessor and threshold KMS network executing the deterministic selection logic honestly — see [Trust model](#trust-model). This is a deliberate design choice, not an oversight: stated plainly so it can be evaluated on its merits.
 
 ---
 
-## Confidentiality & Trust Model
+## Trust model
 
-* **Stays Encrypted Always**: Individual deposit amounts, pool shares, losing balances, winner wallet addresses, and claim transfer amounts.
-* **Necessarily Public**: Draw epoch timestamps (`nextDrawTime`), Draw ID counter (`currentDrawId`), round prize schedule (`roundPot`), and active depositor count integer (`memberCount`).
-* **Threshold MPC Trust Assumption**: Winner selection, blinded prize claiming, and private balance decryption depend on Zama's distributed Key Management System (KMS) and coprocessor infrastructure. Zama's KMS operates via a **Threshold Multi-Party Computation (MPC) network** ($t$-of-$n$ scheme) where no single operator or relayer holds the global decryption key. Protocol correctness and confidentiality rest on the cryptographic assumption that a dishonest coalition does not reach the threshold $t$ of independent KMS validator nodes, and that coprocessor nodes execute deterministic FHEVM bytecode faithfully.
+Correctness and confidentiality depend on Zama's **Threshold Multi-Party Computation (MPC) Key Management System** — a $t$-of-$n$ scheme where no single operator, relayer, or validator holds the global decryption key. The relevant assumption is that a dishonest coalition never reaches the threshold $t$ of independent KMS nodes, and that coprocessor nodes execute the deterministic FHEVM bytecode faithfully. This is meaningfully different from — and stronger than — trusting a single centralized party.
 
 ---
 
-## Quickstart & Local Development
+## Tech stack
 
-### Prerequisites
-* Node.js >= 20.18.0
-* Metamask or compatible web3 wallet connected to **Ethereum Sepolia** (Chain ID `11155111`)
+| Layer | Technology |
+| :--- | :--- |
+| **Contracts** | Solidity, Foundry, `zama-ai/forge-fhevm` |
+| **Confidential tokens** | ERC-7984 (`@openzeppelin/confidential-contracts`) |
+| **SDK** | TypeScript, `@zama-fhe/react-sdk`, Viem |
+| **Frontend** | Next.js 16 (App Router), Wagmi, Tailwind CSS |
+| **Automation** | Node.js autonomous keeper daemon |
 
-### 1. Install Dependencies
+---
+
+## Quickstart
+
 ```bash
+# 1. Install dependencies
 npm install
-```
 
-### 2. Run the Next.js Frontend
-```bash
+# 2. Production build (type-checked)
+npm run build
+
+# 3. Run local frontend
 npm run dev
-```
-Open [http://localhost:3000](http://localhost:3000) to access the dApp:
-* `/faucet`: 1-click testnet USDC minting.
-* `/deposit`: 2-stage approval, wrap, and confidential deposit.
-* `/dashboard`: Real-time epoch countdown, 1-click EIP-712 balance & win decryption, and instant prize claiming.
-* `/withdraw`: 100% principal withdrawal with zero fees.
-* `/history`: Sealed historical draw logs and audit explorer.
 
-### 3. Run the Autonomous Keeper Daemon
-```bash
+# 4. Run autonomous keeper daemon
 node scripts/keeper.mjs
-```
 
-### 4. Run HCU & Gas Benchmarks
-```bash
+# 5. Run HCU & gas benchmark
 node scripts/benchmark.mjs
 ```
 
-### 5. Compile Smart Contracts
-```bash
-node compile.mjs
-```
+### User walkthrough
+1. Connect a wallet on Ethereum Sepolia.
+2. Get test tokens from the in-app faucet (`/faucet`).
+3. Approve → wrap → deposit (`/deposit`).
+4. Decrypt your balance any time via the gasless EIP-712 signature flow.
+5. Withdraw your principal whenever you want — full amount, no loss (`/withdraw`).
+6. If a draw has run and you won, claim your winnings blindly via the dashboard.
 
 ---
 
-## Repository Structure
+## Roadmap
 
-```
-blindpot/
-├── contracts/
-│   ├── src/
-│   │   ├── BlindDraw.sol         # Reusable confidential weighted random selection primitive
-│   │   └── vaults/
-│   │       └── BlindpotVault.sol # ERC-7984 receiver, deposit accounting, time-locked epochs
-│   └── test/
-│       └── HCUBenchmark.t.sol    # Reproducible Foundry HCU & gas benchmark suite
-├── sdk/src/                      # TypeScript SDK wrappers (@zama-fhe/react-sdk + Viem)
-│   ├── deposit.ts                # useDeposit hook (shield + confidentialTransferAndCall)
-│   ├── getMyBalance.ts           # useGetMyBalance hook (EIP-712 balance decryption)
-│   ├── getMyWinnings.ts          # useGetMyWinnings hook (EIP-712 prize decryption)
-│   ├── claim.ts                  # useClaim hook (blinded prize claim)
-│   ├── withdraw.ts               # useWithdraw hook (principal withdrawal)
-│   └── config.ts                 # Deployed Sepolia contract addresses
-├── scripts/
-│   ├── keeper.mjs                # Autonomous background epoch execution daemon
-│   └── benchmark.mjs             # Reproducible gas & HCU report script
-├── app/                          # Next.js 16 print-brutalist frontend
-│   ├── dashboard/                # In-place EIP-712 balance & win outcome dashboard
-│   ├── deposit/                  # 2-stage shield/wrap & deposit UI
-│   ├── withdraw/                 # Guaranteed no-loss principal exit UI
-│   ├── faucet/                   # Interactive 1-click testnet token faucet
-│   └── history/                  # Sealed draw history explorer
-├── ARCHITECTURE.md               # Technical layering, scaling formulas, and roadmap
-├── CONFIDENTIALITY.md            # What stays encrypted, what leaks, and threshold MPC model
-├── SECURITY.md                   # Security audit scope, FHE risks, and trust assumptions
-├── AUDIT.md                      # Self-audit checklist and verification trail
-├── LOGS.md                       # Feature checklist and session change logs
-└── SPEC.md                       # Hackathon judging requirements
-```
+- **v1 (Current)** — Capped pools ($N=25$), proportional fixed-point random draw, time-locked epochs, autonomous keeper, blinded claims, full reference frontend.
+- **v2** — Real yield source integration (Aave/Compound cToken wrapper), multi-pool factory, fee switch, governance over pool parameters.
+- **v3** — $O(\log n)$ confidential selection (segment-tree / Merkle ticket ranges) to remove the 25-member cap for large public pools.
+- **v4** — Cross-chain vaults, selective-disclosure/compliance module for regulated deployments.
+
+---
+
+## Security
+
+Unaudited, testnet-only, experimental software. Protocol correctness depends on the Zama threshold MPC network and coprocessor infrastructure behaving honestly. Do not use with real funds.
 
 ---
 

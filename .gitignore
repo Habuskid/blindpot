@@ -5,6 +5,23 @@
 *.pem
 *.key
 
+# Internal Agent & IDE documentation
+AGENTS.md
+LOGS.md
+SPEC.md
+contracts.md
+frontend.md
+sdk.md
+ARCHITECTURE.md
+CONFIDENTIALITY.md
+SECURITY.md
+AUDIT.md
+BRAND.md
+bureau_document_system/
+llm.txt
+llms-full.txt
+convert.js
+
 # Dependencies & Build artifacts
 .next/
 node_modules/
@@ -14,8 +31,8 @@ contracts/out/
 contracts/cache/
 contracts/dependencies/
 
-# Vendor & Local Skills (Third-party references)
-.agents/skills/
+# Vendor & Agent Tooling
+.agents/
 
 # IDE & OS caches
 .claude/
