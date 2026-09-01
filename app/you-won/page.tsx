@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi';
 import { useGetMyWinnings } from '../../sdk/src/getMyWinnings';
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
+import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 
@@ -83,7 +84,7 @@ function YouWonContent() {
           {decryptedWinnings !== undefined && (
             <div className="flex flex-col items-center justify-center relative">
               <div className="font-value-mono text-4xl md:text-5xl font-bold text-secondary tracking-tight">
-                {decryptedWinnings > 0 ? `${decryptedWinnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC` : "0.00 USDC"}
+                {decryptedWinnings > 0 ? `${formatUSDC(decryptedWinnings)} USDC` : "0.00 USDC"}
               </div>
 
               <div className="mt-4 stamp-decrypt font-stamp-text text-stamp-text text-sm">

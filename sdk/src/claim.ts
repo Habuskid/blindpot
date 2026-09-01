@@ -1,15 +1,7 @@
 import { useWriteContract } from "wagmi";
 import { type Address } from "viem";
 
-const vaultAbi = [
-  {
-    type: "function",
-    name: "claimWinnings",
-    inputs: [{ type: "uint256", name: "drawId" }],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-] as const;
+import { BLINDPOT_VAULT_ABI } from "./abi";
 
 export function useClaim() {
   const { writeContractAsync, isPending, error } = useWriteContract();
@@ -17,7 +9,7 @@ export function useClaim() {
   const claim = async (vaultAddress: Address, drawId: bigint) => {
     const tx = await writeContractAsync({
       address: vaultAddress,
-      abi: vaultAbi,
+      abi: BLINDPOT_VAULT_ABI,
       functionName: "claimWinnings",
       args: [drawId],
     } as any);

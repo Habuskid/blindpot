@@ -7,42 +7,14 @@ import { useAccount, useChainId, useSwitchChain, useReadContract, useWriteContra
 import { sepolia } from 'wagmi/chains';
 import { useDeposit } from '../../sdk/src/deposit';
 import { addresses } from '../../sdk/src/config';
+import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
+import { NetworkBanner } from '../components/NetworkBanner';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
 const UNDERLYING_TOKEN_ADDRESS = addresses.underlyingToken;
-
-const erc20Abi = [
-  {
-    type: "function",
-    name: "balanceOf",
-    inputs: [{ type: "address", name: "account" }],
-    outputs: [{ type: "uint256", name: "" }],
-    stateMutability: "view"
-  },
-  {
-    type: "function",
-    name: "allowance",
-    inputs: [
-      { type: "address", name: "owner" },
-      { type: "address", name: "spender" }
-    ],
-    outputs: [{ type: "uint256", name: "" }],
-    stateMutability: "view"
-  },
-  {
-    type: "function",
-    name: "approve",
-    inputs: [
-      { type: "address", name: "spender" },
-      { type: "uint256", name: "amount" }
-    ],
-    outputs: [{ type: "bool", name: "" }],
-    stateMutability: "nonpayable"
-  }
-] as const;
 
 const wrapperAbi = [
   {
@@ -80,7 +52,7 @@ export default function BlindpotDepositFlow() {
   // Read public USDC balance on Sepolia
   const { data: publicBalanceRaw, refetch: refetchPublicBalance } = useReadContract({
     address: UNDERLYING_TOKEN_ADDRESS,
-    abi: erc20Abi,
+    abi: ERC20_ABI,
     functionName: "balanceOf",
     args: account ? [account] : undefined,
     query: { enabled: !!account && chainId === sepolia.id },
@@ -89,7 +61,7 @@ export default function BlindpotDepositFlow() {
   // Read allowance for wrapper
   const { data: allowanceRaw, refetch: refetchAllowance } = useReadContract({
     address: UNDERLYING_TOKEN_ADDRESS,
-    abi: erc20Abi,
+    abi: ERC20_ABI,
     functionName: "allowance",
     args: account ? [account, TOKEN_WRAPPER_ADDRESS] : undefined,
     query: { enabled: !!account && chainId === sepolia.id },
@@ -127,7 +99,7 @@ export default function BlindpotDepositFlow() {
       const hash = await writeContractAsync({
         chainId: sepolia.id,
         address: UNDERLYING_TOKEN_ADDRESS,
-        abi: erc20Abi,
+        abi: ERC20_ABI,
         functionName: "approve",
         args: [TOKEN_WRAPPER_ADDRESS, amountToApprove],
       } as any);
@@ -271,21 +243,7 @@ export default function BlindpotDepositFlow() {
               </Link>
             </header>
 
-            {isWrongNetwork && (
-              <div className="bg-error-container border-2 border-error text-error p-3 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">warning</span>
-                  Wallet is on Chain {chainId}. Sepolia (11155111) is required.
-                </span>
-                <button
-                  onClick={handleSwitchNetwork}
-                  disabled={isSwitchingChain}
-                  className="bg-error text-surface px-3 py-1 uppercase font-bold font-label-mono hover:opacity-90 whitespace-nowrap"
-                >
-                  Switch Network
-                </button>
-              </div>
-            )}
+            <NetworkBanner />
 
             {/* Stepper Tabs */}
             <div className="grid grid-cols-2 gap-2 mb-6">

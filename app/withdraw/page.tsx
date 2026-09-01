@@ -10,13 +10,14 @@ import { useGetMyBalance } from '../../sdk/src/getMyBalance';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
+import { NetworkBanner } from '../components/NetworkBanner';
 
 const VAULT_ADDRESS = addresses.vault;
 
 export default function BlindpotWithdrawFlow() {
+  const router = useRouter();
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const router = useRouter();
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
@@ -102,20 +103,7 @@ export default function BlindpotWithdrawFlow() {
               </Link>
             </header>
 
-            {isWrongNetwork && (
-              <div className="bg-error-container border-2 border-error text-error p-3 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                <span className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">warning</span>
-                  Wallet is on Chain {chainId}. Sepolia (11155111) is required.
-                </span>
-                <button
-                  onClick={() => switchChainAsync({ chainId: sepolia.id })}
-                  className="bg-error text-surface px-3 py-1 uppercase font-bold font-label-mono hover:opacity-90 whitespace-nowrap"
-                >
-                  Switch Network
-                </button>
-              </div>
-            )}
+            <NetworkBanner />
 
             <div className="p-4 border-2 border-primary bg-surface-container-low mb-6 flex flex-col gap-3">
               <div className="flex justify-between items-center border-b border-primary/20 pb-2">

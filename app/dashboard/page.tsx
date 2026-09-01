@@ -8,60 +8,11 @@ import { useRouter } from 'next/navigation';
 import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-sdk";
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
+import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
+import { formatUSDC, formatTimestamp, formatAddress } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
-
-const vaultAbi = [
-  {
-    type: 'function',
-    name: 'memberCount',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'isMember',
-    inputs: [{ type: 'address', name: 'user' }],
-    outputs: [{ type: 'bool', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'currentDrawId',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'nextDrawTime',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'drawInterval',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'getEncryptedBalance',
-    inputs: [{ type: 'address', name: 'user' }],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'getEncryptedWinnings',
-    inputs: [{ type: 'uint256', name: 'drawId' }, { type: 'address', name: 'user' }],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-] as const;
+import { NetworkBanner } from '../components/NetworkBanner';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
@@ -83,13 +34,13 @@ export default function BlindpotDashboard() {
   // Read Real Pool Stats On-Chain
   const { data: memberCount, refetch: refetchMemberCount } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'memberCount',
   });
 
   const { data: isUserMember, refetch: refetchIsMember } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'isMember',
     args: account ? [account] : undefined,
     query: { enabled: !!account && isConnected },
@@ -97,13 +48,13 @@ export default function BlindpotDashboard() {
 
   const { data: currentDrawId, refetch: refetchDrawId } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'currentDrawId',
   });
 
   const { data: nextDrawTimeRaw } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'nextDrawTime',
   });
 
@@ -116,7 +67,7 @@ export default function BlindpotDashboard() {
   // Read Encrypted Balance Handle
   const { data: encryptedBalanceHandle, refetch: refetchBalanceHandle } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'getEncryptedBalance',
     args: account ? [account] : undefined,
     query: { enabled: !!account && isConnected },
@@ -125,7 +76,7 @@ export default function BlindpotDashboard() {
   // Read Encrypted Winnings Handle for Active/Selected Round
   const { data: encryptedWinningsHandle, refetch: refetchWinningsHandle } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'getEncryptedWinnings',
     args: account && activeDrawId > 0 ? [BigInt(activeDrawId), account] : undefined,
     query: { enabled: !!account && isConnected && activeDrawId > 0 },
@@ -298,20 +249,7 @@ export default function BlindpotDashboard() {
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="w-full max-w-4xl px-margin-mobile md:px-margin-desktop relative z-10 flex flex-col pt-24 md:pt-28 pb-32 mx-auto">
         {/* Network Mismatch Guard */}
-        {isWrongNetwork && (
-          <div className="w-full bg-error-container border-2 border-error text-error p-3.5 mb-6 flex justify-between items-center text-xs font-mono">
-            <span className="flex items-center gap-1.5">
-              <span className="material-symbols-outlined text-[16px]">warning</span>
-              Connected to Chain {chainId}. Please switch to Sepolia (11155111).
-            </span>
-            <button
-              onClick={() => switchChainAsync({ chainId: sepolia.id })}
-              className="bg-error text-surface px-3 py-1 uppercase font-bold font-label-mono"
-            >
-              Switch Network
-            </button>
-          </div>
-        )}
+        <NetworkBanner />
 
         {/* Top Header Card: Balance & Decrypt */}
         <div className="border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary flex flex-col gap-6">

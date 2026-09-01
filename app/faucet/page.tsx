@@ -5,21 +5,10 @@ import Link from 'next/link';
 import { useAccount, useWriteContract, useChainId, useSwitchChain, usePublicClient } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { addresses } from '../../sdk/src/config';
+import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
-
-const mockErc20Abi = [
-  {
-    type: "function",
-    name: "mint",
-    inputs: [
-      { type: "address", name: "to" },
-      { type: "uint256", name: "amount" }
-    ],
-    outputs: [],
-    stateMutability: "nonpayable"
-  }
-] as const;
+import { NetworkBanner } from '../components/NetworkBanner';
 
 export default function BlindpotFaucet() {
   const { address: account, isConnected } = useAccount();
@@ -66,7 +55,7 @@ export default function BlindpotFaucet() {
       const hash = await writeContractAsync({
         chainId: sepolia.id,
         address: addresses.underlyingToken,
-        abi: mockErc20Abi,
+        abi: ERC20_ABI,
         functionName: "mint",
         args: [account, mintAmount],
       } as any);
@@ -105,21 +94,7 @@ export default function BlindpotFaucet() {
               Mint official test USDC tokens directly on-chain on <strong>Ethereum Sepolia Testnet</strong> (Chain ID 11155111).
             </p>
           </div>
-              {isWrongNetwork && (
-                <div className="bg-error-container border-2 border-error text-error p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                  <div className="flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px]">warning</span>
-                    <strong>WRONG NETWORK:</strong> Wallet is on Chain {chainId}. Please switch to Sepolia (11155111).
-                  </div>
-                  <button
-                    onClick={handleSwitchNetwork}
-                    disabled={isSwitchingChain}
-                    className="bg-error text-surface px-4 py-2 uppercase font-bold font-label-mono hover:opacity-90 whitespace-nowrap"
-                  >
-                    {isSwitchingChain ? "Switching..." : "Switch to Sepolia"}
-                  </button>
-                </div>
-              )}
+              <NetworkBanner />
 
               <div className="space-y-4 flex-grow">
                 <div className="flex flex-col">

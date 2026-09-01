@@ -6,31 +6,9 @@ import { useAccount, useReadContract } from 'wagmi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { addresses } from '../../sdk/src/config';
+import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
+import { formatAddress } from '../../lib/formatters';
 import type { PoolRecord } from '../../lib/db';
-
-const vaultAbi = [
-  {
-    type: 'function',
-    name: 'memberCount',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'currentDrawId',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'isMember',
-    inputs: [{ type: 'address', name: 'user' }],
-    outputs: [{ type: 'bool', name: '' }],
-    stateMutability: 'view',
-  },
-] as const;
 
 export default function PoolsDirectoryPage() {
   const { address: account } = useAccount();
@@ -39,19 +17,19 @@ export default function PoolsDirectoryPage() {
 
   const { data: memberCount } = useReadContract({
     address: addresses.vault as `0x${string}`,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'memberCount',
   });
 
   const { data: currentDrawId } = useReadContract({
     address: addresses.vault as `0x${string}`,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'currentDrawId',
   });
 
   const { data: isUserMember } = useReadContract({
     address: addresses.vault as `0x${string}`,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'isMember',
     args: account ? [account] : undefined,
     query: { enabled: !!account },

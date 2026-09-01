@@ -2,15 +2,7 @@ import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-
 import { useReadContract, useAccount } from "wagmi";
 import { type Address } from "viem";
 
-const vaultAbi = [
-  {
-    type: "function",
-    name: "getEncryptedWinnings",
-    inputs: [{ type: "uint256", name: "drawId" }, { type: "address", name: "user" }],
-    outputs: [{ type: "uint256", name: "" }],
-    stateMutability: "view",
-  },
-] as const;
+import { BLINDPOT_VAULT_ABI } from "./abi";
 
 export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
   const { address: account } = useAccount();
@@ -18,7 +10,7 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
   // 1. Fetch the encrypted handle from the Vault
   const { data: encryptedHandle, refetch } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: "getEncryptedWinnings",
     args: account ? [drawId, account] : undefined,
     query: {

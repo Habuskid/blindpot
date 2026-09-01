@@ -2,15 +2,7 @@ import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-
 import { useReadContract, useAccount } from "wagmi";
 import { type Address } from "viem";
 
-const vaultAbi = [
-  {
-    type: "function",
-    name: "getEncryptedBalance",
-    inputs: [{ type: "address", name: "user" }],
-    outputs: [{ type: "uint256", name: "" }],
-    stateMutability: "view",
-  },
-] as const;
+import { BLINDPOT_VAULT_ABI } from "./abi";
 
 export function useGetMyBalance(vaultAddress: Address) {
   const { address: account } = useAccount();
@@ -18,7 +10,7 @@ export function useGetMyBalance(vaultAddress: Address) {
   // 1. Fetch the encrypted handle from the Vault
   const { data: encryptedHandle, refetch } = useReadContract({
     address: vaultAddress,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: "getEncryptedBalance",
     args: account ? [account] : undefined,
     query: {

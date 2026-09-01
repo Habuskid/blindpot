@@ -2,28 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useReadContract, useConnect } from 'wagmi';
-import { injected } from 'wagmi/connectors';
+import { useAccount, useReadContract } from 'wagmi';
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
+import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
+import { formatTimestamp } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 
 const VAULT_ADDRESS = addresses.vault;
 
-const vaultAbi = [
-  {
-    type: 'function',
-    name: 'currentDrawId',
-    inputs: [],
-    outputs: [{ type: 'uint256', name: '' }],
-    stateMutability: 'view',
-  }
-] as const;
-
 export default function BlindpotDrawHistory() {
   const { isConnected } = useAccount();
-  const { connect } = useConnect();
   const { claim, isPending } = useClaim();
   const [claimingDraw, setClaimingDraw] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
@@ -31,7 +21,7 @@ export default function BlindpotDrawHistory() {
 
   const { data: currentDrawId } = useReadContract({
     address: VAULT_ADDRESS as `0x${string}`,
-    abi: vaultAbi,
+    abi: BLINDPOT_VAULT_ABI,
     functionName: 'currentDrawId',
   });
 
@@ -54,10 +44,6 @@ export default function BlindpotDrawHistory() {
   );
 
   const handleClaim = async (drawId: string) => {
-    if (!isConnected) {
-      connect({ connector: injected() });
-      return;
-    }
     setClaimingDraw(drawId);
     setErrorMsg(null);
     setStatusMsg(`Submitting blinded claim transaction for Draw #${drawId}...`);

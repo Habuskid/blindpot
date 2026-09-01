@@ -2,15 +2,7 @@ import { useWriteContract } from "wagmi";
 import { sepolia } from "wagmi/chains";
 import { type Address } from "viem";
 
-const vaultAbi = [
-  {
-    type: "function",
-    name: "withdrawAll",
-    inputs: [],
-    outputs: [],
-    stateMutability: "nonpayable",
-  },
-] as const;
+import { BLINDPOT_VAULT_ABI } from "./abi";
 
 export function useWithdraw() {
   const { writeContractAsync, isPending, error } = useWriteContract();
@@ -19,7 +11,7 @@ export function useWithdraw() {
     const tx = await writeContractAsync({
       chainId: sepolia.id,
       address: vaultAddress,
-      abi: vaultAbi,
+      abi: BLINDPOT_VAULT_ABI,
       functionName: "withdrawAll",
     } as any);
     return tx;
