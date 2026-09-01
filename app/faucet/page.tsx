@@ -67,7 +67,7 @@ export default function BlindpotFaucet() {
         abi: mockErc20Abi,
         functionName: "mint",
         args: [account, mintAmount],
-      });
+      } as any);
 
       setTxHash(hash);
       setStatusMsg("🎉 1,000 Test USDC successfully minted on Sepolia! You can now proceed to wrap and deposit.");

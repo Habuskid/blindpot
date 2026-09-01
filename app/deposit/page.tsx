@@ -129,7 +129,7 @@ export default function BlindpotDepositFlow() {
         abi: erc20Abi,
         functionName: "approve",
         args: [TOKEN_WRAPPER_ADDRESS, amountToApprove],
-      });
+      } as any);
 
       if (publicClient) {
         setStatusMsg("Waiting for approval confirmation on Sepolia...");
@@ -171,7 +171,7 @@ export default function BlindpotDepositFlow() {
         abi: wrapperAbi,
         functionName: "wrap",
         args: [account, baseUnits],
-      });
+      } as any);
 
       if (publicClient) {
         setStatusMsg("Waiting for wrap block confirmation on Sepolia (~12s)...");

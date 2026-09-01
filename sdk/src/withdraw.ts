@@ -21,7 +21,7 @@ export function useWithdraw() {
       address: vaultAddress,
       abi: vaultAbi,
       functionName: "withdrawAll",
-    });
+    } as any);
     return tx;
   };
 

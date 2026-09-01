@@ -4,11 +4,24 @@
   "description": "A confidential, no-loss prize savings protocol built on the Zama Protocol.",
   "main": "convert.js",
   "scripts": {
-    "dev": "next dev"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "benchmark": "node scripts/benchmark.mjs",
+    "keeper": "node scripts/keeper.mjs",
+    "compile": "node compile.mjs",
+    "deploy": "node deploy.mjs"
   },
-  "keywords": [],
+  "keywords": [
+    "zama",
+    "fhevm",
+    "confidential",
+    "defi",
+    "no-loss-savings",
+    "erc7984"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
