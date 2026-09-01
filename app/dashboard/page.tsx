@@ -158,7 +158,8 @@ export default function BlindpotDashboard() {
     if (encryptedWinningsHandle === 0n) {
       decryptedWinnings = 0;
     } else if (validWinningsHandleHex && decryptedValues?.[validWinningsHandleHex] !== undefined) {
-      decryptedWinnings = Number(decryptedValues[validWinningsHandleHex]) / 1_000_000;
+      const raw = Number(decryptedValues[validWinningsHandleHex]);
+      decryptedWinnings = raw >= 1_000_000 ? raw / 1_000_000 : raw;
     }
   }
 

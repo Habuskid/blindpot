@@ -56,7 +56,8 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
     if (encryptedHandle === 0n) {
       decryptedWinnings = 0;
     } else if (formattedHandle && decryptedValues?.[formattedHandle] !== undefined) {
-      decryptedWinnings = Number(decryptedValues[formattedHandle]) / 1_000_000;
+      const raw = Number(decryptedValues[formattedHandle]);
+      decryptedWinnings = raw >= 1_000_000 ? raw / 1_000_000 : raw;
     }
   }
 

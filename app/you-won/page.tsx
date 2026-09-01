@@ -91,7 +91,7 @@ function YouWonContent() {
               {decryptedWinnings !== undefined && (
                 <div className="flex flex-col items-center justify-center relative">
                   <div className="font-value-mono text-4xl md:text-5xl font-bold text-secondary tracking-tight">
-                    {decryptedWinnings > 0 ? `${(decryptedWinnings / 1_000_000).toLocaleString()} USDC` : "0.00 USDC"}
+                    {decryptedWinnings > 0 ? `${decryptedWinnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC` : "0.00 USDC"}
                   </div>
 
                   <div className="mt-4 stamp-decrypt font-stamp-text text-stamp-text text-sm">
