@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAccount, useReadContract, useConnect } from 'wagmi';
 import { injected } from 'wagmi/connectors';
@@ -34,7 +34,23 @@ export default function BlindpotDrawHistory() {
     functionName: 'currentDrawId',
   });
 
-  const totalDraws = currentDrawId !== undefined ? Number(currentDrawId) : 0;
+  const [dbDraws, setDbDraws] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetch('/api/draws')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.draws) {
+          setDbDraws(data.draws);
+        }
+      })
+      .catch((e) => console.warn('Draws fetch error:', e));
+  }, []);
+
+  const totalDraws = Math.max(
+    currentDrawId !== undefined ? Number(currentDrawId) : 0,
+    dbDraws.length
+  );
 
   const handleClaim = async (drawId: string) => {
     if (!isConnected) {

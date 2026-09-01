@@ -17,7 +17,7 @@ export default function BlindpotWithdrawFlow() {
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const router = useRouter();
-  const { isConnected } = useAccount();
+  const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
 
@@ -42,7 +42,23 @@ export default function BlindpotWithdrawFlow() {
     setStatusMsg("Executing full principal withdrawal on Sepolia...");
 
     try {
-      await withdraw(VAULT_ADDRESS);
+      const hash = await withdraw(VAULT_ADDRESS);
+      if (account) {
+        try {
+          await fetch('/api/activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userAddress: account,
+              poolId: 'pool-usdc-sepolia-01',
+              action: 'WITHDRAW',
+              txHash: hash || '0x_withdrawn',
+            }),
+          });
+        } catch (dbErr) {
+          console.warn('Activity log error:', dbErr);
+        }
+      }
       setStatusMsg("🎉 Withdrawal successful! Your full principal has been returned to your wallet.");
       setTimeout(() => {
         router.push('/dashboard');

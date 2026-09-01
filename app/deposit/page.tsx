@@ -218,6 +218,25 @@ export default function BlindpotDepositFlow() {
         await publicClient.waitForTransactionReceipt({ hash: res.txHash });
       }
 
+      // Record to persistent database
+      if (res?.txHash && account) {
+        try {
+          await fetch('/api/activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userAddress: account,
+              poolId: 'pool-usdc-sepolia-01',
+              action: 'DEPOSIT',
+              amount: Number(depositAmount),
+              txHash: res.txHash,
+            }),
+          });
+        } catch (dbErr) {
+          console.warn('Activity logging warning:', dbErr);
+        }
+      }
+
       setStatusMsg("🎉 Confidential deposit successful! Redirecting to Dashboard...");
       setTimeout(() => {
         router.push('/dashboard');

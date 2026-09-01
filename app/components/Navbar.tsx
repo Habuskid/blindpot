@@ -19,6 +19,7 @@ export function Navbar() {
 
   const navLinks = [
     { href: "/dashboard", label: "Dashboard" },
+    { href: "/pools", label: "Pools" },
     { href: "/deposit", label: "Deposit" },
     { href: "/withdraw", label: "Withdraw" },
     { href: "/history", label: "Draws" },

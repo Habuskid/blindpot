@@ -226,13 +226,49 @@ export default function BlindpotDashboard() {
     }
   };
 
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+
+  // Fetch real persistent activity logs from database
+  useEffect(() => {
+    if (!account) return;
+    fetch(`/api/activity?user=${account}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.activity) {
+          setActivityLogs(data.activity);
+        }
+      })
+      .catch((e) => console.warn('Activity fetch error:', e));
+  }, [account]);
+
   const handleClaimWinnings = async () => {
     if (!account) return;
     setClaimErrorMsg(null);
     setClaimStatusMsg("Submitting blinded claim transaction on Sepolia...");
     try {
-      await claim(vaultAddress, BigInt(displayDrawId));
+      const hash = await claim(vaultAddress, BigInt(displayDrawId));
       setClaimStatusMsg("🎉 Blinded claim executed! Winnings have been transferred into your confidential balance.");
+      
+      // Log to database
+      try {
+        await fetch('/api/activity', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userAddress: account,
+            poolId: 'pool-usdc-sepolia-01',
+            action: 'CLAIM',
+            drawId: displayDrawId,
+            txHash: hash || '0x_claimed',
+          }),
+        });
+        const refetchRes = await fetch(`/api/activity?user=${account}`);
+        const refetchData = await refetchRes.json();
+        if (refetchData.success) setActivityLogs(refetchData.activity);
+      } catch (logErr) {
+        console.warn('Claim log error:', logErr);
+      }
+
       await refetchBalanceHandle();
       await refetchWinningsHandle();
     } catch (e: any) {
@@ -608,6 +644,79 @@ export default function BlindpotDashboard() {
                 <span className="material-symbols-outlined text-[18px]">history</span>
                 Draw History
               </button>
+            </div>
+
+            {/* User Activity Ledger (from Database) */}
+            <div className="mt-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
+              <div className="flex justify-between items-center border-b-2 border-primary pb-3 mb-4">
+                <div>
+                  <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Audit Trail</div>
+                  <h3 className="font-headline-sm text-lg uppercase font-bold text-primary m-0">
+                    Your Activity Dossier
+                  </h3>
+                </div>
+                <span className="font-label-mono text-[11px] uppercase bg-surface-container-low border border-primary px-2.5 py-1">
+                  Database Synced
+                </span>
+              </div>
+
+              {activityLogs.length === 0 ? (
+                <div className="text-center py-6 font-label-mono text-xs text-on-surface-variant uppercase">
+                  No previous transactions recorded in database for this address yet.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-mono text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-primary/20 bg-surface-container-low font-bold text-on-surface-variant uppercase">
+                        <th className="p-2">Action</th>
+                        <th className="p-2">Details</th>
+                        <th className="p-2">Timestamp</th>
+                        <th className="p-2 text-right">Receipt</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-primary/10">
+                      {activityLogs.map((log) => (
+                        <tr key={log.id} className="hover:bg-surface-container-low/50">
+                          <td className="p-2">
+                            <span
+                              className={`px-2 py-0.5 text-[10px] font-bold uppercase ${
+                                log.action === 'DEPOSIT'
+                                  ? 'bg-secondary-container text-primary'
+                                  : log.action === 'WITHDRAW'
+                                  ? 'bg-error-container text-error'
+                                  : 'bg-primary text-surface'
+                              }`}
+                            >
+                              {log.action}
+                            </span>
+                          </td>
+                          <td className="p-2">
+                            {log.amount ? `${log.amount} USDC` : log.drawId ? `Round #${log.drawId}` : 'Full Principal'}
+                          </td>
+                          <td className="p-2 text-on-surface-variant">
+                            {new Date(log.timestamp * 1000).toLocaleString()}
+                          </td>
+                          <td className="p-2 text-right">
+                            {log.txHash.startsWith('0x') && log.txHash.length > 20 ? (
+                              <a
+                                href={`https://sepolia.etherscan.io/tx/${log.txHash}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-secondary font-bold hover:underline"
+                              >
+                                View Tx ↗
+                              </a>
+                            ) : (
+                              <span className="text-on-surface-variant">Confirmed</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </>
         )}
