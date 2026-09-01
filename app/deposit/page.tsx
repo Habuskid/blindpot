@@ -139,7 +139,7 @@ export default function BlindpotDepositFlow() {
 
       await refetchAllowance();
       setIsApproving(false);
-      setStatusMsg("✅ Approval confirmed! Now click 'Wrap USDC to cUSDC'.");
+      setStatusMsg("Approval confirmed. Now click 'Wrap USDC to cUSDC'.");
     } catch (e: any) {
       console.error("Approve error:", e);
       setIsApproving(false);
@@ -181,7 +181,7 @@ export default function BlindpotDepositFlow() {
 
       await refetchPublicBalance();
       setIsWrapping(false);
-      setStatusMsg(`🎉 Successfully wrapped ${wrapAmount} USDC into confidential cUSDC!`);
+      setStatusMsg(`Successfully wrapped ${wrapAmount} USDC into confidential cUSDC.`);
       setTimeout(() => {
         setActiveTab("deposit");
         setDepositAmount(wrapAmount);
@@ -237,7 +237,7 @@ export default function BlindpotDepositFlow() {
         }
       }
 
-      setStatusMsg("🎉 Confidential deposit successful! Redirecting to Dashboard...");
+      setStatusMsg("Confidential deposit confirmed. Redirecting to Dashboard...");
       setTimeout(() => {
         router.push('/dashboard');
       }, 2000);
@@ -279,7 +279,10 @@ export default function BlindpotDepositFlow() {
 
             {isWrongNetwork && (
               <div className="bg-error-container border-2 border-error text-error p-3 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                <span>⚠️ Wallet is on Chain {chainId}. Sepolia (11155111) is required.</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">warning</span>
+                  Wallet is on Chain {chainId}. Sepolia (11155111) is required.
+                </span>
                 <button
                   onClick={handleSwitchNetwork}
                   disabled={isSwitchingChain}
@@ -335,8 +338,9 @@ export default function BlindpotDepositFlow() {
             </div>
 
             {errorMsg && (
-              <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words">
-                ⚠️ {errorMsg}
+              <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span>{errorMsg}</span>
               </div>
             )}
 

@@ -219,7 +219,7 @@ export default function BlindpotDashboard() {
       await refetchBalanceHandle();
       await refetchWinningsHandle();
       setIsSigningPermit(false);
-      setStatusMsg("✅ Permit granted! Decrypting your confidential positions via Zama KMS...");
+      setStatusMsg("Permit granted. Decrypting your confidential positions via Zama KMS...");
       setTimeout(() => setStatusMsg(null), 4000);
     } catch (e: any) {
       console.error("Permit grant error:", e);
@@ -250,7 +250,7 @@ export default function BlindpotDashboard() {
     setClaimStatusMsg("Submitting blinded claim transaction on Sepolia...");
     try {
       const hash = await claim(vaultAddress, BigInt(displayDrawId));
-      setClaimStatusMsg("🎉 Blinded claim executed! Winnings have been transferred into your confidential balance.");
+      setClaimStatusMsg("Blinded claim executed. Winnings have been transferred into your confidential balance.");
       
       // Log to database
       try {
@@ -299,7 +299,10 @@ export default function BlindpotDashboard() {
         {/* Network Mismatch Guard */}
         {isWrongNetwork && (
           <div className="w-full bg-error-container border-2 border-error text-error p-3.5 mb-6 flex justify-between items-center text-xs font-mono">
-            <span>⚠️ Connected to Chain {chainId}. Please switch to Sepolia (11155111).</span>
+            <span className="flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px]">warning</span>
+              Connected to Chain {chainId}. Please switch to Sepolia (11155111).
+            </span>
             <button
               onClick={() => switchChainAsync({ chainId: sepolia.id })}
               className="bg-error text-surface px-3 py-1 uppercase font-bold font-label-mono"
@@ -400,8 +403,9 @@ export default function BlindpotDashboard() {
 
               {/* Status and Error Banners */}
               {errorMsg && (
-                <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words">
-                  ⚠️ {errorMsg}
+                <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">error</span>
+                  <span>{errorMsg}</span>
                 </div>
               )}
 
@@ -495,14 +499,16 @@ export default function BlindpotDashboard() {
               </div>
 
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-1">
-                <div className="font-body-md text-xs text-on-surface-variant">
+                <div className="font-body-md text-xs text-on-surface-variant flex items-center gap-1.5">
                   {isEnrolled ? (
                     <span>
-                      ✅ <strong>Your principal is active:</strong> You are automatically entered into every continuous 10-minute epoch draw. Winning probability scales proportionally with your confidential deposit.
+                      <span className="material-symbols-outlined text-[14px] text-secondary inline-block align-middle mr-1">verified</span>
+                      <strong>Your principal is active:</strong> You are automatically entered into every continuous 10-minute epoch draw. Winning probability scales proportionally with your confidential deposit.
                     </span>
                   ) : (
                     <span>
-                      ⚠️ <strong>Join the Pool:</strong> Deposit test USDC to receive confidential draw tickets and participate in automated epoch prize distributions.
+                      <span className="material-symbols-outlined text-[14px] text-primary inline-block align-middle mr-1">info</span>
+                      <strong>Join the Pool:</strong> Deposit test USDC to receive confidential draw tickets and participate in automated epoch prize distributions.
                     </span>
                   )}
                 </div>
@@ -563,16 +569,18 @@ export default function BlindpotDashboard() {
                     <button
                       onClick={onDecryptClick}
                       disabled={isDecryptingActive}
-                      className="bg-surface border-2 border-primary px-3.5 py-1.5 font-label-mono uppercase font-bold text-xs hover:bg-surface-container-high whitespace-nowrap hard-shadow-sm"
+                      className="bg-surface border-2 border-primary px-3.5 py-1.5 font-label-mono uppercase font-bold text-xs hover:bg-surface-container-high whitespace-nowrap hard-shadow-sm flex items-center gap-1"
                     >
-                      {isDecryptingActive ? "Decrypting..." : "🔑 Check My Result"}
+                      <span className="material-symbols-outlined text-[14px]">key</span>
+                      {isDecryptingActive ? "Decrypting..." : "Check My Result"}
                     </button>
                   </div>
                 ) : decryptedWinnings > 0 ? (
                   <div className="bg-secondary-container/40 border border-secondary p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <div className="font-headline-sm text-lg font-bold text-secondary flex items-center gap-1.5">
-                        <span>🎉 CONGRATULATIONS! YOU WON ROUND #{activeDrawId}</span>
+                        <span className="material-symbols-outlined text-[20px]">emoji_events</span>
+                        <span>WINNER CONFIRMED: YOU WON ROUND #{activeDrawId}</span>
                       </div>
                       <div className="font-value-mono text-sm text-primary font-bold mt-0.5">
                         Prize Amount: {decryptedWinnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
@@ -608,8 +616,9 @@ export default function BlindpotDashboard() {
             )}
 
             {claimErrorMsg && (
-              <div className="mt-4 w-full bg-error-container border border-error text-error p-3 text-xs font-mono">
-                ⚠️ {claimErrorMsg}
+              <div className="mt-4 w-full bg-error-container border border-error text-error p-3 text-xs font-mono flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                {claimErrorMsg}
               </div>
             )}
 

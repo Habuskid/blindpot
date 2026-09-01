@@ -59,7 +59,7 @@ export default function BlindpotWithdrawFlow() {
           console.warn('Activity log error:', dbErr);
         }
       }
-      setStatusMsg("🎉 Withdrawal successful! Your full principal has been returned to your wallet.");
+      setStatusMsg("Withdrawal successful. Your full principal has been returned to your wallet.");
       setTimeout(() => {
         router.push('/dashboard');
       }, 2500);
@@ -110,7 +110,10 @@ export default function BlindpotWithdrawFlow() {
 
             {isWrongNetwork && (
               <div className="bg-error-container border-2 border-error text-error p-3 mb-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                <span>⚠️ Wallet is on Chain {chainId}. Sepolia (11155111) is required.</span>
+                <span className="flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-[16px]">warning</span>
+                  Wallet is on Chain {chainId}. Sepolia (11155111) is required.
+                </span>
                 <button
                   onClick={() => switchChainAsync({ chainId: sepolia.id })}
                   className="bg-error text-surface px-3 py-1 uppercase font-bold font-label-mono hover:opacity-90 whitespace-nowrap"
@@ -130,7 +133,7 @@ export default function BlindpotWithdrawFlow() {
                     </span>
                   ) : (
                     <span className="font-value-mono text-xs bg-primary text-surface px-2 py-0.5 tracking-widest">
-                      ████████
+                      SEALED CIPHERTEXT
                     </span>
                   )}
                 </div>
@@ -145,9 +148,10 @@ export default function BlindpotWithdrawFlow() {
                 <button
                   onClick={onDecryptClick}
                   disabled={isGrantingPermit || isDecrypting}
-                  className="mt-1 text-xs font-label-mono text-primary underline hover:text-secondary text-left self-start"
+                  className="mt-1 text-xs font-label-mono text-primary underline hover:text-secondary text-left self-start flex items-center gap-1"
                 >
-                  {isGrantingPermit ? "Signing permit..." : "🔑 Click to decrypt exact balance before withdrawing"}
+                  <span className="material-symbols-outlined text-[14px]">key</span>
+                  {isGrantingPermit ? "Signing permit..." : "Click to decrypt exact balance before withdrawing"}
                 </button>
               )}
             </div>
@@ -159,8 +163,9 @@ export default function BlindpotWithdrawFlow() {
             </div>
 
             {errorMsg && (
-              <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words">
-                ⚠️ {errorMsg}
+              <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span>{errorMsg}</span>
               </div>
             )}
 

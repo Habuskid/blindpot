@@ -63,7 +63,7 @@ export default function BlindpotDrawHistory() {
 
     try {
       await claim(VAULT_ADDRESS, BigInt(drawId));
-      setStatusMsg(`🎉 Claim transaction confirmed for Draw #${drawId}! If you were the winner, your prize has been transferred into your confidential balance.`);
+      setStatusMsg(`Claim transaction confirmed for Draw #${drawId}. If you were the winner, your prize has been transferred into your confidential balance.`);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e?.message || `Claim failed for Draw #${drawId}. Make sure the draw has finalized.`);
@@ -90,8 +90,9 @@ export default function BlindpotDrawHistory() {
         </div>
 
         {errorMsg && (
-          <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words">
-            ⚠️ {errorMsg}
+          <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words flex items-center gap-1.5">
+            <span className="material-symbols-outlined text-[16px]">error</span>
+            <span>{errorMsg}</span>
           </div>
         )}
 

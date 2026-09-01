@@ -78,7 +78,7 @@ export default function BlindpotFaucet() {
         await publicClient.waitForTransactionReceipt({ hash });
       }
 
-      setStatusMsg("🎉 1,000 Test USDC successfully minted on Sepolia! You can now wrap and deposit.");
+      setStatusMsg("1,000 Test USDC successfully minted on Sepolia. You can now wrap and deposit.");
     } catch (e: any) {
       console.error("Mint error:", e);
       setErrorMsg(e?.message || "Mint transaction rejected or failed. Ensure you have Sepolia testnet ETH for gas.");
@@ -115,8 +115,9 @@ export default function BlindpotFaucet() {
             <>
               {isWrongNetwork && (
                 <div className="bg-error-container border-2 border-error text-error p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono">
-                  <div>
-                    <strong>⚠️ WRONG NETWORK:</strong> Wallet is currently on Chain {chainId}. Please switch to Sepolia (11155111) to avoid mainnet gas.
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px]">warning</span>
+                    <strong>WRONG NETWORK:</strong> Wallet is on Chain {chainId}. Please switch to Sepolia (11155111).
                   </div>
                   <button
                     onClick={handleSwitchNetwork}
@@ -180,8 +181,9 @@ export default function BlindpotFaucet() {
                 </div>
 
                 {errorMsg && (
-                  <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words">
-                    ⚠️ {errorMsg}
+                  <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    <span>{errorMsg}</span>
                   </div>
                 )}
 

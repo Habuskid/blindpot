@@ -29,7 +29,7 @@ function YouWonContent() {
     setStatusMsg(`Submitting claim transaction for Draw #${drawParam}...`);
     try {
       await claim(VAULT_ADDRESS, drawId);
-      setStatusMsg(`🎉 Claim transaction confirmed! If you won Draw #${drawParam}, your winnings have been deposited into your confidential balance.`);
+      setStatusMsg(`Claim transaction confirmed. If you won Draw #${drawParam}, your winnings have been deposited into your confidential balance.`);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e?.message || `Claim failed for Draw #${drawParam}.`);
@@ -72,7 +72,7 @@ function YouWonContent() {
               {!hasPermit && decryptedWinnings === undefined && (
                 <div className="flex flex-col items-center justify-center gap-3">
                   <div className="bg-primary text-surface px-6 py-3 font-value-mono text-2xl tracking-widest hard-shadow-sm">
-                    ████████ USDC
+                    SEALED CIPHERTEXT
                   </div>
                   <div className="font-label-mono text-xs uppercase text-on-surface-variant flex items-center gap-1">
                     <span className="material-symbols-outlined text-[14px]">lock</span>
@@ -102,8 +102,9 @@ function YouWonContent() {
             </div>
 
             {errorMsg && (
-              <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words">
-                ⚠️ {errorMsg}
+              <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">error</span>
+                <span>{errorMsg}</span>
               </div>
             )}
 
