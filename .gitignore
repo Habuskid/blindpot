@@ -5,24 +5,8 @@
 *.pem
 *.key
 
-# UI pages and assets (as requested)
-app/
-public/
-bureau_document_system/
-.next/
-convert.js
-next.config.mjs
-next-env.d.ts
-postcss.config.cjs
-tailwind.config.cjs
-
-# Documentation files (as requested)
-*.md
-**/*.md
-llm.txt
-llms-full.txt
-
 # Dependencies & Build artifacts
+.next/
 node_modules/
 package-lock.json
 tsconfig.tsbuildinfo
@@ -30,8 +14,7 @@ contracts/out/
 contracts/cache/
 contracts/dependencies/
 
-# Agent & IDE caches
-.agents/
+# IDE & OS caches
 .claude/
 .gemini/
 skills-lock.json

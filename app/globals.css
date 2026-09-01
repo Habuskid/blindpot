@@ -1,0 +1,64 @@
+@import "tailwindcss";
+@config "../tailwind.config.cjs";
+
+@layer utilities {
+  .hairline-b { border-bottom: 1px solid #000; }
+  .hairline-r { border-right: 1px solid #000; }
+  .hairline-t { border-top: 1px solid #000; }
+  .hairline-l { border-left: 1px solid #000; }
+  .hairline-b-thick { border-bottom: 2px solid #000; }
+  
+  .ink-border { border: 2px solid #000; }
+  .ink-border-thin { border: 1px solid #000; }
+  
+  .hard-shadow { box-shadow: 4px 4px 0px #000; }
+  .hard-shadow-sm { box-shadow: 2px 2px 0px #000; }
+  .hard-shadow-primary { box-shadow: 4px 4px 0px #000; }
+  .hard-shadow-secondary { box-shadow: 4px 4px 0px #795919; }
+  .hard-shadow-lg { box-shadow: 8px 8px 0px #000; }
+  .btn-hard-shadow { box-shadow: 4px 4px 0px #000; }
+  
+  .interactive-element:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
+  .interactive-element:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+  
+  .redact-bar, .redaction-bar {
+    background-color: #000;
+    color: transparent;
+    user-select: none;
+    display: inline-block;
+  }
+  
+  .stamp-decrypt, .stamp {
+    border: 2px solid #ba1a1a;
+    color: #ba1a1a;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(-10deg);
+    padding: 2px 8px;
+    letter-spacing: 0.1em;
+    display: inline-block;
+  }
+  
+  .ledger-row {
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+  }
+}
+
+body {
+  background-color: #fcf9f1;
+  color: #1b1c17;
+  font-family: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+code, pre, .font-mono, .font-value-mono, .font-label-mono {
+  font-family: "IBM Plex Mono", monospace;
+}
