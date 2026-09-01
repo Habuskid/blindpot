@@ -23,6 +23,7 @@
   "license": "MIT",
   "type": "module",
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "@tanstack/react-query": "^5.101.4",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
@@ -42,6 +43,7 @@
     "@tailwindcss/postcss": "^4.3.3",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.26",
+    "prisma": "^6.19.3",
     "solc": "^0.8.27",
     "tailwindcss": "^4.3.3"
   }

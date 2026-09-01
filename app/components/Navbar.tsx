@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAccount, useConnect, useDisconnect, useChainId, useSwitchChain } from "wagmi";
+import { ConnectAndSignButton } from "./ConnectAndSignButton";
 import { injected } from "wagmi/connectors";
 import { sepolia } from "wagmi/chains";
 
@@ -63,13 +64,7 @@ export function Navbar() {
               Open App
             </button>
           ) : (
-            <button
-              onClick={() => connect({ connector: injected() })}
-              className="bg-secondary-container text-primary border-2 border-primary px-4 py-1.5 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[16px]">account_balance_wallet</span>
-              Connect Wallet
-            </button>
+            <ConnectAndSignButton />
           )}
         </div>
       </header>
@@ -124,13 +119,7 @@ export function Navbar() {
               </button>
             </div>
           ) : (
-            <button
-              onClick={() => connect({ connector: injected() })}
-              className="bg-secondary-container text-primary border-2 border-primary px-4 py-1.5 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[16px]">account_balance_wallet</span>
-              Connect
-            </button>
+            <ConnectAndSignButton />
           )}
         </div>
       </header>

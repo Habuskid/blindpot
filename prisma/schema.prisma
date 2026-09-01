@@ -1,0 +1,21 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // Set this in your Vercel / .env file
+}
+
+model ActivityLog {
+  id          String   @id @default(cuid())
+  userAddress String
+  poolId      String
+  action      String
+  amount      Float?
+  drawId      Int?
+  txHash      String
+  timestamp   DateTime @default(now())
+
+  @@index([userAddress])
+}

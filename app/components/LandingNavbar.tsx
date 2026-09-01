@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAccount, useConnect } from "wagmi";
+import { ConnectAndSignButton } from "./ConnectAndSignButton";
 import { injected } from "wagmi/connectors";
 
 export function LandingNavbar() {
@@ -38,22 +39,7 @@ export function LandingNavbar() {
       </nav>
 
       <div className="flex items-center gap-3">
-        <button
-          onClick={() => {
-            if (isConnected) {
-              router.push("/dashboard");
-            } else {
-              connect({ connector: injected() });
-            }
-          }}
-          disabled={isPending}
-          className="bg-secondary-container text-primary border-2 border-primary px-4 sm:px-5 py-2 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
-        >
-          <span className="material-symbols-outlined text-[16px]">
-            {isConnected ? "space_dashboard" : "account_balance_wallet"}
-          </span>
-          {isConnected ? "Open App" : isPending ? "Connecting..." : "Connect Wallet"}
-        </button>
+        {isConnected ? <button onClick={() => router.push("/dashboard")} className="bg-secondary-container text-primary border-2 border-primary px-4 sm:px-5 py-2 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"><span className="material-symbols-outlined text-[16px]">space_dashboard</span>Open App</button> : <ConnectAndSignButton className="bg-secondary-container text-primary border-2 border-primary px-4 sm:px-5 py-2 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5" /> }
       </div>
     </header>
   );

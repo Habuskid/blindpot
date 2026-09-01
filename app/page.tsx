@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAccount, useConnect, useReadContract } from 'wagmi';
+import { ConnectAndSignButton } from "./components/ConnectAndSignButton";
 import { injected } from 'wagmi/connectors';
 import { addresses } from '../sdk/src/config';
 import { LandingNavbar } from './components/LandingNavbar';
