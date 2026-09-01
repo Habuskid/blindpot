@@ -110,6 +110,9 @@ export default function BlindpotDashboard() {
   const displayMembers = memberCount !== undefined ? Number(memberCount) : 0;
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
 
+  const [selectedDrawId, setSelectedDrawId] = useState<number | null>(null);
+  const activeDrawId = selectedDrawId !== null ? selectedDrawId : displayDrawId;
+
   // Read Encrypted Balance Handle
   const { data: encryptedBalanceHandle, refetch: refetchBalanceHandle } = useReadContract({
     address: vaultAddress,
@@ -119,13 +122,13 @@ export default function BlindpotDashboard() {
     query: { enabled: !!account && isConnected },
   });
 
-  // Read Encrypted Winnings Handle for Latest Round
+  // Read Encrypted Winnings Handle for Active/Selected Round
   const { data: encryptedWinningsHandle, refetch: refetchWinningsHandle } = useReadContract({
     address: vaultAddress,
     abi: vaultAbi,
     functionName: 'getEncryptedWinnings',
-    args: account && displayDrawId > 0 ? [BigInt(displayDrawId), account] : undefined,
-    query: { enabled: !!account && isConnected && displayDrawId > 0 },
+    args: account && activeDrawId > 0 ? [BigInt(activeDrawId), account] : undefined,
+    query: { enabled: !!account && isConnected && activeDrawId > 0 },
   });
 
   // Zama EIP-712 Permit & Multi-Value Decryption
@@ -518,20 +521,44 @@ export default function BlindpotDashboard() {
             {/* Personal Draw Result Banner */}
             {displayDrawId > 0 && (
               <div className="mt-6 w-full border-2 border-primary bg-surface p-5 hard-shadow-sm">
-                <div className="flex justify-between items-center mb-2 pb-2 border-b border-primary/20">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3 pb-2 border-b border-primary/20">
                   <div className="font-label-mono text-xs uppercase font-bold text-primary flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[16px] text-secondary">emoji_events</span>
-                    Latest Draw Outcome (Round #{displayDrawId})
+                    Epoch Outcome Dossier (Inspecting Round #{activeDrawId})
                   </div>
-                  <span className="font-value-mono text-xs text-on-surface-variant font-bold">
-                    {decryptedWinnings !== undefined ? "DECRYPTED" : "SEALED"}
-                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {displayDrawId > 1 && (
+                      <div className="flex gap-1">
+                        {Array.from({ length: displayDrawId }).map((_, idx) => {
+                          const r = idx + 1;
+                          const isSelected = activeDrawId === r;
+                          return (
+                            <button
+                              key={r}
+                              onClick={() => setSelectedDrawId(r)}
+                              className={`px-2 py-0.5 font-label-mono text-[10px] uppercase font-bold border ${
+                                isSelected
+                                  ? 'bg-primary text-surface border-primary'
+                                  : 'bg-surface-container-low text-on-surface border-primary/30 hover:bg-surface-container-high'
+                              }`}
+                            >
+                              Round #{r}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    <span className="font-value-mono text-xs text-on-surface-variant font-bold">
+                      {decryptedWinnings !== undefined ? "DECRYPTED" : "SEALED"}
+                    </span>
+                  </div>
                 </div>
 
                 {decryptedWinnings === undefined ? (
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 py-2 text-xs">
                     <span className="text-on-surface-variant font-body-md">
-                      Your round outcome is sealed in ciphertext. Click "Decrypt My Details" to verify if you won the round prize.
+                      Your Round #{activeDrawId} outcome is sealed in ciphertext. Click "Decrypt My Details" to verify if you won the round prize.
                     </span>
                     <button
                       onClick={onDecryptClick}
@@ -545,7 +572,7 @@ export default function BlindpotDashboard() {
                   <div className="bg-secondary-container/40 border border-secondary p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
                       <div className="font-headline-sm text-lg font-bold text-secondary flex items-center gap-1.5">
-                        <span>🎉 CONGRATULATIONS! YOU WON ROUND #{displayDrawId}</span>
+                        <span>🎉 CONGRATULATIONS! YOU WON ROUND #{activeDrawId}</span>
                       </div>
                       <div className="font-value-mono text-sm text-primary font-bold mt-0.5">
                         Prize Amount: {decryptedWinnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
@@ -557,16 +584,16 @@ export default function BlindpotDashboard() {
                       disabled={isClaiming}
                       className="bg-secondary-container text-primary border-2 border-primary font-label-mono text-xs uppercase px-6 py-2.5 font-bold hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50 whitespace-nowrap"
                     >
-                      {isClaiming ? "Claiming Prize..." : "Claim Prize to Balance"}
+                      {isClaiming ? "Claiming Prize..." : `Claim Round #${activeDrawId} Prize`}
                     </button>
                   </div>
                 ) : (
-                  <div className="py-2 text-xs flex items-center justify-between">
+                  <div className="py-2 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <span className="text-on-surface-variant font-body-md">
-                      <strong>Round #{displayDrawId} Result:</strong> Non-winning ticket. 100% of your deposit principal remains active in the pool for the next epoch!
+                      <strong>Round #{activeDrawId} Result:</strong> Non-winning ticket. 100% of your deposit principal has rolled over into the next epoch draw automatically!
                     </span>
-                    <span className="font-label-mono text-xs uppercase text-primary font-bold bg-surface-container-low px-2 py-1 border border-primary/20">
-                      Principal Safe
+                    <span className="font-label-mono text-xs uppercase text-primary font-bold bg-surface-container-low px-2 py-1 border border-primary/20 whitespace-nowrap self-start sm:self-auto">
+                      Principal Rolled Over
                     </span>
                   </div>
                 )}

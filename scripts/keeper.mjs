@@ -108,6 +108,31 @@ async function checkAndExecuteDraw() {
       console.log("⏳ Waiting for Sepolia block confirmation...");
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       console.log(`🎉 Draw confirmed in block ${receipt.blockNumber}! Winner selected via FHE.randEuint32.\n`);
+
+      // Sync completed draw to protocol database
+      try {
+        const dbPath = './data/protocol_db.json';
+        if (fs.existsSync(dbPath)) {
+          const dbData = JSON.parse(fs.readFileSync(dbPath, 'utf8'));
+          const newDraw = {
+            id: `draw-${round + 1}`,
+            drawId: round + 1,
+            poolId: 'pool-usdc-sepolia-01',
+            timestamp: Math.floor(Date.now() / 1000),
+            blockNumber: Number(receipt.blockNumber),
+            potSize: 10.0,
+            txHash: hash,
+            status: 'EXECUTED',
+          };
+          if (!dbData.draws.some(d => d.drawId === newDraw.drawId)) {
+            dbData.draws.unshift(newDraw);
+            fs.writeFileSync(dbPath, JSON.stringify(dbData, null, 2), 'utf8');
+            console.log(`💾 Draw #${round + 1} recorded to persistent database.\n`);
+          }
+        }
+      } catch (dbErr) {
+        console.warn("Database sync notice:", dbErr.message);
+      }
     }
   } catch (error) {
     console.error("\n⚠️ Keeper check error:", error.message || error);
