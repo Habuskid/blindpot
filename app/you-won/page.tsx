@@ -8,7 +8,7 @@ import { useGetMyWinnings } from '../../sdk/src/getMyWinnings';
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { AuthGuard } from '../components/AuthGuard';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -135,18 +135,12 @@ function YouWonContent() {
 
 export default function BlindpotYouWon() {
   return (
-    <>
+    <AuthGuard>
       <Navbar />
       <div className="md:pl-60 flex-grow flex flex-col">
-        <WalletGate
-          title="Dossier Decryption Locked"
-          description="Connect your Web3 wallet to decrypt your encrypted draw ticket and claim any winnings from this epoch."
-          actionName="Connect Wallet to Decrypt Dossier"
-        >
-          <Suspense fallback={<div className="pt-32 text-center font-mono">Loading dossier...</div>}>
-            <YouWonContent />
-          </Suspense>
-        </WalletGate>
+        <Suspense fallback={<div className="pt-32 text-center font-mono">Loading dossier...</div>}>
+          <YouWonContent />
+        </Suspense>
         <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
           <div className="font-label-mono text-xs font-bold uppercase">
             © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
@@ -157,6 +151,6 @@ export default function BlindpotYouWon() {
           </div>
         </footer>
       </div>
-    </>
+    </AuthGuard>
   );
 }

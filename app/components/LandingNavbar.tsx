@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAccount, useConnect } from "wagmi";
@@ -10,7 +10,7 @@ export function LandingNavbar() {
   const pathname = usePathname();
   const router = useRouter();
   const { isConnected } = useAccount();
-  const { connect } = useConnect();
+  const { connect, isPending } = useConnect();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center px-4 md:px-8 py-3 bg-surface border-b-2 border-primary">
@@ -18,7 +18,7 @@ export function LandingNavbar() {
         <img src="/logo.png" alt="Blindpot" className="h-10 md:h-12 w-auto mix-blend-multiply" />
       </Link>
 
-      <nav className="hidden md:flex items-center gap-6 font-label-mono text-xs uppercase font-bold text-on-surface">
+      <nav className="flex items-center gap-4 sm:gap-6 font-label-mono text-xs uppercase font-bold text-on-surface">
         <Link
           href="/"
           className={`hover:text-secondary transition-colors ${
@@ -35,18 +35,6 @@ export function LandingNavbar() {
         >
           How It Works
         </Link>
-        <Link
-          href="/pools"
-          className="hover:text-secondary transition-colors text-on-surface-variant"
-        >
-          Pools
-        </Link>
-        <Link
-          href="/history"
-          className="hover:text-secondary transition-colors text-on-surface-variant"
-        >
-          Draw Logs
-        </Link>
       </nav>
 
       <div className="flex items-center gap-3">
@@ -58,12 +46,13 @@ export function LandingNavbar() {
               connect({ connector: injected() });
             }
           }}
-          className="bg-secondary-container text-primary border-2 border-primary px-5 py-2 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
+          disabled={isPending}
+          className="bg-secondary-container text-primary border-2 border-primary px-4 sm:px-5 py-2 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
         >
           <span className="material-symbols-outlined text-[16px]">
             {isConnected ? "space_dashboard" : "account_balance_wallet"}
           </span>
-          {isConnected ? "Launch App" : "Connect Wallet"}
+          {isConnected ? "Open App" : isPending ? "Connecting..." : "Connect Wallet"}
         </button>
       </div>
     </header>

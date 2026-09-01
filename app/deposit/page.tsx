@@ -8,7 +8,7 @@ import { sepolia } from 'wagmi/chains';
 import { useDeposit } from '../../sdk/src/deposit';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { AuthGuard } from '../components/AuthGuard';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -251,18 +251,13 @@ export default function BlindpotDepositFlow() {
   const needsApproval = currentAllowance < Number(wrapAmount);
 
   return (
-    <>
+    <AuthGuard>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="w-full max-w-xl px-margin-mobile relative z-10 mx-auto pt-24 pb-28 flex flex-col items-center">
-          <WalletGate
-            title="Deposit Terminal Locked"
-            description="Connect your Web3 wallet to wrap test USDC and execute encrypted FHE deposits into the Blindpot Vault."
-            actionName="Connect Wallet to Deposit"
-          >
-            <div className="bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col w-full">
-              <header className="flex justify-between items-center border-b-2 border-primary pb-4 mb-6">
+          <div className="bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col w-full">
+            <header className="flex justify-between items-center border-b-2 border-primary pb-4 mb-6">
               <div>
                 <div className="font-label-mono text-xs uppercase text-on-surface-variant">Confidential Savings Pipeline</div>
                 <h1 className="font-headline-md text-xl uppercase font-bold m-0">Deposit Workflow</h1>
@@ -508,7 +503,6 @@ export default function BlindpotDepositFlow() {
               </div>
             )}
           </div>
-          </WalletGate>
         </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
@@ -521,6 +515,6 @@ export default function BlindpotDepositFlow() {
         </div>
       </footer>
       </div>
-    </>
+    </AuthGuard>
   );
 }

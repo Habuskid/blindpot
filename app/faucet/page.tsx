@@ -6,7 +6,7 @@ import { useAccount, useWriteContract, useChainId, useSwitchChain, usePublicClie
 import { sepolia } from 'wagmi/chains';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
-import { WalletGate } from '../components/WalletGate';
+import { AuthGuard } from '../components/AuthGuard';
 
 const mockErc20Abi = [
   {
@@ -87,21 +87,16 @@ export default function BlindpotFaucet() {
   };
 
   return (
-    <>
+    <AuthGuard>
       <Navbar />
 
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="flex-grow flex items-center justify-center pt-24 pb-20 px-margin-mobile md:px-margin-desktop z-10 relative">
-          <WalletGate
-            title="Faucet Authentication Required"
-            description="Connect your Web3 wallet to mint 1,000 test USDC tokens directly to your wallet address on Ethereum Sepolia."
-            actionName="Connect Wallet to Mint Tokens"
-          >
-            <div className="w-full max-w-[620px] bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col relative mx-auto">
-              <div className="absolute top-0 right-0 p-2 border-l-2 border-b-2 border-primary bg-surface-container-low flex items-center gap-1 font-label-mono text-[10px]">
-                <span className="material-symbols-outlined text-[12px]">description</span>
-                DOC-FCT-001
-              </div>
+          <div className="w-full max-w-[620px] bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col relative mx-auto">
+            <div className="absolute top-0 right-0 p-2 border-l-2 border-b-2 border-primary bg-surface-container-low flex items-center gap-1 font-label-mono text-[10px]">
+              <span className="material-symbols-outlined text-[12px]">description</span>
+              DOC-FCT-001
+            </div>
 
           <div className="mb-6 border-b-2 border-primary pb-4">
             <div className="font-label-mono text-xs uppercase text-on-surface-variant mb-1">Official Zama Testnet Assets</div>
@@ -252,7 +247,6 @@ export default function BlindpotFaucet() {
                 </div>
               </div>
             </div>
-          </WalletGate>
         </main>
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
@@ -265,6 +259,6 @@ export default function BlindpotFaucet() {
         </div>
       </footer>
       </div>
-    </>
+    </AuthGuard>
   );
 }
