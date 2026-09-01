@@ -51,6 +51,10 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     // Map drawId => user address => encrypted winnings handle (for EIP-712)
     mapping(uint256 => mapping(address => euint64)) private userWinnings;
 
+    // Security & Access Controls
+    address public pendingOwner;
+    bool public paused;
+
     // Reentrancy Guard state
     uint256 private _status;
     uint256 private constant _NOT_ENTERED = 1;
@@ -61,9 +65,18 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     event MemberWithdrawn(address indexed user, uint256 totalMembers);
     event PrizePoolFunded(address indexed funder, uint256 amount, uint256 newTotal);
     event YieldSourceUpdated(address indexed newYieldSource);
+    event OwnershipTransferStarted(address indexed previousOwner, address indexed newOwner);
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+    event Paused(address account);
+    event Unpaused(address account);
 
     modifier onlyOwner() {
         require(msg.sender == owner, "Only owner authorized");
+        _;
+    }
+
+    modifier whenNotPaused() {
+        require(!paused, "Pausable: protocol paused");
         _;
     }
 
@@ -80,6 +93,43 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         draw = new BlindDraw();
         nextDrawTime = block.timestamp + drawInterval;
         _status = _NOT_ENTERED;
+        paused = false;
+    }
+
+    /**
+     * @notice Emergency protocol pause. Halts new deposits and draws.
+     * @dev Note: Withdrawals remain unpaused by design to guarantee 100% user fund access.
+     */
+    function pause() external onlyOwner {
+        paused = true;
+        emit Paused(msg.sender);
+    }
+
+    /**
+     * @notice Resume protocol operations after pause.
+     */
+    function unpause() external onlyOwner {
+        paused = false;
+        emit Unpaused(msg.sender);
+    }
+
+    /**
+     * @notice Safe 2-step ownership transfer initiation.
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        require(newOwner != address(0), "New owner is zero address");
+        pendingOwner = newOwner;
+        emit OwnershipTransferStarted(owner, newOwner);
+    }
+
+    /**
+     * @notice Complete 2-step ownership transfer.
+     */
+    function acceptOwnership() external {
+        require(msg.sender == pendingOwner, "Caller is not pending owner");
+        emit OwnershipTransferred(owner, pendingOwner);
+        owner = pendingOwner;
+        pendingOwner = address(0);
     }
 
     /**
@@ -91,7 +141,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         address from,
         euint64 amount,
         bytes calldata /*data*/
-    ) external nonReentrant returns (ebool) {
+    ) external nonReentrant whenNotPaused returns (ebool) {
         require(msg.sender == address(confidentialToken), "Only valid token");
 
         // Let the draw contract read the handle
@@ -160,7 +210,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
      * @notice Trigger the confidential draw for a winner.
      * Permissionless: anyone, a keeper bot, or community member can execute once the epoch elapses.
      */
-    function drawWinner() external nonReentrant {
+    function drawWinner() external nonReentrant whenNotPaused {
         require(block.timestamp >= nextDrawTime, "Epoch draw interval not reached");
         require(memberCount > 0, "No active depositors in pool");
 
