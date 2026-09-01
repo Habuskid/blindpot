@@ -51,6 +51,11 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     // Map drawId => user address => encrypted winnings handle (for EIP-712)
     mapping(uint256 => mapping(address => euint64)) private userWinnings;
 
+    // Reentrancy Guard state
+    uint256 private _status;
+    uint256 private constant _NOT_ENTERED = 1;
+    uint256 private constant _ENTERED = 2;
+
     event DrawExecuted(uint256 indexed drawId, uint256 timestamp, uint256 potSize);
     event MemberJoined(address indexed user, uint256 totalMembers);
     event MemberWithdrawn(address indexed user, uint256 totalMembers);
@@ -62,11 +67,19 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         _;
     }
 
+    modifier nonReentrant() {
+        require(_status != _ENTERED, "ReentrancyGuard: reentrant call");
+        _status = _ENTERED;
+        _;
+        _status = _NOT_ENTERED;
+    }
+
     constructor(address _confidentialToken) {
         owner = msg.sender;
         confidentialToken = ERC7984(_confidentialToken);
         draw = new BlindDraw();
         nextDrawTime = block.timestamp + drawInterval;
+        _status = _NOT_ENTERED;
     }
 
     /**
@@ -78,7 +91,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         address from,
         euint64 amount,
         bytes calldata /*data*/
-    ) external returns (ebool) {
+    ) external nonReentrant returns (ebool) {
         require(msg.sender == address(confidentialToken), "Only valid token");
 
         // Let the draw contract read the handle
@@ -122,7 +135,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
      * @notice Withdraw full principal at any time without loss.
      * Cleanly resets membership status and decrements active capacity count.
      */
-    function withdrawAll() external {
+    function withdrawAll() external nonReentrant {
         require(isMember[msg.sender], "Not an active pool depositor");
         
         euint64 currentBalance = draw.getBalance(msg.sender);
@@ -147,7 +160,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
      * @notice Trigger the confidential draw for a winner.
      * Permissionless: anyone, a keeper bot, or community member can execute once the epoch elapses.
      */
-    function drawWinner() external {
+    function drawWinner() external nonReentrant {
         require(block.timestamp >= nextDrawTime, "Epoch draw interval not reached");
         require(memberCount > 0, "No active depositors in pool");
 
@@ -210,7 +223,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
      * @notice Claim winnings without decrypting the winner's address on-chain.
      * @param drawId The ID of the draw to claim from.
      */
-    function claimWinnings(uint256 drawId) external {
+    function claimWinnings(uint256 drawId) external nonReentrant {
         euint64 amountToPay = userWinnings[drawId][msg.sender];
         require(FHE.isInitialized(amountToPay), "Draw not ready or not member");
 

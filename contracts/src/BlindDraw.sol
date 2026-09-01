@@ -6,6 +6,8 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 
 contract BlindDraw is ZamaEthereumConfig {
 
+    address public immutable vault;
+
     struct Member {
         address user;
         euint64 balance; // In tickets
@@ -21,7 +23,16 @@ contract BlindDraw is ZamaEthereumConfig {
     
     eaddress public currentWinner;
 
-    function addMember(address _user, euint64 _balance) public {
+    modifier onlyVault() {
+        require(msg.sender == vault, "Only vault authorized");
+        _;
+    }
+
+    constructor() {
+        vault = msg.sender;
+    }
+
+    function addMember(address _user, euint64 _balance) public onlyVault {
         if (!FHE.isInitialized(totalTickets)) {
             totalTickets = FHE.asEuint64(0);
         }
@@ -41,7 +52,7 @@ contract BlindDraw is ZamaEthereumConfig {
         FHE.allow(members[members.length - 1].balance, _user);
     }
 
-    function removeMember(address _user, euint64 _balanceToRemove) public {
+    function removeMember(address _user, euint64 _balanceToRemove) public onlyVault {
         totalTickets = FHE.sub(totalTickets, _balanceToRemove);
         FHE.allowThis(totalTickets);
 
@@ -88,7 +99,7 @@ contract BlindDraw is ZamaEthereumConfig {
     }
 
     // Weighted selection loop
-    function drawWinner(uint256 maxMembers) public returns (eaddress) {
+    function drawWinner(uint256 maxMembers) public onlyVault returns (eaddress) {
         require(members.length <= maxMembers, "Too many members");
         require(members.length > 0, "No members");
         require(FHE.isInitialized(totalTickets), "No tickets");
