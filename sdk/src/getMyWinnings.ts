@@ -39,10 +39,10 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
   };
 
   // 4. Decrypt the handle using the permit (KMS fetch)
-  const formattedHandle =
-    encryptedHandle !== undefined
-      ? `0x${encryptedHandle.toString(16).padStart(64, "0")}` as `0x${string}`
-      : undefined;
+  const hasValidHandle = encryptedHandle !== undefined && encryptedHandle > 0n;
+  const formattedHandle = hasValidHandle
+    ? (`0x${encryptedHandle.toString(16).padStart(64, "0")}` as `0x${string}`)
+    : undefined;
 
   const { data: decryptedValues, isLoading: isDecrypting } = useDecryptValues(
     formattedHandle ? [{ encryptedValue: formattedHandle, contractAddress: vaultAddress }] : [],
@@ -51,9 +51,14 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
     }
   );
 
-  const decryptedWinnings = decryptedValues?.[0] !== undefined 
-    ? Number(decryptedValues[0]) 
-    : undefined;
+  let decryptedWinnings: number | undefined = undefined;
+  if (hasPermit) {
+    if (encryptedHandle === 0n) {
+      decryptedWinnings = 0;
+    } else if (formattedHandle && decryptedValues?.[formattedHandle] !== undefined) {
+      decryptedWinnings = Number(decryptedValues[formattedHandle]) / 1_000_000;
+    }
+  }
 
   return {
     encryptedHandle: formattedHandle,

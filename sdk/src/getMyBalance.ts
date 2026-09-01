@@ -39,13 +39,10 @@ export function useGetMyBalance(vaultAddress: Address) {
   };
 
   // 4. Decrypt the handle using the permit (KMS fetch)
-  // We format the encrypted handle to be parsed by `useDecryptValues`
-  // Note: the handle is passed as a `bigint` from wagmi, but `useDecryptValues`
-  // expects it as a hex string `0x...`
-  const formattedHandle =
-    encryptedHandle !== undefined
-      ? `0x${encryptedHandle.toString(16).padStart(64, "0")}` as `0x${string}`
-      : undefined;
+  const hasValidHandle = encryptedHandle !== undefined && encryptedHandle > 0n;
+  const formattedHandle = hasValidHandle
+    ? (`0x${encryptedHandle.toString(16).padStart(64, "0")}` as `0x${string}`)
+    : undefined;
 
   const { data: decryptedValues, isLoading: isDecrypting } = useDecryptValues(
     formattedHandle ? [{ encryptedValue: formattedHandle, contractAddress: vaultAddress }] : [],
@@ -54,10 +51,14 @@ export function useGetMyBalance(vaultAddress: Address) {
     }
   );
 
-  // Zama decrypted values come back as bigint
-  const decryptedBalance = decryptedValues?.[0] !== undefined 
-    ? Number(decryptedValues[0]) 
-    : undefined;
+  let decryptedBalance: number | undefined = undefined;
+  if (hasPermit) {
+    if (encryptedHandle === 0n) {
+      decryptedBalance = 0;
+    } else if (formattedHandle && decryptedValues?.[formattedHandle] !== undefined) {
+      decryptedBalance = Number(decryptedValues[formattedHandle]) / 1_000_000;
+    }
+  }
 
   return {
     encryptedHandle: formattedHandle,
