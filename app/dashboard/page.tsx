@@ -21,6 +21,13 @@ const vaultAbi = [
   },
   {
     type: 'function',
+    name: 'isMember',
+    inputs: [{ type: 'address', name: 'user' }],
+    outputs: [{ type: 'bool', name: '' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
     name: 'currentDrawId',
     inputs: [],
     outputs: [{ type: 'uint256', name: '' }],
@@ -78,6 +85,14 @@ export default function BlindpotDashboard() {
     address: vaultAddress,
     abi: vaultAbi,
     functionName: 'memberCount',
+  });
+
+  const { data: isUserMember, refetch: refetchIsMember } = useReadContract({
+    address: vaultAddress,
+    abi: vaultAbi,
+    functionName: 'isMember',
+    args: account ? [account] : undefined,
+    query: { enabled: !!account && isConnected },
   });
 
   const { data: currentDrawId, refetch: refetchDrawId } = useReadContract({
@@ -197,6 +212,7 @@ export default function BlindpotDashboard() {
       setStatusMsg("Prompting wallet to sign EIP-712 Decryption Permit (gasless)...");
       await grantPermit([vaultAddress]);
       await refetchPermit();
+      await refetchIsMember();
       await refetchBalanceHandle();
       await refetchWinningsHandle();
       setIsSigningPermit(false);
@@ -234,6 +250,7 @@ export default function BlindpotDashboard() {
   };
 
   const isDecryptingActive = isSigningPermit || isKmsDecrypting;
+  const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
   return (
     <>
@@ -258,7 +275,7 @@ export default function BlindpotDashboard() {
           <>
             <WalletGate
               title="Dashboard Access Restricted"
-              description="To view your encrypted deposit balance, decrypt your prize win status, or execute blinded claims, please connect your Web3 wallet."
+              description="To view your active pool enrollment, decrypt your deposit balance, or claim epoch winnings, please connect your Web3 wallet."
               actionName="Connect Wallet to View Dashboard"
             />
 
@@ -382,6 +399,86 @@ export default function BlindpotDashboard() {
               </div>
             </div>
 
+            {/* ACTIVE POOL MEMBERSHIP DOSSIER */}
+            <div className="mt-6 w-full border-2 border-primary bg-surface p-6 hard-shadow-primary flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b-2 border-primary pb-3">
+                <div>
+                  <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Enrolled Liquidity Pool</div>
+                  <h2 className="font-headline-sm text-lg uppercase font-bold text-primary m-0">
+                    Blindpot Vault #1 (USDC Savings)
+                  </h2>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {isEnrolled ? (
+                    <span className="font-label-mono text-xs bg-secondary-container text-primary border border-secondary px-3 py-1 font-bold uppercase flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-secondary animate-ping inline-block"></span>
+                      Active Depositor · Enrolled
+                    </span>
+                  ) : (
+                    <span className="font-label-mono text-xs bg-surface-container-high text-on-surface-variant border border-primary/40 px-3 py-1 font-bold uppercase flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-on-surface-variant inline-block"></span>
+                      Not Enrolled (0 Deposit)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-surface-container-low border border-primary p-4">
+                <div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Target Network</div>
+                  <div className="font-value-mono text-xs font-bold text-primary mt-0.5">Ethereum Sepolia</div>
+                </div>
+                <div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Smart Contract</div>
+                  <a
+                    href={`https://sepolia.etherscan.io/address/${vaultAddress}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-value-mono text-xs font-bold text-secondary hover:underline flex items-center gap-1 mt-0.5 truncate"
+                  >
+                    {vaultAddress.slice(0, 6)}...{vaultAddress.slice(-4)}
+                    <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                  </a>
+                </div>
+                <div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Pool Capacity</div>
+                  <div className="font-value-mono text-xs font-bold text-primary mt-0.5">
+                    {displayMembers} / 25 Depositors
+                  </div>
+                </div>
+                <div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Yield Engine</div>
+                  <div className="font-value-mono text-xs font-bold text-secondary mt-0.5">
+                    Aave / ERC-4626
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-1">
+                <div className="font-body-md text-xs text-on-surface-variant">
+                  {isEnrolled ? (
+                    <span>
+                      ✅ <strong>Your principal is active:</strong> You are automatically entered into every continuous 10-minute epoch draw. Winning probability scales proportionally with your confidential deposit.
+                    </span>
+                  ) : (
+                    <span>
+                      ⚠️ <strong>Join the Pool:</strong> Deposit test USDC to receive confidential draw tickets and participate in automated epoch prize distributions.
+                    </span>
+                  )}
+                </div>
+
+                {!isEnrolled && (
+                  <button
+                    onClick={() => router.push('/deposit')}
+                    className="bg-primary text-surface border-2 border-primary font-label-mono text-xs uppercase px-4 py-2 font-bold hard-shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
+                  >
+                    Deposit to Join Pool →
+                  </button>
+                )}
+              </div>
+            </div>
+
             {/* Personal Draw Result Banner */}
             {displayDrawId > 0 && (
               <div className="mt-6 w-full border-2 border-primary bg-surface p-5 hard-shadow-sm">
@@ -415,7 +512,7 @@ export default function BlindpotDashboard() {
                         <span>🎉 CONGRATULATIONS! YOU WON ROUND #{displayDrawId}</span>
                       </div>
                       <div className="font-value-mono text-sm text-primary font-bold mt-0.5">
-                        Prize Amount: {decryptedWinnings.toLocaleString()} USDC
+                        Prize Amount: {decryptedWinnings.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                       </div>
                     </div>
 
