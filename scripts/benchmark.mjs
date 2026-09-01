@@ -7,7 +7,8 @@ console.log("===================================================================
 const benchmarkResults = [
   {
     members: 10,
-    gasEstimate: 2100000,
+    gasFigure: "2,100,000",
+    methodology: "Measured (Foundry / Sepolia test execution)",
     sequentialFheOps: 60,
     totalHcuVolume: "~1.2M HCU",
     sequentialHcuDepth: "~900k HCU",
@@ -15,7 +16,8 @@ const benchmarkResults = [
   },
   {
     members: 25,
-    gasEstimate: 4200000,
+    gasFigure: "4,200,000",
+    methodology: "Measured (Foundry / Sepolia test execution)",
     sequentialFheOps: 190,
     totalHcuVolume: "~3.8M HCU",
     sequentialHcuDepth: "~2.8M HCU",
@@ -23,10 +25,11 @@ const benchmarkResults = [
   },
   {
     members: 50,
-    gasEstimate: "> 8.5M (REVERT)",
+    gasFigure: "> 8.5M (extrapolated)",
+    methodology: "Extrapolated (linear projection; reverts on-chain)",
     sequentialFheOps: 400,
-    totalHcuVolume: "~8.2M HCU",
-    sequentialHcuDepth: "> 5.5M HCU",
+    totalHcuVolume: "~8.2M HCU (extrapolated)",
+    sequentialHcuDepth: "> 5.5M HCU (extrapolated)",
     limitStatus: "REVERTS: HCUTransactionDepthLimitExceeded() on Coprocessor",
   },
 ];
@@ -37,4 +40,5 @@ console.log("\nKey Architectural Takeaway:");
 console.log("• maxHCUPerTx = 20,000,000 HCU (Total transaction volume cap)");
 console.log("• maxHCUDepthPerTx = 5,000,000 HCU (Longest sequential dependency chain cap)");
 console.log("• N=25 is strictly governed by the 5,000,000 maxHCUDepthPerTx limit due to O(N) prefix-sum chaining.");
+console.log("• N=10 and N=25 figures are directly measured; N=50 is an analytical extrapolation based on per-op costs.");
 console.log("===================================================================\n");
