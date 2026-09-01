@@ -90,7 +90,8 @@ export default function BlindpotFaucet() {
     <>
       <Navbar />
 
-      <main className="flex-grow flex items-center justify-center pt-24 pb-20 px-margin-mobile md:px-margin-desktop z-10 relative">
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <main className="flex-grow flex items-center justify-center pt-24 pb-20 px-margin-mobile md:px-margin-desktop z-10 relative">
         <div className="w-full max-w-[620px] bg-surface border-2 border-primary hard-shadow-lg p-6 md:p-8 flex flex-col relative">
           <div className="absolute top-0 right-0 p-2 border-l-2 border-b-2 border-primary bg-surface-container-low flex items-center gap-1 font-label-mono text-[10px]">
             <span className="material-symbols-outlined text-[12px]">description</span>
@@ -220,17 +221,17 @@ export default function BlindpotFaucet() {
                     <button
                       onClick={handleDirectMint}
                       disabled={isMinting}
-                      className="w-full bg-secondary-container border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase text-primary font-bold text-center hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full bg-secondary-container text-primary border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold text-center hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {isMinting ? (
                         <>
                           <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
-                          Minting 1,000 Test USDC on Sepolia...
+                          Minting 1,000 USDC on Sepolia...
                         </>
                       ) : (
                         <>
-                          <span className="material-symbols-outlined text-[18px]">payments</span>
-                          1-Click Mint 1,000 Test USDC (Sepolia)
+                          <span className="material-symbols-outlined text-[18px]">water_drop</span>
+                          Mint 1,000 Test USDC to Wallet
                         </>
                       )}
                     </button>
@@ -268,6 +269,7 @@ export default function BlindpotFaucet() {
           <Link href="/deposit" className="hover:underline">Deposit</Link>
         </div>
       </footer>
+      </div>
     </>
   );
 }

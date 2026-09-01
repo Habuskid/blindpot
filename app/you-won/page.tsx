@@ -154,18 +154,20 @@ export default function BlindpotYouWon() {
   return (
     <>
       <Navbar />
-      <Suspense fallback={<div className="pt-32 text-center font-mono">Loading dossier...</div>}>
-        <YouWonContent />
-      </Suspense>
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link href="/history" className="hover:underline">History</Link>
-        </div>
-      </footer>
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <Suspense fallback={<div className="pt-32 text-center font-mono">Loading dossier...</div>}>
+          <YouWonContent />
+        </Suspense>
+        <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
+          <div className="font-label-mono text-xs font-bold uppercase">
+            © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
+          </div>
+          <div className="flex gap-6 font-label-mono text-xs uppercase">
+            <Link href="/dashboard" className="hover:underline">Dashboard</Link>
+            <Link href="/history" className="hover:underline">History</Link>
+          </div>
+        </footer>
+      </div>
     </>
   );
 }

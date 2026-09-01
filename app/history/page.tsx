@@ -77,7 +77,8 @@ export default function BlindpotDrawHistory() {
     <>
       <Navbar />
 
-      <main className="flex-grow pt-24 md:pt-28 pb-20 px-margin-mobile md:px-margin-desktop max-w-[1100px] mx-auto w-full">
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <main className="flex-grow pt-24 md:pt-28 pb-20 px-margin-mobile md:px-margin-desktop max-w-[1100px] mx-auto w-full">
         <div className="mb-8 border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary">
           <div className="font-label-mono text-xs uppercase text-on-surface-variant mb-1">Protocol Audit Log</div>
           <h1 className="font-headline-lg text-2xl md:text-3xl text-primary uppercase border-b-2 border-primary pb-2 mb-4 tracking-tighter">
@@ -122,38 +123,40 @@ export default function BlindpotDrawHistory() {
                   </td>
                 </tr>
               ) : (
-                Array.from({ length: totalDraws }).map((_, idx) => {
-                  const drawNum = (totalDraws - idx).toString();
-                  const isClaimingThis = isPending && claimingDraw === drawNum;
+                Array.from({ length: totalDraws }).map((_, index) => {
+                  const drawIdNum = totalDraws - index;
+                  const drawId = drawIdNum.toString();
+                  const isCurrent = drawIdNum === Number(currentDrawId);
+                  const isClaiming = isPending && claimingDraw === drawId;
 
                   return (
-                    <tr key={drawNum} className="hover:bg-surface-container-low transition-colors">
-                      <td className="p-3.5 border-r border-primary/20 font-bold">
-                        #{drawNum}
-                      </td>
-                      <td className="p-3.5 border-r border-primary/20 font-mono text-xs">
-                        FHE.randEuint32 (deposit-weighted)
+                    <tr key={drawId} className="border-b border-primary/10 hover:bg-surface-container-low transition-colors">
+                      <td className="p-3.5 font-bold border-r border-primary/20">
+                        #{drawId} {isCurrent && <span className="text-[10px] bg-secondary-container text-primary border border-secondary px-1.5 py-0.5 ml-1">ACTIVE</span>}
                       </td>
                       <td className="p-3.5 border-r border-primary/20">
-                        <span className="bg-primary text-surface text-[11px] px-2 py-0.5 uppercase tracking-wider font-bold">
-                          SEALED eaddress
+                        <span className="font-label-mono text-xs bg-surface-container-high px-2 py-0.5 border border-primary/20">
+                          FHE.randEuint32
                         </span>
                       </td>
-                      <td className="p-3.5 border-r border-primary/20 text-center">
+                      <td className="p-3.5 border-r border-primary/20 text-xs font-label-mono text-error">
+                        SEALED
+                      </td>
+                      <td className="p-3.5 text-center border-r border-primary/20">
                         <button
-                          className="bg-secondary-container text-primary border border-primary px-3.5 py-1 text-xs font-label-mono uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
-                          onClick={() => handleClaim(drawNum)}
-                          disabled={isClaimingThis}
+                          onClick={() => handleClaim(drawId)}
+                          disabled={isClaiming}
+                          className="bg-primary text-surface font-label-mono text-xs uppercase px-3 py-1.5 font-bold hard-shadow-sm hover:opacity-90 active:shadow-none transition-all disabled:opacity-50"
                         >
-                          {isClaimingThis ? "Claiming..." : !isConnected ? "Connect to Claim" : "Claim"}
+                          {isClaiming ? "Claiming..." : "Blinded Claim"}
                         </button>
                       </td>
                       <td className="p-3.5 text-center">
                         <Link
-                          href={`/you-won?draw=${drawNum}`}
-                          className="text-primary hover:text-secondary font-label-mono text-xs uppercase underline"
+                          href={`/you-won?drawId=${drawId}`}
+                          className="font-label-mono text-xs text-secondary font-bold underline hover:text-primary"
                         >
-                          View Dossier
+                          Decrypt Dossier →
                         </Link>
                       </td>
                     </tr>
@@ -180,6 +183,7 @@ export default function BlindpotDrawHistory() {
           <Link href="/how-it-works" className="hover:underline">Documentation</Link>
         </div>
       </footer>
+      </div>
     </>
   );
 }

@@ -295,7 +295,8 @@ export default function BlindpotDashboard() {
     <>
       <Navbar />
 
-      <main className="w-full max-w-4xl px-margin-mobile md:px-margin-desktop relative z-10 flex flex-col pt-24 md:pt-28 pb-32 mx-auto">
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <main className="w-full max-w-4xl px-margin-mobile md:px-margin-desktop relative z-10 flex flex-col pt-24 md:pt-28 pb-32 mx-auto">
         {/* Network Mismatch Guard */}
         {isWrongNetwork && (
           <div className="w-full bg-error-container border-2 border-error text-error p-3.5 mb-6 flex justify-between items-center text-xs font-mono">
@@ -767,6 +768,7 @@ export default function BlindpotDashboard() {
           <Link href="/how-it-works" className="hover:underline">Docs</Link>
         </div>
       </footer>
+      </div>
     </>
   );
 }

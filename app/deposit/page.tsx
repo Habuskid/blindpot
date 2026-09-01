@@ -254,7 +254,8 @@ export default function BlindpotDepositFlow() {
     <>
       <Navbar />
 
-      <main className="w-full max-w-xl px-margin-mobile relative z-10 mx-auto pt-24 pb-28 flex flex-col items-center">
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <main className="w-full max-w-xl px-margin-mobile relative z-10 mx-auto pt-24 pb-28 flex flex-col items-center">
         {!isConnected ? (
           <WalletGate
             title="Deposit Terminal Locked"
@@ -521,6 +522,7 @@ export default function BlindpotDepositFlow() {
           <Link href="/faucet" className="hover:underline">Faucet</Link>
         </div>
       </footer>
+      </div>
     </>
   );
 }

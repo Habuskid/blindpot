@@ -75,7 +75,8 @@ export default function PoolsDirectoryPage() {
     <>
       <Navbar />
 
-      <main className="flex-grow pt-24 md:pt-28 pb-24 px-margin-mobile md:px-margin-desktop max-w-[1100px] mx-auto w-full">
+      <div className="md:pl-60 flex-grow flex flex-col">
+        <main className="flex-grow pt-24 md:pt-28 pb-24 px-margin-mobile md:px-margin-desktop max-w-[1100px] mx-auto w-full">
         {/* Header dossier */}
         <div className="border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b-2 border-primary pb-3 mb-4">
@@ -184,6 +185,7 @@ export default function PoolsDirectoryPage() {
           <Link href="/deposit" className="hover:underline">Deposit</Link>
         </div>
       </footer>
+      </div>
     </>
   );
 }

@@ -59,6 +59,13 @@ export default function BlindpotLandingPage() {
   const displayMembers = memberCount !== undefined ? Number(memberCount) : 0;
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
 
+  // Auto-redirect connected wallets directly to dashboard
+  useEffect(() => {
+    if (isConnected) {
+      router.push('/dashboard');
+    }
+  }, [isConnected, router]);
+
   useEffect(() => {
     if (nextDrawTimeRaw === undefined) return;
     const target = Number(nextDrawTimeRaw);
