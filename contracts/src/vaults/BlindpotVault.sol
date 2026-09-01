@@ -6,15 +6,18 @@ import {ZamaEthereumConfig} from "@fhevm/solidity/config/ZamaConfig.sol";
 import {ERC7984} from "@openzeppelin/confidential-contracts/token/ERC7984/ERC7984.sol";
 import {IERC7984Receiver} from "@openzeppelin/confidential-contracts/interfaces/IERC7984Receiver.sol";
 import {BlindDraw} from "../BlindDraw.sol";
+import {IYieldSource} from "../yield/IYieldSource.sol";
 
 /**
  * @title BlindpotVault
- * @notice Vault for confidential deposits on the fhEVM with autonomous, time-locked epochs.
+ * @notice Vault for confidential deposits on the fhEVM with autonomous epochs,
+ * external yield harvesting (Aave / ERC-4626), and direct prize pool funding.
  */
 contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     
     ERC7984 public immutable confidentialToken;
     BlindDraw public immutable draw;
+    address public owner;
 
     uint256 public memberCount;
 
@@ -26,10 +29,19 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
 
     uint256 public currentDrawId;
 
-    // Time-locked Epoch configuration (Default: 600s / 10 minutes for testing/judging)
+    // Time-locked Epoch configuration (Default: 600s / 10 minutes)
     uint256 public drawInterval = 600;
     uint256 public nextDrawTime;
     
+    // Optional external yield source (e.g. ERC4626YieldAdapter routing to Aave/Compound)
+    IYieldSource public yieldSource;
+    
+    // Accumulated manual / sponsor prize pool balance
+    uint256 public accumulatedPrizePool;
+    
+    // Base guaranteed floor prize per round (e.g., 10 USDC)
+    uint256 public baseRoundPrize = 10 * 10 ** 6;
+
     // Map drawId to the encrypted address of the winner
     mapping(uint256 => eaddress) private drawWinners;
     // Map drawId to the pot size
@@ -42,8 +54,16 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     event DrawExecuted(uint256 indexed drawId, uint256 timestamp, uint256 potSize);
     event MemberJoined(address indexed user, uint256 totalMembers);
     event MemberWithdrawn(address indexed user, uint256 totalMembers);
+    event PrizePoolFunded(address indexed funder, uint256 amount, uint256 newTotal);
+    event YieldSourceUpdated(address indexed newYieldSource);
+
+    modifier onlyOwner() {
+        require(msg.sender == owner, "Only owner authorized");
+        _;
+    }
 
     constructor(address _confidentialToken) {
+        owner = msg.sender;
         confidentialToken = ERC7984(_confidentialToken);
         draw = new BlindDraw();
         nextDrawTime = block.timestamp + drawInterval;
@@ -81,6 +101,24 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
     }
 
     /**
+     * @notice Fund the vault prize pool directly (from sponsor, DAO treasury, or foundation grant).
+     * @param amount The amount of prize funding added.
+     */
+    function fundPrizePool(uint256 amount) external {
+        require(amount > 0, "Amount must be > 0");
+        accumulatedPrizePool += amount;
+        emit PrizePoolFunded(msg.sender, amount, accumulatedPrizePool);
+    }
+
+    /**
+     * @notice Set or update the external yield adapter (Aave / Compound / ERC-4626).
+     */
+    function setYieldSource(address _yieldSource) external onlyOwner {
+        yieldSource = IYieldSource(_yieldSource);
+        emit YieldSourceUpdated(_yieldSource);
+    }
+
+    /**
      * @notice Withdraw full principal at any time without loss.
      * Cleanly resets membership status and decrements active capacity count.
      */
@@ -113,6 +151,16 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         require(block.timestamp >= nextDrawTime, "Epoch draw interval not reached");
         require(memberCount > 0, "No active depositors in pool");
 
+        // 1. Harvest yield from external lending adapter if configured
+        uint256 harvestedYield = 0;
+        if (address(yieldSource) != address(0)) {
+            try yieldSource.harvestYield() returns (uint256 harvested) {
+                harvestedYield = harvested;
+            } catch {
+                harvestedYield = 0;
+            }
+        }
+
         eaddress winnerHandle = draw.drawWinner(MAX_MEMBERS);
         
         currentDrawId++;
@@ -121,8 +169,15 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         // Reset next draw time to next epoch interval
         nextDrawTime = block.timestamp + drawInterval;
 
-        // Dynamic simulated pot: 10 base units per round
-        uint256 roundPot = 10 * 10 ** 6; // 10 USDC
+        // Calculate round prize: base guaranteed floor + harvested lending yield + fraction of accumulated pot
+        uint256 roundPot = baseRoundPrize + harvestedYield;
+        if (accumulatedPrizePool > 0) {
+            uint256 sponsorBonus = accumulatedPrizePool / 10; // 10% of sponsor pot per round
+            if (sponsorBonus > 0) {
+                roundPot += sponsorBonus;
+                accumulatedPrizePool -= sponsorBonus;
+            }
+        }
         drawPots[currentDrawId] = roundPot;
 
         // Precompute winnings for all members so they can decrypt via EIP-712 without paying gas

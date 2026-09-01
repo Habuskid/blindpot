@@ -29,6 +29,7 @@
 - [Live Deployment](#live-deployment)
 - [Architecture](#architecture)
 - [How the Confidential Draw Works](#how-the-confidential-draw-works)
+- [Prize Pool Funding & Yield Strategy (Aave / ERC-4626)](#prize-pool-funding--yield-strategy-aave--erc-4626)
 - [Confidentiality Design: What Stays Encrypted vs. Public](#confidentiality-design-what-stays-encrypted-vs-public)
 - [Trust Model](#trust-model)
 - [Tech Stack](#tech-stack)
@@ -139,6 +140,43 @@ Each pool is configured with a member cap of $N = 25$. This limit is governed by
 | **10** | ~2,100,000 | ~900,000 HCU | **PASS** (Measured on Sepolia testnet) |
 | **25** | ~4,200,000 | ~2,800,000 HCU | **PASS** (Measured protocol capacity ceiling) |
 | **50** | >8,500,000 | >5,500,000 HCU | **REVERTS** (Extrapolated: exceeds `maxHCUDepthPerTx`) |
+
+---
+
+## Prize Pool Funding & Yield Strategy (Aave / ERC-4626)
+
+Blindpot is a **no-loss** protocol: depositors never risk their underlying principal. Rewards are generated and funded through two primary mechanisms:
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                DEPOSIT & YIELD PIPELINE                                │
+│                                                                                        │
+│  [ Depositors ] ──► [ BlindpotVault ] ──► [ ERC4626YieldAdapter ] ──► [ Aave v3 / USDC ]│
+│         ▲                    │                     │                         │         │
+│         │                    │                     ▼                         ▼         │
+│  100% Principal       drawWinner()         harvestYield()             Continuous       │
+│  Guaranteed Safe     (Epoch Trigger)    (Interest Accrued)            Lending Yield    │
+│         │                    │                     │                         │         │
+│         └────────────────────┼─────────────────────┴─────────────────────────┘         │
+│                              ▼                                                         │
+│                [ Confidential Prize Pot ] ──► [ Sealed Winner Transfer ]               │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+### 1. Automated Lending Yield Harvesting (`IYieldSource`)
+In production environments, pooled underlying deposits are supplied to low-risk decentralized lending markets using standard tokenized vault wrappers ([`contracts/src/yield/ERC4626YieldAdapter.sol`](contracts/src/yield/ERC4626YieldAdapter.sol)):
+* **Supply**: When deposits enter the vault, the adapter routes funds into yield-bearing markets (e.g., Aave v3 `aUSDC`, Compound v3, or Morpho Blue).
+* **Yield Harvesting**: At each epoch boundary when `drawWinner()` executes, the vault invokes `harvestYield()`. Any interest generated above the initial principal is collected and added directly into the round's prize pot.
+* **Instant Liquidity**: When a user withdraws via `withdrawAll()`, the adapter redeems their exact principal from the lending pool instantly without penalties or fees.
+
+### 2. Direct Prize Pool Seeding (`fundPrizePool`)
+Protocol sponsors, community grants, or DAO treasuries can also seed or augment the prize pool directly via the vault:
+```solidity
+// Direct prize pot funding from sponsors or foundation grants
+vault.fundPrizePool(amount);
+```
+* **Floor Prize Guarantee**: A base prize (e.g., 10 USDC) ensures active incentive even during periods of low market interest rates.
+* **Proportional Scaling**: If accumulated sponsor funding exists, 10% of the sponsor reserve is unlocked and added to each epoch draw.
 
 ---
 
