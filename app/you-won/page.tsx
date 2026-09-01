@@ -8,6 +8,7 @@ import { useGetMyWinnings } from '../../sdk/src/getMyWinnings';
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { Navbar } from '../components/Navbar';
+import { WalletGate } from '../components/WalletGate';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -25,10 +26,10 @@ function YouWonContent() {
 
   const handleExecuteClaim = async () => {
     setErrorMsg(null);
-    setStatusMsg(`Submitting claim for Draw #${drawParam}...`);
+    setStatusMsg(`Submitting claim transaction for Draw #${drawParam}...`);
     try {
       await claim(VAULT_ADDRESS, drawId);
-      setStatusMsg(`Claim transaction broadcasted! If you won Draw #${drawParam}, your winnings have been deposited directly into your confidential balance.`);
+      setStatusMsg(`🎉 Claim transaction confirmed! If you won Draw #${drawParam}, your winnings have been deposited into your confidential balance.`);
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e?.message || `Claim failed for Draw #${drawParam}.`);
@@ -54,85 +55,95 @@ function YouWonContent() {
         </header>
 
         <h1 className="font-headline-lg text-2xl md:text-3xl font-bold uppercase tracking-tighter mb-8 text-center text-primary">
-          DRAW #{drawParam} — WINNING DOSSIER
+          DRAW #{drawParam} - WINNING DOSSIER
         </h1>
 
-        <div className="border-2 border-primary bg-surface-container-low p-8 mb-8 relative min-h-[180px] flex flex-col items-center justify-center">
-          <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 19px, #000 19px, #000 20px)" }}></div>
+        {!isConnected ? (
+          <WalletGate
+            title="Dossier Decryption Locked"
+            description="To decrypt whether your wallet holds the winning ticket for this draw and execute a claim, please connect your Web3 wallet."
+            actionName="Connect Wallet to Decrypt Dossier"
+          />
+        ) : (
+          <>
+            <div className="border-2 border-primary bg-surface-container-low p-8 mb-8 relative min-h-[180px] flex flex-col items-center justify-center">
+              <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 19px, #000 19px, #000 20px)" }}></div>
 
-          {!hasPermit && decryptedWinnings === undefined && (
-            <div className="flex flex-col items-center justify-center gap-3">
-              <div className="bg-primary text-surface px-6 py-3 font-value-mono text-2xl tracking-widest hard-shadow-sm">
-                ████████ USDC
-              </div>
-              <div className="font-label-mono text-xs uppercase text-on-surface-variant flex items-center gap-1">
-                <span className="material-symbols-outlined text-[14px]">lock</span>
-                Confidential Winnings Encrypted
-              </div>
+              {!hasPermit && decryptedWinnings === undefined && (
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <div className="bg-primary text-surface px-6 py-3 font-value-mono text-2xl tracking-widest hard-shadow-sm">
+                    ████████ USDC
+                  </div>
+                  <div className="font-label-mono text-xs uppercase text-on-surface-variant flex items-center gap-1">
+                    <span className="material-symbols-outlined text-[14px]">lock</span>
+                    Confidential Winnings Encrypted
+                  </div>
+                </div>
+              )}
+
+              {(isDecrypting || isGrantingPermit) && decryptedWinnings === undefined && (
+                <div className="font-value-mono text-lg text-secondary flex items-center gap-2">
+                  <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
+                  Decrypting Winnings with KMS...
+                </div>
+              )}
+
+              {decryptedWinnings !== undefined && (
+                <div className="flex flex-col items-center justify-center relative">
+                  <div className="font-value-mono text-4xl md:text-5xl font-bold text-secondary tracking-tight">
+                    {decryptedWinnings > 0 ? `${(decryptedWinnings / 1_000_000).toLocaleString()} USDC` : "0.00 USDC"}
+                  </div>
+
+                  <div className="mt-4 stamp-decrypt font-stamp-text text-stamp-text text-sm">
+                    {decryptedWinnings > 0 ? "PRIZE CONFIRMED" : "NON-WINNING TICKET"}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
 
-          {(isDecrypting || isGrantingPermit) && decryptedWinnings === undefined && (
-            <div className="font-value-mono text-lg text-secondary flex items-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
-              Decrypting Winnings with KMS...
-            </div>
-          )}
-
-          {decryptedWinnings !== undefined && (
-            <div className="flex flex-col items-center justify-center relative">
-              <div className="font-value-mono text-4xl md:text-5xl font-bold text-secondary tracking-tight">
-                {decryptedWinnings > 0 ? `${decryptedWinnings.toLocaleString()} USDC` : "0.00 USDC"}
+            {errorMsg && (
+              <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words">
+                ⚠️ {errorMsg}
               </div>
+            )}
 
-              <div className="mt-4 stamp-decrypt font-stamp-text text-stamp-text text-sm">
-                {decryptedWinnings > 0 ? "PRIZE CONFIRMED" : "NON-WINNING TICKET"}
+            {statusMsg && (
+              <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
+                <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                {statusMsg}
               </div>
-            </div>
-          )}
-        </div>
+            )}
 
-        {errorMsg && (
-          <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words">
-            ⚠️ {errorMsg}
-          </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t-2 border-primary pt-6">
+              {!hasPermit ? (
+                <button
+                  onClick={handleGrantPermit}
+                  disabled={isGrantingPermit}
+                  className="bg-surface text-primary border-2 border-primary hard-shadow-primary font-label-mono text-xs uppercase px-8 py-3.5 flex items-center gap-2 hover:bg-surface-container-high font-bold disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[18px]">key</span>
+                  {isGrantingPermit ? "Signing Permit..." : "Decrypt Winnings"}
+                </button>
+              ) : (
+                <button
+                  onClick={handleExecuteClaim}
+                  disabled={isClaiming}
+                  className="bg-secondary-container text-primary border-2 border-primary hard-shadow-primary font-label-mono text-xs uppercase px-8 py-3.5 font-bold flex items-center gap-2 hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
+                >
+                  <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
+                  {isClaiming ? "Executing Claim..." : "Claim to Balance"}
+                </button>
+              )}
+
+              <Link
+                href="/history"
+                className="font-label-mono text-xs uppercase text-on-surface-variant hover:text-primary underline px-4 py-2"
+              >
+                ← Back to All Draws
+              </Link>
+            </div>
+          </>
         )}
-
-        {statusMsg && (
-          <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
-            {statusMsg}
-          </div>
-        )}
-
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 border-t-2 border-primary pt-6">
-          {!hasPermit ? (
-            <button
-              onClick={handleGrantPermit}
-              disabled={isGrantingPermit || !isConnected}
-              className="bg-surface text-primary border-2 border-primary hard-shadow-primary font-label-mono text-xs uppercase px-8 py-3.5 flex items-center gap-2 hover:bg-surface-container-high font-bold disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[18px]">key</span>
-              {isGrantingPermit ? "Signing Permit..." : "Decrypt Winnings"}
-            </button>
-          ) : (
-            <button
-              onClick={handleExecuteClaim}
-              disabled={isClaiming || !isConnected}
-              className="bg-secondary-container text-primary border-2 border-primary hard-shadow-primary font-label-mono text-xs uppercase px-8 py-3.5 font-bold flex items-center gap-2 hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all disabled:opacity-50"
-            >
-              <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-              {isClaiming ? "Executing Claim..." : "Claim to Balance"}
-            </button>
-          )}
-
-          <Link
-            href="/history"
-            className="font-label-mono text-xs uppercase text-on-surface-variant hover:text-primary underline px-4 py-2"
-          >
-            ← Back to All Draws
-          </Link>
-        </div>
       </div>
     </main>
   );
