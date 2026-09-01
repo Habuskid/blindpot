@@ -2,45 +2,72 @@
 @config "../tailwind.config.cjs";
 
 @layer utilities {
-  .hairline-b { border-bottom: 1px solid #000; }
-  .hairline-r { border-right: 1px solid #000; }
-  .hairline-t { border-top: 1px solid #000; }
-  .hairline-l { border-left: 1px solid #000; }
-  .hairline-b-thick { border-bottom: 2px solid #000; }
+  .hairline-b { border-bottom: 1px solid #0F0F12; }
+  .hairline-r { border-right: 1px solid #0F0F12; }
+  .hairline-t { border-top: 1px solid #0F0F12; }
+  .hairline-l { border-left: 1px solid #0F0F12; }
+  .hairline-b-thick { border-bottom: 2px solid #0F0F12; }
   
-  .ink-border { border: 2px solid #000; }
-  .ink-border-thin { border: 1px solid #000; }
+  .ink-border { border: 1px solid #0F0F12; }
+  .ink-border-thin { border: 1px solid #0F0F12; }
   
-  .hard-shadow { box-shadow: 4px 4px 0px #000; }
-  .hard-shadow-sm { box-shadow: 2px 2px 0px #000; }
-  .hard-shadow-primary { box-shadow: 4px 4px 0px #000; }
-  .hard-shadow-secondary { box-shadow: 4px 4px 0px #795919; }
-  .hard-shadow-lg { box-shadow: 8px 8px 0px #000; }
-  .btn-hard-shadow { box-shadow: 4px 4px 0px #000; }
+  /* Redefined for sleek dossier print-brutalism rather than chunky neo-brutalism */
+  .hard-shadow { box-shadow: 2px 2px 0px #0F0F12; }
+  .hard-shadow-sm { box-shadow: 1px 1px 0px #0F0F12; }
+  .hard-shadow-primary { box-shadow: 3px 3px 0px #0F0F12; }
+  .hard-shadow-secondary { box-shadow: 3px 3px 0px #C9A15A; }
+  .hard-shadow-lg { box-shadow: 4px 4px 0px #0F0F12; }
+  .btn-hard-shadow { box-shadow: 2px 2px 0px #0F0F12; }
   
-  .interactive-element:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0px #000; }
-  .interactive-element:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+  /* Faster, sharper interactive states */
+  .interactive-element {
+    transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .interactive-element:hover { 
+    transform: translate(-1px, -1px); 
+    box-shadow: 3px 3px 0px #0F0F12; 
+  }
+  .interactive-element:active { 
+    transform: translate(1px, 1px); 
+    box-shadow: 0px 0px 0px #0F0F12; 
+  }
   
   .redact-bar, .redaction-bar {
-    background-color: #000;
+    background-color: #0F0F12;
     color: transparent;
     user-select: none;
     display: inline-block;
+    transition: all 0.3s ease-in-out;
   }
   
   .stamp-decrypt, .stamp {
-    border: 2px solid #ba1a1a;
-    color: #ba1a1a;
-    font-weight: bold;
+    border: 1px solid #C1432E;
+    color: #C1432E;
+    font-weight: 600;
     text-transform: uppercase;
-    transform: rotate(-10deg);
-    padding: 2px 8px;
-    letter-spacing: 0.1em;
+    transform: rotate(-3deg);
+    padding: 2px 6px;
+    letter-spacing: 0.05em;
     display: inline-block;
+    background: transparent;
+    mix-blend-mode: multiply;
   }
   
   .ledger-row {
-    border-bottom: 1px dashed rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid #E5E7EB;
+  }
+  
+  /* Skeleton loading animation for sleek data fetching */
+  @keyframes scanline {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+  .skeleton-redact {
+    background: linear-gradient(90deg, #0F0F12 25%, #1f2127 50%, #0F0F12 75%);
+    background-size: 200% 100%;
+    animation: scanline 2s infinite linear;
+    color: transparent;
+    user-select: none;
   }
 }
 

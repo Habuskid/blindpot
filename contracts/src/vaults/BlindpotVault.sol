@@ -167,7 +167,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
      * @notice Fund the vault prize pool directly (from sponsor, DAO treasury, or foundation grant).
      * @param amount The amount of prize funding added.
      */
-    function fundPrizePool(uint256 amount) external {
+    function fundPrizePool(uint256 amount) external onlyOwner {
         require(amount > 0, "Amount must be > 0");
         accumulatedPrizePool += amount;
         emit PrizePoolFunded(msg.sender, amount, accumulatedPrizePool);
@@ -248,7 +248,7 @@ contract BlindpotVault is ZamaEthereumConfig, IERC7984Receiver {
         for (uint i = 0; i < len; i++) {
             address memberUser = draw.getMember(i);
             ebool isWinner = FHE.eq(winnerHandle, FHE.asEaddress(memberUser));
-            euint64 winnings = FHE.select(isWinner, FHE.asEuint64(uint64(roundPot / 10**6)), FHE.asEuint64(0));
+            euint64 winnings = FHE.select(isWinner, FHE.asEuint64(uint64(roundPot)), FHE.asEuint64(0));
             userWinnings[currentDrawId][memberUser] = winnings;
             
             // Allow this contract and the member to decrypt

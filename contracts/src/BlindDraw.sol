@@ -87,7 +87,7 @@ contract BlindDraw is ZamaEthereumConfig {
                 return members[i].balance;
             }
         }
-        revert("Not a member");
+        return euint64.wrap(0);
     }
 
     function getMembersLength() public view returns (uint256) {

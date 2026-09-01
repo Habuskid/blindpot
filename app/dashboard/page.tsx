@@ -290,20 +290,22 @@ export default function BlindpotDashboard() {
                 <div className="flex items-center gap-3">
                   {decryptedBalance === undefined && (
                     <div className="relative group cursor-pointer" onClick={onDecryptClick}>
-                      <div className="bg-primary text-surface px-5 py-2.5 font-label-mono text-xs uppercase tracking-widest hard-shadow-sm flex items-center gap-2 border border-primary select-none">
-                        <span className="material-symbols-outlined text-[16px] text-secondary">lock</span>
-                        <span className="font-mono tracking-[0.2em] font-bold text-surface/90">SEALED CIPHERTEXT</span>
+                      <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm transition-all hover:bg-surface">
+                        <span className={`text-2xl md:text-3xl font-bold font-value-mono px-2 ${isDecryptingActive ? 'skeleton-redact' : 'redact-bar'}`}>
+                          XXXXX.XX USDC
+                        </span>
+                        {!isDecryptingActive && (
+                           <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">
+                             DECRYPT
+                           </span>
+                        )}
+                        {isDecryptingActive && (
+                           <span className="font-label-mono text-xs text-secondary flex items-center gap-1 font-bold animate-pulse">
+                             <span className="material-symbols-outlined animate-spin text-[14px]">sync</span>
+                             KMS
+                           </span>
+                        )}
                       </div>
-                      <div className="absolute -bottom-5 right-0 text-[10px] font-label-mono text-on-surface-variant uppercase tracking-wider">
-                        Click to Decrypt
-                      </div>
-                    </div>
-                  )}
-
-                  {isDecryptingActive && decryptedBalance === undefined && (
-                    <div className="font-label-mono text-xs text-secondary flex items-center gap-1.5 font-bold animate-pulse">
-                      <span className="material-symbols-outlined animate-spin text-[16px]">sync</span>
-                      DECRYPTING VIA KMS...
                     </div>
                   )}
 
