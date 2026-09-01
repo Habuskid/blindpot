@@ -45,11 +45,14 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
 
   let decryptedWinnings: number | undefined = undefined;
   if (hasPermit) {
-    if (encryptedHandle === 0n) {
+    if (encryptedHandle === 0n || !hasValidHandle) {
       decryptedWinnings = 0;
-    } else if (formattedHandle && decryptedValues?.[formattedHandle] !== undefined) {
-      const raw = Number(decryptedValues[formattedHandle]);
-      decryptedWinnings = raw >= 1_000_000 ? raw / 1_000_000 : raw;
+    } else if (formattedHandle) {
+      const val = decryptedValues?.[formattedHandle] ?? decryptedValues?.[formattedHandle.toLowerCase() as `0x${string}`];
+      if (val !== undefined && val !== null) {
+        const raw = Number(val);
+        decryptedWinnings = raw >= 1_000_000 ? raw / 1_000_000 : raw;
+      }
     }
   }
 
@@ -58,7 +61,7 @@ export function useGetMyWinnings(vaultAddress: Address, drawId: bigint) {
     decryptedWinnings,
     hasPermit,
     isGrantingPermit,
-    isDecrypting,
+    isDecrypting: isDecrypting && !!formattedHandle && decryptedWinnings === undefined,
     handleGrantPermit,
     refetchHandle: refetch,
   };

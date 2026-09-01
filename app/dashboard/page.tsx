@@ -58,6 +58,12 @@ export default function BlindpotDashboard() {
     functionName: 'nextDrawTime',
   });
 
+  const { data: drawAddress } = useReadContract({
+    address: vaultAddress,
+    abi: BLINDPOT_VAULT_ABI,
+    functionName: 'draw',
+  });
+
   const displayMembers = memberCount !== undefined ? Number(memberCount) : 0;
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
 
@@ -83,7 +89,11 @@ export default function BlindpotDashboard() {
   });
 
   // Zama EIP-712 Permit & Multi-Value Decryption
-  const { data: hasPermit, refetch: refetchPermit } = useHasPermit({ contractAddresses: [vaultAddress] });
+  const permitContracts = drawAddress
+    ? [vaultAddress, drawAddress as `0x${string}`]
+    : [vaultAddress];
+
+  const { data: hasPermit, refetch: refetchPermit } = useHasPermit({ contractAddresses: permitContracts });
   const { mutateAsync: grantPermit } = useGrantPermit();
 
   // Format valid non-zero handles for KMS query
@@ -100,7 +110,8 @@ export default function BlindpotDashboard() {
 
   const handlesToDecrypt: { encryptedValue: `0x${string}`; contractAddress: `0x${string}` }[] = [];
   if (validBalanceHandleHex) {
-    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: vaultAddress });
+    const targetAddr = (drawAddress as `0x${string}`) || vaultAddress;
+    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: targetAddr });
   }
   if (validWinningsHandleHex) {
     handlesToDecrypt.push({ encryptedValue: validWinningsHandleHex, contractAddress: vaultAddress });
@@ -111,24 +122,37 @@ export default function BlindpotDashboard() {
     { enabled: !!hasPermit && handlesToDecrypt.length > 0 }
   );
 
+  // Helper to extract decrypted value regardless of case
+  const getDecryptedNumber = (handleHex?: string): number | undefined => {
+    if (!handleHex || !decryptedValues) return undefined;
+    const val = decryptedValues[handleHex as `0x${string}`] ?? decryptedValues[handleHex.toLowerCase() as `0x${string}`];
+    if (val === undefined || val === null) return undefined;
+    return Number(val);
+  };
+
   // Compute final display balance
   let decryptedBalance: number | undefined = undefined;
   if (hasPermit) {
-    if (encryptedBalanceHandle === 0n) {
+    if (isUserMember === false || encryptedBalanceHandle === 0n || !hasValidBalanceHandle) {
       decryptedBalance = 0;
-    } else if (validBalanceHandleHex && decryptedValues?.[validBalanceHandleHex] !== undefined) {
-      decryptedBalance = Number(decryptedValues[validBalanceHandleHex]) / 1_000_000;
+    } else if (validBalanceHandleHex) {
+      const num = getDecryptedNumber(validBalanceHandleHex);
+      if (num !== undefined) {
+        decryptedBalance = num / 1_000_000;
+      }
     }
   }
 
   // Compute final display winnings
   let decryptedWinnings: number | undefined = undefined;
   if (hasPermit) {
-    if (encryptedWinningsHandle === 0n) {
+    if (encryptedWinningsHandle === 0n || !hasValidWinningsHandle) {
       decryptedWinnings = 0;
-    } else if (validWinningsHandleHex && decryptedValues?.[validWinningsHandleHex] !== undefined) {
-      const raw = Number(decryptedValues[validWinningsHandleHex]);
-      decryptedWinnings = raw >= 1_000_000 ? raw / 1_000_000 : raw;
+    } else if (validWinningsHandleHex) {
+      const num = getDecryptedNumber(validWinningsHandleHex);
+      if (num !== undefined) {
+        decryptedWinnings = num >= 1_000_000 ? num / 1_000_000 : num;
+      }
     }
   }
 
@@ -164,7 +188,7 @@ export default function BlindpotDashboard() {
     try {
       setIsSigningPermit(true);
       setStatusMsg("Prompting wallet to sign EIP-712 Decryption Permit (gasless)...");
-      await grantPermit([vaultAddress]);
+      await grantPermit(permitContracts);
       await refetchPermit();
       await refetchIsMember();
       await refetchBalanceHandle();
@@ -239,7 +263,7 @@ export default function BlindpotDashboard() {
     return `${m}:${s}`;
   };
 
-  const isDecryptingActive = isSigningPermit || isKmsDecrypting;
+  const isDecryptingActive = isSigningPermit || (isKmsDecrypting && handlesToDecrypt.length > 0 && decryptedBalance === undefined);
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
   return (

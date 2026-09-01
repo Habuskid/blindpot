@@ -1,9 +1,16 @@
-﻿export const BLINDPOT_VAULT_ABI = [
+export const BLINDPOT_VAULT_ABI = [
   {
     type: "function",
     name: "currentDrawId",
     inputs: [],
     outputs: [{ type: "uint256", name: "" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "draw",
+    inputs: [],
+    outputs: [{ type: "address", name: "" }],
     stateMutability: "view",
   },
   {
