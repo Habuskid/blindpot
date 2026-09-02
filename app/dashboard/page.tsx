@@ -263,7 +263,7 @@ export default function BlindpotDashboard() {
     return `${m}:${s}`;
   };
 
-  const isDecryptingActive = isSigningPermit || (isKmsDecrypting && handlesToDecrypt.length > 0 && decryptedBalance === undefined);
+  const isDecryptingActive = isSigningPermit || (hasPermit && isKmsDecrypting && handlesToDecrypt.length > 0 && decryptedBalance === undefined);
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
   return (
@@ -353,7 +353,7 @@ export default function BlindpotDashboard() {
                     </span>
                     {isSigningPermit
                       ? "Signing in Wallet..."
-                      : isKmsDecrypting
+                      : (hasPermit && isKmsDecrypting)
                       ? "Querying KMS..."
                       : hasPermit
                       ? "Refresh Decryption"
