@@ -42,7 +42,7 @@ export async function GET() {
       // If running locally without a DB, return the local file contents
       try {
         const fileContent = fs.readFileSync("bug_logs.json", "utf8");
-        const bugs = fileContent.trim().split("\n").map(JSON.parse);
+        const bugs = fileContent.trim().split("\n").map(line => JSON.parse(line));
         return NextResponse.json({ success: true, bugs });
       } catch (e) {
         return NextResponse.json({ success: false, message: "No DB URL and no local logs" });

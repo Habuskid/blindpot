@@ -40,3 +40,5 @@ contracts/dependencies/
 skills-lock.json
 .DS_Store
 Thumbs.db
+
+.vercel
