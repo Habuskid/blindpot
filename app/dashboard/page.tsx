@@ -109,8 +109,8 @@ export default function BlindpotDashboard() {
     : undefined;
 
   const handlesToDecrypt: { encryptedValue: `0x${string}`; contractAddress: `0x${string}` }[] = [];
-  if (validBalanceHandleHex) {
-    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: vaultAddress });
+  if (validBalanceHandleHex && drawAddress) {
+    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: drawAddress as `0x${string}` });
   }
   if (validWinningsHandleHex) {
     handlesToDecrypt.push({ encryptedValue: validWinningsHandleHex, contractAddress: vaultAddress });
@@ -365,25 +365,6 @@ export default function BlindpotDashboard() {
                 <div className="font-body-md text-xs text-on-surface-variant max-w-md">
                   Balances are encrypted end-to-end with Zama fhEVM. Decrypting uses a gasless EIP-712 permit to retrieve your private plaintext directly in your browser.
                 </div>
-
-                <div>
-                  <button
-                    className="bg-secondary-container text-primary border-2 border-primary font-label-mono text-xs uppercase px-5 py-2.5 hard-shadow-sm font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-transform flex items-center gap-2 disabled:opacity-50"
-                    onClick={onDecryptClick}
-                    disabled={isDecryptingActive}
-                  >
-                    <span className="material-symbols-outlined text-[16px]">
-                      {isDecryptingActive ? "sync" : "key"}
-                    </span>
-                    {isSigningPermit
-                      ? "Signing in Wallet..."
-                      : (hasPermit && isKmsDecrypting)
-                      ? "Querying KMS..."
-                      : hasPermit
-                      ? "Refresh Decryption"
-                      : "Decrypt My Details"}
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -509,16 +490,8 @@ export default function BlindpotDashboard() {
                 {decryptedWinnings === undefined ? (
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 py-2 text-xs">
                     <span className="text-on-surface-variant font-body-md">
-                      Your Round #{activeDrawId} outcome is sealed in ciphertext. Click "Decrypt My Details" to verify if you won the round prize.
+                      Your Round #{activeDrawId} outcome is sealed in ciphertext. Click the encrypted balance above to verify if you won the round prize.
                     </span>
-                    <button
-                      onClick={onDecryptClick}
-                      disabled={isDecryptingActive}
-                      className="bg-surface border-2 border-primary px-3.5 py-1.5 font-label-mono uppercase font-bold text-xs hover:bg-surface-container-high whitespace-nowrap hard-shadow-sm flex items-center gap-1"
-                    >
-                      <span className="material-symbols-outlined text-[14px]">key</span>
-                      {isDecryptingActive ? "Decrypting..." : "Check My Result"}
-                    </button>
                   </div>
                 ) : decryptedWinnings > 0 ? (
                   <div className="bg-secondary-container/40 border border-secondary p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
