@@ -55,17 +55,7 @@ export function Navbar() {
             How It Works
           </Link>
 
-          {isConnected ? (
-            <button
-              onClick={() => router.push("/dashboard")}
-              className="bg-secondary-container text-primary border-2 border-primary px-4 py-1.5 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5"
-            >
-              <span className="material-symbols-outlined text-[16px]">space_dashboard</span>
-              Open App
-            </button>
-          ) : (
-            <ConnectAndSignButton />
-          )}
+          <ConnectAndSignButton />
         </div>
       </header>
     );

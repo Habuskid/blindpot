@@ -100,19 +100,7 @@ export default function BlindpotLandingPage() {
               Deposit into a confidential prize pool powered by Fully Homomorphic Encryption (FHE). Your balance, tickets, and odds remain completely private on-chain. Withdraw 100% of your principal at any time with zero loss and zero fees.
             </p>
             <div className="flex flex-wrap gap-4">
-              <button
-                onClick={() => {
-                  if (isConnected) {
-                    router.push('/dashboard');
-                  } else {
-                    connect({ connector: injected() });
-                  }
-                }}
-                className="bg-secondary-container text-primary font-label-mono text-label-mono uppercase px-6 py-3.5 text-base font-bold border-2 border-primary hard-shadow-primary hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2"
-              >
-                <span className="material-symbols-outlined text-[18px]">account_balance_wallet</span>
-                {isConnected ? "Open Dashboard" : "Connect Wallet & Launch"}
-              </button>
+              <ConnectAndSignButton className="bg-secondary-container text-primary font-label-mono text-label-mono uppercase px-6 py-3.5 text-base font-bold border-2 border-primary hard-shadow-primary hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2" />
               <Link
                 href="/how-it-works"
                 className="bg-surface text-primary font-label-mono text-label-mono uppercase px-6 py-3.5 text-base border-2 border-primary hard-shadow-sm hover:bg-surface-container-high transition-colors flex items-center gap-1"
@@ -167,7 +155,7 @@ export default function BlindpotLandingPage() {
               </div>
 
               <div className="mt-5 pt-3 border-t border-primary/20 text-center font-label-mono text-[11px] text-on-surface-variant uppercase">
-                {isConnected ? "Connected: Enter Dashboard to Decrypt" : "Connect Wallet to Decrypt Your Position"}
+                Launch App to Decrypt Your Position
               </div>
             </div>
           </div>
