@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '../../../lib/prisma';
+import { neon } from '@neondatabase/serverless';
 
 export async function GET(req: Request) {
   try {
@@ -10,15 +10,22 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: true, activity: [] });
     }
 
-    const activity = await prisma.activityLog.findMany({
-      where: { userAddress: { equals: user, mode: 'insensitive' } },
-      orderBy: { timestamp: 'desc' },
-      take: 50,
-    });
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: true, activity: [] });
+    }
+
+    const sql = neon(process.env.DATABASE_URL);
+    // Use ILIKE for case-insensitive match
+    const activity = await sql`
+      SELECT * FROM "ActivityLog"
+      WHERE "userAddress" ILIKE ${user}
+      ORDER BY timestamp DESC
+      LIMIT 50
+    `;
     
     return NextResponse.json({ success: true, activity });
   } catch (e: any) {
-    console.warn("Prisma error (likely missing DATABASE_URL):", e?.message);
+    console.warn("Neon DB error on GET:", e?.message);
     return NextResponse.json({ success: true, activity: [] });
   }
 }
@@ -30,20 +37,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
     
-    const record = await prisma.activityLog.create({
-      data: {
-        userAddress: body.userAddress,
-        poolId: body.poolId || 'pool-usdc-sepolia-01',
-        action: body.action,
-        amount: body.amount ? parseFloat(body.amount) : null,
-        drawId: body.drawId ? parseInt(body.drawId) : null,
-        txHash: body.txHash,
-      }
-    });
-    return NextResponse.json({ success: true, record });
+    if (!process.env.DATABASE_URL) {
+      return NextResponse.json({ success: true, record: { ...body, id: 'fake' } });
+    }
+
+    const sql = neon(process.env.DATABASE_URL);
+    
+    const record = await sql`
+      INSERT INTO "ActivityLog" (
+        "id", "userAddress", "poolId", "action", "amount", "drawId", "txHash", "timestamp"
+      ) VALUES (
+        gen_random_uuid(),
+        ${body.userAddress},
+        ${body.poolId || 'pool-usdc-sepolia-01'},
+        ${body.action},
+        ${body.amount ? parseFloat(body.amount) : null},
+        ${body.drawId ? parseInt(body.drawId) : null},
+        ${body.txHash},
+        NOW()
+      )
+      RETURNING *
+    `;
+
+    return NextResponse.json({ success: true, record: record[0] });
   } catch (e: any) {
-    console.warn("Prisma error on write:", e?.message);
+    console.warn("Neon DB error on POST:", e?.message);
     return NextResponse.json({ success: false, error: 'Database not connected' }, { status: 500 });
   }
 }
-
