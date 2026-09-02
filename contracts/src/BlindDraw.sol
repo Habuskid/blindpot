@@ -47,7 +47,12 @@ contract BlindDraw is ZamaEthereumConfig {
                 return;
             }
         }
-        members.push(Member(_user, _balance));
+        
+        // Fix: FHE.add creates a new handle owned by this contract. 
+        // If we just push _balance directly, the Vault retains ownership and KMS decryption fails.
+        euint64 safeBalance = FHE.add(_balance, FHE.asEuint64(0));
+        
+        members.push(Member(_user, safeBalance));
         FHE.allowThis(members[members.length - 1].balance);
         FHE.allow(members[members.length - 1].balance, _user);
     }
