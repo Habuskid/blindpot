@@ -110,8 +110,7 @@ export default function BlindpotDashboard() {
 
   const handlesToDecrypt: { encryptedValue: `0x${string}`; contractAddress: `0x${string}` }[] = [];
   if (validBalanceHandleHex) {
-    const targetAddr = (drawAddress as `0x${string}`) || vaultAddress;
-    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: targetAddr });
+    handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: vaultAddress });
   }
   if (validWinningsHandleHex) {
     handlesToDecrypt.push({ encryptedValue: validWinningsHandleHex, contractAddress: vaultAddress });
