@@ -19,3 +19,10 @@ model ActivityLog {
 
   @@index([userAddress])
 }
+
+model BugLog {
+  id        String   @id @default(cuid())
+  message   String
+  details   String?
+  createdAt DateTime @default(now())
+}

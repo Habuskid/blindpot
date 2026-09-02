@@ -116,7 +116,7 @@ export default function BlindpotDashboard() {
     handlesToDecrypt.push({ encryptedValue: validWinningsHandleHex, contractAddress: vaultAddress });
   }
 
-  const { data: decryptedValues, isLoading: isKmsDecrypting } = useDecryptValues(
+  const { data: decryptedValues, isLoading: isKmsDecrypting, error: kmsError } = useDecryptValues(
     handlesToDecrypt,
     { enabled: !!hasPermit && handlesToDecrypt.length > 0 }
   );
@@ -128,6 +128,21 @@ export default function BlindpotDashboard() {
     if (val === undefined || val === null) return undefined;
     return Number(val);
   };
+
+  
+  // Auto-log KMS errors
+  useEffect(() => {
+    if (kmsError) {
+      fetch('/api/bugs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: 'KMS Decryption Error',
+          details: kmsError.message || String(kmsError)
+        })
+      }).catch(console.error);
+    }
+  }, [kmsError]);
 
   // Compute final display balance
   let decryptedBalance: number | undefined = undefined;
@@ -290,8 +305,9 @@ export default function BlindpotDashboard() {
                   {decryptedBalance === undefined && (
                     <div className="relative group cursor-pointer" onClick={onDecryptClick}>
                       <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm transition-all hover:bg-surface">
-                        <span className={`text-2xl md:text-3xl font-bold font-value-mono px-2 ${isDecryptingActive ? 'skeleton-redact' : 'redact-bar'}`}>
-                          XXXXX.XX USDC
+                        <span className="text-2xl md:text-3xl font-bold font-value-mono px-2 flex items-center gap-2">
+                          <span className="material-symbols-outlined text-[28px] opacity-70">visibility_off</span>
+                          <span>***.** USDC</span>
                         </span>
                         {!isDecryptingActive && (
                            <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">
@@ -322,6 +338,15 @@ export default function BlindpotDashboard() {
               </div>
 
               {/* Status and Error Banners */}
+              {kmsError && (
+                <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex flex-col gap-1 mb-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-[16px]">error</span>
+                    <span className="font-bold">KMS Decryption Failed</span>
+                  </div>
+                  <span className="opacity-80">{kmsError.message || String(kmsError)}</span>
+                </div>
+              )}
               {errorMsg && (
                 <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex items-center gap-1.5">
                   <span className="material-symbols-outlined text-[16px]">error</span>
