@@ -9,7 +9,8 @@
     "benchmark": "node scripts/benchmark.mjs",
     "keeper": "node scripts/keeper.mjs",
     "compile": "node compile.mjs",
-    "deploy": "node deploy.mjs"
+    "deploy": "node deploy.mjs",
+    "postinstall": "prisma generate"
   },
   "keywords": [
     "zama",
