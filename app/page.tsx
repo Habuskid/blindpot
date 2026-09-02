@@ -109,9 +109,6 @@ export default function BlindpotLandingPage() {
               </Link>
             </div>
 
-            <div className="absolute top-4 right-4 font-stamp-text text-stamp-text text-error opacity-60 hidden sm:block">
-              SEPOLIA TESTNET · 11155111
-            </div>
           </div>
 
           {/* LIVE ON-CHAIN PROTOCOL LEDGER CARD */}
