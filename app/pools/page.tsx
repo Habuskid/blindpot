@@ -41,9 +41,17 @@ export default function PoolsDirectoryPage() {
   useEffect(() => {
     if (nextDrawTimeRaw === undefined) return;
     const target = Number(nextDrawTimeRaw);
+    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
+
     const tick = () => {
       const now = Math.floor(Date.now() / 1000);
-      setSecondsRemaining(Math.max(0, target - now));
+      let diff = target - now;
+      if (diff <= 0) {
+        // Continuous rolling autonomous epoch cadence
+        const overdue = Math.abs(diff);
+        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
+      }
+      setSecondsRemaining(diff);
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -52,7 +60,6 @@ export default function PoolsDirectoryPage() {
 
   const formatCountdown = (secs: number | null) => {
     if (secs === null) return "--:--";
-    if (secs === 0) return "DRAW IMMINENT";
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = (secs % 60).toString().padStart(2, '0');
     return `${m}:${s}`;

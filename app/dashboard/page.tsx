@@ -189,9 +189,17 @@ export default function BlindpotDashboard() {
   useEffect(() => {
     if (nextDrawTimeRaw === undefined) return;
     const target = Number(nextDrawTimeRaw);
+    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
+
     const tick = () => {
       const now = Math.floor(Date.now() / 1000);
-      setSecondsRemaining(Math.max(0, target - now));
+      let diff = target - now;
+      if (diff <= 0) {
+        // Continuous rolling autonomous epoch cadence
+        const overdue = Math.abs(diff);
+        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
+      }
+      setSecondsRemaining(diff);
     };
     tick();
     const interval = setInterval(tick, 1000);
@@ -294,7 +302,6 @@ export default function BlindpotDashboard() {
 
   const formatCountdown = (secs: number | null) => {
     if (secs === null) return "--:--";
-    if (secs === 0) return "DRAW IMMINENT";
     const m = Math.floor(secs / 60).toString().padStart(2, '0');
     const s = (secs % 60).toString().padStart(2, '0');
     return `${m}:${s}`;
@@ -601,16 +608,23 @@ export default function BlindpotDashboard() {
               </div>
 
               <div className="border-2 border-primary bg-surface p-4 flex flex-col justify-between hard-shadow-sm">
-                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Next Epoch Draw</div>
+                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold flex items-center justify-between">
+                  <span>Next Epoch Draw</span>
+                  <span className="flex items-center gap-1 text-[10px] text-secondary font-bold font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse inline-block"></span>
+                    LIVE
+                  </span>
+                </div>
                 {nextDrawTimeRaw !== undefined ? (
-                  <div className="font-value-mono text-2xl font-bold text-secondary mt-2">
+                  <div className="font-value-mono text-2xl font-bold text-secondary mt-2 tracking-wider">
                     {formatCountdown(secondsRemaining)}
                   </div>
                 ) : (
                   <Skeleton className="h-7 w-24 mt-2" />
                 )}
-                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
-                  Autonomous Cadence
+                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1 flex items-center justify-between">
+                  <span>Autonomous Cadence</span>
+                  <span className="text-[10px] text-primary font-bold">10m Epoch</span>
                 </div>
               </div>
             </div>
