@@ -111,7 +111,7 @@ export default function PoolsDirectoryPage() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant uppercase">Current Epoch</span>
-                      <span className="font-bold text-primary">Round #{displayDrawId}</span>
+                      <span className="font-bold text-primary">Round #{displayDrawId === 0 ? 1 : displayDrawId + 1}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant uppercase">Draw Cadence</span>
@@ -121,10 +121,10 @@ export default function PoolsDirectoryPage() {
                       <span className="text-on-surface-variant uppercase font-bold">Real Blended APR</span>
                       <div className="text-right">
                         <span className="font-bold text-secondary text-sm bg-surface px-1.5 py-0.5 border border-primary">
-                          {pool.totalApr ? `${pool.totalApr}%` : "8.57%"} APR
+                          {pool.totalApr ? `${pool.totalApr}%` : "9.19%"} APR
                         </span>
                         <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">
-                          {pool.baseLendingApr ? `${pool.baseLendingApr}% Aave v3` : "3.37% Aave v3"} + {pool.prizeApr ? `${pool.prizeApr}% Prize` : "5.20% Prize"}
+                          {pool.baseLendingApr ? `${pool.baseLendingApr}% Morpho Blue` : "3.99% Morpho Blue"} + {pool.prizeApr ? `${pool.prizeApr}% Prize` : "5.20% Prize"}
                         </div>
                       </div>
                     </div>

@@ -56,7 +56,7 @@ const DB_FILE = path.join(DB_DIR, 'protocol_db.json');
 const INITIAL_POOLS: PoolRecord[] = [
   {
     id: 'pool-usdc-sepolia-01',
-    name: 'USDC Core Savings Vault',
+    name: 'Morpho USDC Savings Vault',
     symbol: 'cUSDC',
     network: 'Ethereum Sepolia',
     chainId: 11155111,
@@ -65,7 +65,7 @@ const INITIAL_POOLS: PoolRecord[] = [
     underlyingAddress: '0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF',
     maxMembers: 25,
     drawInterval: 600,
-    yieldEngine: 'ERC-4626 / Aave v3 Continuous Lending',
+    yieldEngine: 'Morpho Blue / MetaMorpho (Sepolia)',
     status: 'ACTIVE',
     createdAt: 1725192000,
   }

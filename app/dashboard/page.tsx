@@ -13,7 +13,7 @@ import { formatUSDC, formatTimestamp, formatAddress } from '../../lib/formatters
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { CipherSpinner } from '../components/BlindpotLoader';
+import { CipherSpinner, CircularLoader } from '../components/BlindpotLoader';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
@@ -316,35 +316,38 @@ export default function BlindpotDashboard() {
             </div>
 
                 {/* REDACTED DOSSIER BAR VS DECRYPTED BALANCE */}
-                <div className="flex items-center gap-3">
-                  {decryptedBalance === undefined && (
-                    <div className="relative group cursor-pointer" onClick={onDecryptClick}>
-                      <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm transition-all hover:bg-surface">
-                        <span className="text-2xl md:text-3xl font-bold font-value-mono px-2 flex items-center gap-2">
-                          <span className="material-symbols-outlined text-[28px] opacity-70">visibility_off</span>
-                          <span>***.** USDC</span>
-                        </span>
-                        {!isDecryptingActive && (
-                           <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase opacity-0 group-hover:opacity-100 transition-opacity">
-                             DECRYPT
-                           </span>
-                        )}
-                        {isDecryptingActive && (
-                           <span className="font-label-mono text-xs text-secondary flex items-center gap-1.5 font-bold">
-                             <CipherSpinner size="sm" />
-                             KMS
-                           </span>
-                        )}
+                <div className="flex flex-wrap items-center gap-3">
+                  {decryptedBalance === undefined ? (
+                    <>
+                      <div className="flex items-center gap-2 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm">
+                        <span className="material-symbols-outlined text-[24px] opacity-70">visibility_off</span>
+                        <span className="text-xl md:text-2xl font-bold font-value-mono">***.** USDC</span>
                       </div>
-                    </div>
-                  )}
-
-                  {decryptedBalance !== undefined && (
+                      <button
+                        onClick={onDecryptClick}
+                        disabled={isDecryptingActive}
+                        className="bg-primary text-surface border-2 border-primary font-label-mono text-xs uppercase px-4 py-2.5 font-bold hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-2 disabled:opacity-50"
+                      >
+                        {isDecryptingActive ? (
+                          <>
+                            <CircularLoader size="sm" />
+                            <span>Decrypting KMS...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="material-symbols-outlined text-[16px]">key</span>
+                            <span>Decrypt Balance</span>
+                          </>
+                        )}
+                      </button>
+                    </>
+                  ) : (
                     <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm">
                       <span className="font-value-mono text-2xl md:text-3xl text-secondary font-bold">
                         {decryptedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
                       </span>
-                      <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase">
+                      <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase flex items-center gap-1">
+                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
                         DECRYPTED
                       </span>
                     </div>
@@ -389,7 +392,7 @@ export default function BlindpotDashboard() {
                 <div>
                   <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Enrolled Liquidity Pool</div>
                   <h2 className="font-headline-sm text-lg uppercase font-bold text-primary m-0">
-                    Blindpot Vault #1 (USDC Savings)
+                    Blindpot Vault #1 (Morpho USDC Savings)
                   </h2>
                 </div>
 
@@ -408,13 +411,13 @@ export default function BlindpotDashboard() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 bg-surface-container-low border border-primary p-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-surface-container-low border border-primary p-4">
                 <div>
                   <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Target Network</div>
                   <div className="font-value-mono text-xs font-bold text-primary mt-0.5">Ethereum Sepolia</div>
                 </div>
                 <div>
-                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Smart Contract</div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Vault Contract</div>
                   <a
                     href={`https://sepolia.etherscan.io/address/${vaultAddress}`}
                     target="_blank"
@@ -434,19 +437,25 @@ export default function BlindpotDashboard() {
                 <div>
                   <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Real Blended APR</div>
                   <div className="font-value-mono text-xs font-bold text-secondary mt-0.5 flex items-center gap-1">
-                    <span>8.57% APR</span>
-                    <span className="text-[10px] text-on-surface-variant font-normal">(3.37% Aave v3)</span>
+                    <span>9.19% APR</span>
+                    <span className="text-[10px] text-on-surface-variant font-normal">(3.99% Morpho)</span>
                   </div>
                 </div>
                 <div>
                   <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Yield Engine</div>
-                  <div className="font-value-mono text-xs font-bold text-primary mt-0.5">
-                    Aave v3 / ERC-4626
-                  </div>
+                  <a
+                    href="https://sepolia.etherscan.io/address/0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-value-mono text-xs font-bold text-secondary hover:underline flex items-center gap-1 mt-0.5"
+                  >
+                    Morpho Blue
+                    <span className="material-symbols-outlined text-[12px]">open_in_new</span>
+                  </a>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-1">
+              <div className="pt-1">
                 <div className="font-body-md text-xs text-on-surface-variant flex items-center gap-1.5">
                   {isEnrolled ? (
                     <span>
@@ -456,19 +465,10 @@ export default function BlindpotDashboard() {
                   ) : (
                     <span>
                       <span className="material-symbols-outlined text-[14px] text-primary inline-block align-middle mr-1">info</span>
-                      <strong>Join the Pool:</strong> Deposit test USDC to receive confidential draw tickets and participate in automated epoch prize distributions.
+                      <strong>Join the Pool:</strong> Deposit test USDC below to receive confidential draw tickets and participate in automated epoch prize distributions.
                     </span>
                   )}
                 </div>
-
-                {!isEnrolled && (
-                  <button
-                    onClick={() => router.push('/deposit')}
-                    className="bg-primary text-surface border-2 border-primary font-label-mono text-xs uppercase px-4 py-2 font-bold hard-shadow-sm hover:opacity-90 transition-opacity whitespace-nowrap"
-                  >
-                    Deposit to Join Pool →
-                  </button>
-                )}
               </div>
             </div>
 
@@ -575,12 +575,12 @@ export default function BlindpotDashboard() {
               </div>
 
               <div className="border-2 border-primary bg-surface p-4 flex flex-col justify-between hard-shadow-sm">
-                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Current Round</div>
+                <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Active Round</div>
                 <div className="font-value-mono text-2xl font-bold text-primary mt-2">
-                  #{displayDrawId}
+                  #{displayDrawId === 0 ? 1 : displayDrawId + 1}
                 </div>
-                <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
-                  On-Chain FHE Draw
+                <div className="text-[11px] font-label-mono text-secondary font-bold mt-1">
+                  {displayDrawId === 0 ? "Initial Epoch (Active)" : `Epoch #${displayDrawId + 1} (Active)`}
                 </div>
               </div>
 
@@ -595,30 +595,22 @@ export default function BlindpotDashboard() {
               </div>
             </div>
 
-            {/* Primary Action Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
+            {/* Primary Action Buttons (Streamlined 2-Action Console) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6">
               <button
                 onClick={() => router.push('/deposit')}
-                className="bg-secondary-container text-primary border-2 border-primary font-label-mono uppercase px-4 py-3.5 hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all text-center font-bold text-sm flex items-center justify-center gap-2"
+                className="bg-primary text-surface border-2 border-primary font-label-mono uppercase px-6 py-4 hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all text-center font-bold text-sm flex items-center justify-center gap-2"
               >
-                <span className="material-symbols-outlined text-[18px]">add_circle</span>
-                Deposit USDC
+                <span className="material-symbols-outlined text-[20px]">add_circle</span>
+                Deposit USDC to Vault
               </button>
 
               <button
                 onClick={() => router.push('/withdraw')}
-                className="bg-surface text-primary border-2 border-primary font-label-mono uppercase px-4 py-3.5 hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all text-center font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container-high"
+                className="bg-surface text-primary border-2 border-primary font-label-mono uppercase px-6 py-4 hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all text-center font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container-high"
               >
-                <span className="material-symbols-outlined text-[18px]">arrow_upward</span>
-                Withdraw Principal
-              </button>
-
-              <button
-                onClick={() => router.push('/history')}
-                className="bg-surface text-primary border-2 border-primary font-label-mono uppercase px-4 py-3.5 hard-shadow-sm hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all text-center font-bold text-sm flex items-center justify-center gap-2 hover:bg-surface-container-high"
-              >
-                <span className="material-symbols-outlined text-[18px]">history</span>
-                Draw History
+                <span className="material-symbols-outlined text-[20px]">arrow_upward</span>
+                Withdraw Principal (No Loss)
               </button>
             </div>
 
@@ -631,9 +623,18 @@ export default function BlindpotDashboard() {
                     Your Activity Dossier
                   </h3>
                 </div>
-                <span className="font-label-mono text-[11px] uppercase bg-surface-container-low border border-primary px-2.5 py-1">
-                  Database Synced
-                </span>
+                <div className="flex items-center gap-3">
+                  <Link
+                    href="/history"
+                    className="font-label-mono text-xs text-secondary font-bold hover:underline flex items-center gap-1 uppercase"
+                  >
+                    <span>View All Draws</span>
+                    <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+                  </Link>
+                  <span className="font-label-mono text-[11px] uppercase bg-surface-container-low border border-primary px-2.5 py-1">
+                    Database Synced
+                  </span>
+                </div>
               </div>
 
               {activityLogs.length === 0 ? (
