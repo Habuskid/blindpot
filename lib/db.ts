@@ -46,10 +46,19 @@ export interface ActivityRecord {
   status: 'CONFIRMED' | 'PENDING';
 }
 
+export interface TelemetryRecord {
+  id: string;
+  path: string;
+  referrer: string;
+  device?: string;
+  timestamp: number;
+}
+
 interface DatabaseSchema {
   pools: PoolRecord[];
   draws: DrawRecord[];
   activity: ActivityRecord[];
+  telemetry?: TelemetryRecord[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -269,5 +278,26 @@ export const db = {
     data.activity.unshift(activity);
     saveDb(data);
     return activity;
+  },
+
+  logVisit(visit: Omit<TelemetryRecord, 'id' | 'timestamp'>) {
+    const data = initDb();
+    if (!data.telemetry) data.telemetry = [];
+    const record: TelemetryRecord = {
+      id: `tel-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+      timestamp: Math.floor(Date.now() / 1000),
+      ...visit,
+    };
+    data.telemetry.unshift(record);
+    if (data.telemetry.length > 300) {
+      data.telemetry = data.telemetry.slice(0, 300);
+    }
+    saveDb(data);
+    return record;
+  },
+
+  getTelemetry(limit = 100): TelemetryRecord[] {
+    const data = initDb();
+    return (data.telemetry || []).slice(0, limit);
   },
 };
