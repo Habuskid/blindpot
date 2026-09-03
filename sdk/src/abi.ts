@@ -172,3 +172,42 @@ export const ERC20_ABI = [
     stateMutability: "nonpayable",
   },
 ] as const;
+
+export const CUSDC_WRAPPER_ABI = [
+  {
+    type: "function",
+    name: "wrap",
+    inputs: [
+      { type: "address", name: "to" },
+      { type: "uint256", name: "amount" },
+    ],
+    outputs: [{ type: "bytes32", name: "" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "unwrap",
+    inputs: [
+      { type: "address", name: "from" },
+      { type: "address", name: "to" },
+      { type: "bytes32", name: "encryptedAmount" },
+      { type: "bytes", name: "inputProof" },
+    ],
+    outputs: [{ type: "bytes32", name: "" }],
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "confidentialBalanceOf",
+    inputs: [{ type: "address", name: "account" }],
+    outputs: [{ type: "uint256", name: "" }],
+    stateMutability: "view",
+  },
+  {
+    type: "function",
+    name: "underlying",
+    inputs: [],
+    outputs: [{ type: "address", name: "" }],
+    stateMutability: "view",
+  },
+] as const;

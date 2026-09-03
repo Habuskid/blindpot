@@ -8,11 +8,10 @@
     "start": "next start",
     "benchmark": "node scripts/benchmark.mjs",
     "keeper": "node scripts/keeper.mjs",
-    "compile": "node compile.mjs",
-    "deploy": "node deploy.mjs",
+    "compile": "cd contracts && forge build",
+    "deploy": "cd contracts && forge script script/DeployBlindpot.s.sol",
     "contracts:build": "cd contracts && forge build",
-    "contracts:test": "cd contracts && forge test",
-    "postinstall": "prisma generate"
+    "contracts:test": "cd contracts && forge test"
   },
   "keywords": [
     "zama",
@@ -27,17 +26,12 @@
   "type": "module",
   "dependencies": {
     "@neondatabase/serverless": "^1.1.0",
-    "@prisma/client": "^6.19.3",
     "@tanstack/react-query": "^5.101.4",
-    "@types/node": "^26.2.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.4",
     "@zama-fhe/react-sdk": "^3.4.0",
     "@zama-fhe/sdk": "^3.4.0",
     "next": "^16.3.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "typescript": "^7.0.2",
     "viem": "^2.55.13",
     "wagmi": "^3.7.6"
   },
@@ -45,10 +39,12 @@
     "@tailwindcss/container-queries": "^0.1.1",
     "@tailwindcss/forms": "^0.5.11",
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.2.0",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
     "autoprefixer": "^10.5.4",
     "postcss": "^8.5.26",
-    "prisma": "^6.19.3",
-    "solc": "^0.8.27",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "typescript": "^7.0.2"
   }
 }
