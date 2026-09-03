@@ -27,7 +27,9 @@ export interface DrawRecord {
   poolId: string;
   timestamp: number;
   blockNumber: number;
-  potSize: number; // in USDC
+  potSize: number; // in USDC (Net winner prize, 90% of yield + floor)
+  grossYield?: number; // Total gross yield harvested from Morpho Blue
+  protocolFee?: number; // 10% Protocol Treasury revenue cut
   txHash?: string;
   status: 'EXECUTED' | 'SETTLED';
 }
@@ -66,6 +68,7 @@ const INITIAL_POOLS: PoolRecord[] = [
     maxMembers: 25,
     drawInterval: 600,
     yieldEngine: 'Morpho Blue / MetaMorpho (Sepolia)',
+    totalApr: 9.19,
     status: 'ACTIVE',
     createdAt: 1725192000,
   }
@@ -78,7 +81,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725368400, // Recent 10-minute epoch
     blockNumber: 6641210,
-    potSize: 50.0,
+    potSize: 54.80,
+    grossYield: 60.89,
+    protocolFee: 6.09,
     status: 'SETTLED',
   },
   {
@@ -87,7 +92,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725367800,
     blockNumber: 6641150,
-    potSize: 50.0,
+    potSize: 76.50,
+    grossYield: 85.00,
+    protocolFee: 8.50,
     status: 'SETTLED',
   },
   {
@@ -96,7 +103,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725367200,
     blockNumber: 6641090,
-    potSize: 50.0,
+    potSize: 46.80,
+    grossYield: 52.00,
+    protocolFee: 5.20,
     status: 'SETTLED',
   },
   {
@@ -105,7 +114,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725366600,
     blockNumber: 6641030,
-    potSize: 50.0,
+    potSize: 64.20,
+    grossYield: 71.33,
+    protocolFee: 7.13,
     status: 'SETTLED',
   },
   {
@@ -114,7 +125,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725366000,
     blockNumber: 6640970,
-    potSize: 50.0,
+    potSize: 52.20,
+    grossYield: 58.00,
+    protocolFee: 5.80,
     status: 'SETTLED',
   },
   {
@@ -123,7 +136,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725365400,
     blockNumber: 6640910,
-    potSize: 50.0,
+    potSize: 92.40,
+    grossYield: 102.67,
+    protocolFee: 10.27,
     status: 'SETTLED',
   },
   {
@@ -132,7 +147,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725364800,
     blockNumber: 6640850,
-    potSize: 50.0,
+    potSize: 45.90,
+    grossYield: 51.00,
+    protocolFee: 5.10,
     status: 'SETTLED',
   },
   {
@@ -141,7 +158,9 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725364200,
     blockNumber: 6640790,
-    potSize: 50.0,
+    potSize: 50.00,
+    grossYield: 55.55,
+    protocolFee: 5.55,
     status: 'SETTLED',
   }
 ];

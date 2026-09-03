@@ -49,18 +49,21 @@ export default function BlindpotDrawHistory() {
     const drawIdNum = maxDrawCount - index;
     const existing = dbDraws.find((d) => Number(d.drawId) === drawIdNum);
     if (existing) {
-      return {
-        ...existing,
-        potSize: 50.0,
-      };
+      return existing;
     }
+    const gross = 50.0 + (drawIdNum * 3.75);
+    const fee = gross * 0.10;
+    const net = gross - fee;
+
     return {
       id: `draw-${drawIdNum}`,
       drawId: drawIdNum,
       poolId: 'pool-usdc-sepolia-01',
       timestamp: 1725368400 - 600 * (maxDrawCount - drawIdNum),
       blockNumber: 6641210 - (maxDrawCount - drawIdNum) * 60,
-      potSize: 50.0,
+      potSize: Number(net.toFixed(2)),
+      grossYield: Number(gross.toFixed(2)),
+      protocolFee: Number(fee.toFixed(2)),
       status: 'SETTLED',
     };
   });
@@ -157,7 +160,12 @@ export default function BlindpotDrawHistory() {
 
                     <td className="p-3.5 border-r border-primary/20 whitespace-nowrap">
                       <div className="font-bold text-secondary">{Number(draw.potSize).toFixed(2)} USDC</div>
-                      <div className="text-[10px] text-on-surface-variant font-mono uppercase">Floor + Yield</div>
+                      <div className="text-[10px] text-on-surface-variant font-mono flex items-center gap-1">
+                        <span>Net Prize</span>
+                        <span className="text-[9px] bg-surface-container-high px-1 border border-primary/20 text-primary">
+                          10% Fee Deducted
+                        </span>
+                      </div>
                     </td>
 
                     <td className="p-3.5 border-r border-primary/20 whitespace-nowrap">
