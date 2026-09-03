@@ -82,6 +82,7 @@ export interface OnchainSyncCardProps {
   txHash?: string | null;
   onDismiss?: () => void;
   className?: string;
+  hideOnSuccess?: boolean;
 }
 
 /**
@@ -96,8 +97,10 @@ export function OnchainSyncCard({
   txHash,
   onDismiss,
   className = "",
+  hideOnSuccess = true,
 }: OnchainSyncCardProps) {
   if (phase === "idle") return null;
+  if (hideOnSuccess && phase === "success") return null;
 
   const isPending = phase === "wallet" || phase === "mining" || phase === "syncing";
 

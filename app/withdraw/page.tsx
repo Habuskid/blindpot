@@ -276,6 +276,16 @@ export default function BlindpotWithdrawFlow() {
               )}
             </div>
 
+            {/* Synchronized On-Chain Action Card (in-flight & error states only) */}
+            <OnchainSyncCard
+              phase={actionPhase}
+              title={actionTitle}
+              description={actionDesc}
+              txHash={actionTx}
+              onDismiss={() => setActionPhase("idle")}
+              hideOnSuccess={true}
+            />
+
             {/* Step 1 Content: Pool Exit */}
             {activeTab === "pool" && (
               <div className="flex flex-col">
@@ -335,7 +345,7 @@ export default function BlindpotWithdrawFlow() {
                 </div>
 
                 <button
-                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
+                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-2 ${
                     actionPhase === "success"
                       ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                       : "bg-primary text-surface"
@@ -369,6 +379,22 @@ export default function BlindpotWithdrawFlow() {
                     </>
                   )}
                 </button>
+
+                {actionPhase === "success" && actionTx && (
+                  <div className="text-center pb-3 text-xs font-mono text-on-surface-variant flex items-center justify-center gap-1.5">
+                    <span className="text-secondary font-bold">✓ Exited on Sepolia</span>
+                    <span>·</span>
+                    <a
+                      href={`https://sepolia.etherscan.io/tx/${actionTx}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
+                    >
+                      TX: {actionTx.slice(0, 8)}...{actionTx.slice(-6)}
+                      <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
@@ -426,7 +452,7 @@ export default function BlindpotWithdrawFlow() {
                 </div>
 
                 <button
-                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
+                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-2 ${
                     actionPhase === "success"
                       ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                       : "bg-secondary-container text-primary"
@@ -457,17 +483,24 @@ export default function BlindpotWithdrawFlow() {
                     </>
                   )}
                 </button>
+
+                {actionPhase === "success" && actionTx && (
+                  <div className="text-center pb-3 text-xs font-mono text-on-surface-variant flex items-center justify-center gap-1.5">
+                    <span className="text-secondary font-bold">✓ Unwrapped on Sepolia</span>
+                    <span>·</span>
+                    <a
+                      href={`https://sepolia.etherscan.io/tx/${actionTx}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
+                    >
+                      TX: {actionTx.slice(0, 8)}...{actionTx.slice(-6)}
+                      <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
-
-            {/* Synchronized On-Chain Action Card */}
-            <OnchainSyncCard
-              phase={actionPhase}
-              title={actionTitle}
-              description={actionDesc}
-              txHash={actionTx}
-              onDismiss={() => setActionPhase("idle")}
-            />
 
             {/* Error Dossier */}
             {errorMsg && (

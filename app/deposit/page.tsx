@@ -353,13 +353,14 @@ export default function BlindpotDepositFlow() {
               </div>
             </div>
 
-            {/* Synchronized On-Chain Action Card */}
+            {/* Synchronized On-Chain Action Card (in-flight & error states only) */}
             <OnchainSyncCard
               phase={actionPhase}
               title={actionTitle}
               description={actionDesc}
               txHash={actionTx}
               onDismiss={() => setActionPhase("idle")}
+              hideOnSuccess={true}
             />
 
             {errorMsg && (
@@ -487,6 +488,21 @@ export default function BlindpotDepositFlow() {
                       )}
                     </button>
                   )}
+                  {actionPhase === "success" && actionTx && (
+                    <div className="text-center pt-2 pb-1 text-xs font-mono text-on-surface-variant flex items-center justify-center gap-1.5">
+                      <span className="text-secondary font-bold">✓ Wrapped on Sepolia</span>
+                      <span>·</span>
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${actionTx}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        TX: {actionTx.slice(0, 8)}...{actionTx.slice(-6)}
+                        <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -569,6 +585,22 @@ export default function BlindpotDepositFlow() {
                       </>
                     )}
                   </button>
+
+                  {actionPhase === "success" && actionTx && (
+                    <div className="text-center pt-2 pb-1 text-xs font-mono text-on-surface-variant flex items-center justify-center gap-1.5">
+                      <span className="text-secondary font-bold">✓ Deposited to Vault</span>
+                      <span>·</span>
+                      <a
+                        href={`https://sepolia.etherscan.io/tx/${actionTx}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary font-bold hover:underline inline-flex items-center gap-0.5"
+                      >
+                        TX: {actionTx.slice(0, 8)}...{actionTx.slice(-6)}
+                        <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+                      </a>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
