@@ -140,7 +140,7 @@ export default function BlindpotHowItWorks() {
         </div>
       </main>
 
-      <Footer />
+      <Footer minimal />
     </>
   );
 }

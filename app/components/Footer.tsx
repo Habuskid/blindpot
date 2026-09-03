@@ -1,9 +1,22 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import Link from "next/link";
 
-export function Footer({ simple = false }: { simple?: boolean }) {
+export function Footer({ simple = false, minimal = false }: { simple?: boolean; minimal?: boolean }) {
+  if (minimal) {
+    return (
+      <footer className="w-full py-6 px-margin-mobile md:px-margin-desktop flex flex-col items-center justify-center text-center border-t-2 border-primary bg-surface mt-auto">
+        <div className="font-label-mono text-xs font-bold text-primary tracking-wider">
+          © BLINDPOT POOL. ALL RIGHTS RESERVED.
+        </div>
+        <div className="font-label-mono text-[11px] text-on-surface-variant uppercase mt-1">
+          Zama fhEVM · Morpho Blue · Sepolia Testnet
+        </div>
+      </footer>
+    );
+  }
+
   return (
     <footer className="w-full py-6 px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center border-t-2 border-primary bg-surface mt-auto gap-4">
       <div className="flex flex-col items-center md:items-start text-center md:text-left">

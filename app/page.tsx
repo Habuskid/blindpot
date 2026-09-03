@@ -220,7 +220,7 @@ export default function BlindpotLandingPage() {
         </section>
       </main>
 
-      <Footer />
+      <Footer minimal />
     </>
   );
 }
