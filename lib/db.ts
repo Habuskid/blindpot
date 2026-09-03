@@ -56,7 +56,7 @@ const INITIAL_POOLS: PoolRecord[] = [
     symbol: 'cUSDC',
     network: 'Ethereum Sepolia',
     chainId: 11155111,
-    vaultAddress: '0xe936872f7558fd545bfc072fcf9f321c8d5965c4',
+    vaultAddress: '0x489f37147c8ba2554c14e385d8e5603f143635fd',
     tokenAddress: '0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639',
     underlyingAddress: '0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF',
     maxMembers: 25,

@@ -66,7 +66,7 @@ Blindpot rebuilds prize-linked savings from first principles using Zama's Fully 
 | :--- | :--- |
 | **Live Application** | [`https://blindpot.vercel.app`](https://blindpot.vercel.app) |
 | **Network** | Ethereum Sepolia (Chain ID `11155111`) |
-| **`BlindpotVault`** | [`0xe936872f7558fd545bfc072fcf9f321c8d5965c4`](https://sepolia.etherscan.io/address/0xe936872f7558fd545bfc072fcf9f321c8d5965c4) |
+| **`BlindpotVault`** | [`0x489f37147c8ba2554c14e385d8e5603f143635fd`](https://sepolia.etherscan.io/address/0x489f37147c8ba2554c14e385d8e5603f143635fd) |
 | **`cUSDCMock` (ERC-7984)** | [`0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639`](https://sepolia.etherscan.io/address/0x7c5BF43B851c1dff1a4feE8dB225b87f2C223639) |
 | **`Underlying USDC` (ERC-20)** | [`0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF`](https://sepolia.etherscan.io/address/0x9b5Cd13b8eFbB58Dc25A05CF411D8056058aDFfF) |
 
