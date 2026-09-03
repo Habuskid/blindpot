@@ -2,19 +2,24 @@
 
 import React, { useEffect, useState } from "react";
 
-interface CipherSpinnerProps {
+export interface CircularLoaderProps {
   size?: "sm" | "md" | "lg";
   className?: string;
   brassAccent?: boolean;
 }
 
 /**
- * Mechanical Aperture Tumbler: A bespoke brutalist loading indicator
- * that rotates in discrete mechanical steps instead of a generic smooth circle.
+ * CircularLoader: A sleek, rotating circular loader that is clean,
+ * responsive, and non-generic. Features a calibrated orbital arc with
+ * an orbiting Prize Brass (#C9A15A) marker.
  */
-export function CipherSpinner({ size = "md", className = "", brassAccent = true }: CipherSpinnerProps) {
-  const sizePx = size === "sm" ? 14 : size === "lg" ? 24 : 18;
-  const strokeWidth = size === "sm" ? 2 : 2.5;
+export function CircularLoader({
+  size = "md",
+  className = "",
+  brassAccent = true,
+}: CircularLoaderProps) {
+  const sizePx = size === "sm" ? 16 : size === "lg" ? 28 : 20;
+  const strokeWidth = size === "sm" ? 2.5 : size === "lg" ? 3 : 2.5;
 
   return (
     <span
@@ -24,37 +29,157 @@ export function CipherSpinner({ size = "md", className = "", brassAccent = true 
       aria-label="Loading"
     >
       <svg
-        viewBox="0 0 24 24"
+        viewBox="0 0 32 32"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        className="w-full h-full animate-mechanical"
-        style={{ transformOrigin: "center" }}
+        className="w-full h-full animate-spin"
+        style={{ animationDuration: "0.85s" }}
       >
-        {/* Outer square aperture */}
-        <rect
-          x="2"
-          y="2"
-          width="20"
-          height="20"
+        {/* Subtle background track */}
+        <circle
+          cx="16"
+          cy="16"
+          r="13"
           stroke="currentColor"
           strokeWidth={strokeWidth}
-          strokeDasharray="6 3"
+          opacity="0.16"
         />
-        {/* Inner crosshair reticle */}
-        <line x1="12" y1="5" x2="12" y2="8" stroke="currentColor" strokeWidth={strokeWidth} />
-        <line x1="12" y1="16" x2="12" y2="19" stroke="currentColor" strokeWidth={strokeWidth} />
-        <line x1="5" y1="12" x2="8" y2="12" stroke="currentColor" strokeWidth={strokeWidth} />
-        <line x1="16" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth={strokeWidth} />
-        {/* Center core pulse pip */}
-        <rect
-          x="10"
-          y="10"
-          width="4"
-          height="4"
-          fill={brassAccent ? "#C9A15A" : "currentColor"}
+        {/* Active rotating arc */}
+        <circle
+          cx="16"
+          cy="16"
+          r="13"
+          stroke="currentColor"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          strokeDasharray="26 80"
         />
+        {/* Distinctive Prize Brass Orbiting Marker */}
+        {brassAccent && (
+          <circle
+            cx="29"
+            cy="16"
+            r={size === "sm" ? "2.2" : size === "lg" ? "3" : "2.6"}
+            fill="#C9A15A"
+            stroke="#0F0F12"
+            strokeWidth="0.75"
+          />
+        )}
       </svg>
     </span>
+  );
+}
+
+// Alias for backwards compatibility across existing pages
+export const CipherSpinner = CircularLoader;
+
+export type OnchainPhase = "idle" | "wallet" | "mining" | "syncing" | "success" | "error";
+
+export interface OnchainSyncCardProps {
+  phase: OnchainPhase;
+  title?: string;
+  description?: string;
+  txHash?: string | null;
+  onDismiss?: () => void;
+  className?: string;
+}
+
+/**
+ * OnchainSyncCard: High-UX synchronization status banner.
+ * Gives the user real-time visual feedback while confirming in wallet,
+ * waiting for block inclusion, and syncing on-chain balances.
+ */
+export function OnchainSyncCard({
+  phase,
+  title,
+  description,
+  txHash,
+  onDismiss,
+  className = "",
+}: OnchainSyncCardProps) {
+  if (phase === "idle") return null;
+
+  const isPending = phase === "wallet" || phase === "mining" || phase === "syncing";
+
+  return (
+    <div
+      className={`border-2 p-4 mb-5 transition-all flex flex-col gap-2 ${
+        phase === "wallet"
+          ? "border-secondary bg-surface-container-high hard-shadow-sm animate-pulse"
+          : phase === "mining" || phase === "syncing"
+          ? "border-primary bg-surface-container-low hard-shadow-sm"
+          : phase === "success"
+          ? "border-primary bg-surface-container hard-shadow-sm"
+          : "border-error bg-error-container text-error"
+      } ${className}`}
+    >
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          {isPending && <CircularLoader size="md" />}
+          {phase === "success" && (
+            <span className="material-symbols-outlined text-[20px] text-secondary font-bold">
+              check_circle
+            </span>
+          )}
+          {phase === "error" && (
+            <span className="material-symbols-outlined text-[20px] text-error font-bold">
+              cancel
+            </span>
+          )}
+          <span className="font-headline-sm text-xs md:text-sm font-bold uppercase tracking-tight text-primary">
+            {title ||
+              (phase === "wallet"
+                ? "Confirm in Wallet"
+                : phase === "mining"
+                ? "Broadcasting on Sepolia"
+                : phase === "syncing"
+                ? "Synchronizing State"
+                : phase === "success"
+                ? "Confirmed on-Chain"
+                : "Transaction Cancelled / Failed")}
+          </span>
+        </div>
+
+        {onDismiss && (
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="text-on-surface-variant hover:text-primary transition-colors text-xs font-mono"
+            title="Dismiss"
+          >
+            ✕
+          </button>
+        )}
+      </div>
+
+      <p className="font-body-md text-xs text-on-surface-variant leading-relaxed m-0 pl-7">
+        {description ||
+          (phase === "wallet"
+            ? "Please review and confirm the transaction prompt in MetaMask or your connected wallet."
+            : phase === "mining"
+            ? "Transaction submitted. Waiting for block inclusion on Ethereum Sepolia (~12s)..."
+            : phase === "syncing"
+            ? "Block mined! Updating encrypted balances and on-chain state..."
+            : phase === "success"
+            ? "The transaction was mined successfully and your ledger has been synchronized."
+            : "The transaction was rejected in your wallet or reverted on-chain.")}
+      </p>
+
+      {txHash && (
+        <div className="pl-7 pt-1 flex items-center gap-2 text-[11px] font-mono">
+          <span className="text-on-surface-variant">TX:</span>
+          <a
+            href={`https://sepolia.etherscan.io/tx/${txHash}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-secondary hover:underline flex items-center gap-0.5 font-bold"
+          >
+            {txHash.slice(0, 10)}...{txHash.slice(-8)}
+            <span className="material-symbols-outlined text-[13px]">open_in_new</span>
+          </a>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -66,8 +191,6 @@ interface DossierLoaderProps {
 
 /**
  * DossierLoader: Classified FHEVM Coprocessor Scanning Card
- * Displays the signature 3 redaction bars (2 silver, 1 brass) from BRAND.md
- * with a cycling hex stream ticker.
  */
 export function DossierLoader({
   label = "PROCESSING ENCRYPTED RECORD...",
@@ -97,7 +220,6 @@ export function DossierLoader({
     <div
       className={`border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary flex flex-col items-center justify-center text-center w-full max-w-md mx-auto relative overflow-hidden ${className}`}
     >
-      {/* Top Classified Dossier Header */}
       <div className="w-full flex justify-between items-center border-b border-primary/20 pb-3 mb-5 text-[10px] font-label-mono uppercase tracking-wider text-on-surface-variant">
         <span className="flex items-center gap-1.5">
           <span className="w-2 h-2 rounded-full bg-error animate-ping inline-block" />
@@ -108,16 +230,14 @@ export function DossierLoader({
         </span>
       </div>
 
-      {/* Signature Redaction Bars (2 silver + 1 prize brass) from BRAND.md */}
       <div className="w-full flex flex-col gap-2 mb-6 items-center">
         <div className="w-3/4 h-3.5 bg-surface-variant border border-primary animate-radar" style={{ animationDelay: "0ms" }} />
         <div className="w-full h-3.5 bg-[#C9A15A] border border-primary animate-radar shadow-[1px_1px_0px_#0F0F12]" style={{ animationDelay: "150ms" }} />
         <div className="w-1/2 h-3.5 bg-surface-variant border border-primary animate-radar" style={{ animationDelay: "300ms" }} />
       </div>
 
-      {/* Mechanical Tumbler + Label */}
       <div className="flex items-center gap-2 mb-1.5">
-        <CipherSpinner size="md" />
+        <CircularLoader size="md" />
         <span className="font-headline-sm text-xs md:text-sm font-bold uppercase tracking-tight text-primary">
           {label}
         </span>

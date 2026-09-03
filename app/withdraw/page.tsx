@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAccount, useChainId, useSwitchChain, useReadContract } from 'wagmi';
+import { useAccount, useChainId, useSwitchChain, useReadContract, usePublicClient } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { useUnshieldAll } from '@zama-fhe/react-sdk';
 import { useWithdraw } from '../../sdk/src/withdraw';
@@ -14,7 +14,7 @@ import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { CipherSpinner } from '../components/BlindpotLoader';
+import { CircularLoader, OnchainSyncCard, type OnchainPhase } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -23,11 +23,16 @@ const UNDERLYING_TOKEN_ADDRESS = addresses.underlyingToken;
 export default function BlindpotWithdrawFlow() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"pool" | "unwrap">("pool");
+  const [actionPhase, setActionPhase] = useState<OnchainPhase>("idle");
+  const [actionTitle, setActionTitle] = useState<string>("");
+  const [actionDesc, setActionDesc] = useState<string>("");
+  const [actionTx, setActionTx] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
+  const publicClient = usePublicClient();
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
   const { withdraw, isPending: isWithdrawing } = useWithdraw();
@@ -68,10 +73,27 @@ export default function BlindpotWithdrawFlow() {
     }
 
     setErrorMsg(null);
-    setStatusMsg("Executing full principal withdrawal from Blindpot Vault on Sepolia...");
+    setStatusMsg(null);
+    setActionTx(null);
+    setActionPhase("wallet");
+    setActionTitle("Confirm Exit in Wallet");
+    setActionDesc("Please review and confirm the full principal withdrawal transaction in MetaMask...");
 
     try {
       const hash = await withdraw(VAULT_ADDRESS);
+      setActionTx(hash || null);
+      setActionPhase("mining");
+      setActionTitle("Mining on Sepolia");
+      setActionDesc("Transaction broadcasted! Waiting for block inclusion on Ethereum Sepolia (~12s)...");
+
+      if (publicClient && hash) {
+        await publicClient.waitForTransactionReceipt({ hash });
+      }
+
+      setActionPhase("syncing");
+      setActionTitle("Synchronizing Vault State");
+      setActionDesc("Block confirmed! Updating encrypted vault balances...");
+
       try {
         await fetch('/api/activity', {
           method: 'POST',
@@ -88,12 +110,21 @@ export default function BlindpotWithdrawFlow() {
       }
 
       await refetchHandle();
-      setStatusMsg("Withdrawal successful! Your principal is now in your wallet as confidential cUSDC. Proceed to Step 2 to unwrap to public USDC.");
-      setActiveTab("unwrap");
+      await refetchPublicBalance();
+
+      setActionPhase("success");
+      setActionTitle("Withdrawal Confirmed");
+      setActionDesc("100% of your principal is now in your wallet as confidential cUSDC. Switching to Step 2 to unwrap to public USDC...");
+
+      setTimeout(() => {
+        setActiveTab("unwrap");
+      }, 2500);
     } catch (e: any) {
       console.error("Withdraw error:", e);
-      setErrorMsg(e?.message || "Withdrawal failed. Make sure you are an active depositor in the pool.");
-      setStatusMsg(null);
+      const isRejection = e?.message?.includes("rejected") || e?.message?.includes("denied") || e?.code === 4001;
+      setActionPhase("error");
+      setActionTitle(isRejection ? "Transaction Cancelled" : "Withdrawal Failed");
+      setActionDesc(isRejection ? "The withdrawal request was cancelled in your wallet." : (e?.message || "Withdrawal failed. Make sure you have an active deposit balance."));
     }
   };
 
@@ -106,16 +137,37 @@ export default function BlindpotWithdrawFlow() {
     }
 
     setErrorMsg(null);
-    setStatusMsg("Submitting Zama cryptographic unwrap request (cUSDC -> public USDC)...");
+    setStatusMsg(null);
+    setActionTx(null);
+    setActionPhase("wallet");
+    setActionTitle("Confirm Unwrap in Wallet");
+    setActionDesc("Please review and sign the Zama cryptographic unshield transaction in MetaMask...");
 
     try {
-      await unshieldAll();
+      setActionPhase("mining");
+      setActionTitle("Processing Zama Cryptographic Unwrap");
+      setActionDesc("Orchestrating unwrap request, KMS public decryption proof, and token release on Sepolia...");
+
+      const res = await unshieldAll();
+      const hash = (res as any)?.hash || (res as any)?.txHash;
+      if (hash) setActionTx(hash);
+
+      setActionPhase("syncing");
+      setActionTitle("Synchronizing Balances");
+      setActionDesc("Unwrap finalized on-chain! Updating your MetaMask public USDC balance...");
+
       await refetchPublicBalance();
-      setStatusMsg("Unwrap complete! Your public USDC balance in MetaMask has been restored.");
+      await refetchHandle();
+
+      setActionPhase("success");
+      setActionTitle("Unwrap Complete");
+      setActionDesc("Your confidential cUSDC tokens have been fully unwrapped back into public USDC in MetaMask!");
     } catch (e: any) {
       console.error("Unwrap error:", e);
-      setErrorMsg(e?.message || "Unwrap failed or was rejected.");
-      setStatusMsg(null);
+      const isRejection = e?.message?.includes("rejected") || e?.message?.includes("denied") || e?.code === 4001;
+      setActionPhase("error");
+      setActionTitle(isRejection ? "Unwrap Cancelled" : "Unwrap Failed");
+      setActionDesc(isRejection ? "The unwrap request was cancelled in your wallet." : (e?.message || "Unwrap failed or was rejected."));
     }
   };
 
@@ -232,7 +284,7 @@ export default function BlindpotWithdrawFlow() {
                 >
                   {isWithdrawing ? (
                     <>
-                      <CipherSpinner size="sm" />
+                      <CircularLoader size="sm" />
                       Withdrawing cUSDC...
                     </>
                   ) : isWrongNetwork ? (
@@ -263,7 +315,7 @@ export default function BlindpotWithdrawFlow() {
                 >
                   {isUnshielding ? (
                     <>
-                      <CipherSpinner size="sm" />
+                      <CircularLoader size="sm" />
                       Unwrapping to Public USDC...
                     </>
                   ) : isWrongNetwork ? (
@@ -278,7 +330,16 @@ export default function BlindpotWithdrawFlow() {
               </div>
             )}
 
-            {/* Status & Error Dossier */}
+            {/* Synchronized On-Chain Action Card */}
+            <OnchainSyncCard
+              phase={actionPhase}
+              title={actionTitle}
+              description={actionDesc}
+              txHash={actionTx}
+              onDismiss={() => setActionPhase("idle")}
+            />
+
+            {/* Error Dossier */}
             {errorMsg && (
               <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">error</span>
@@ -288,7 +349,7 @@ export default function BlindpotWithdrawFlow() {
 
             {statusMsg && (
               <div className="bg-surface-container-high border border-primary text-primary p-3 mb-4 text-xs font-mono flex items-center gap-2">
-                <CipherSpinner size="sm" />
+                <CircularLoader size="sm" />
                 <span>{statusMsg}</span>
               </div>
             )}

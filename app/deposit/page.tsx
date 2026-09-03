@@ -11,7 +11,7 @@ import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { CipherSpinner } from '../components/BlindpotLoader';
+import { CircularLoader, OnchainSyncCard, type OnchainPhase } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -33,6 +33,10 @@ const wrapperAbi = [
 export default function BlindpotDepositFlow() {
   const [wrapAmount, setWrapAmount] = useState("100");
   const [depositAmount, setDepositAmount] = useState("100");
+  const [actionPhase, setActionPhase] = useState<OnchainPhase>("idle");
+  const [actionTitle, setActionTitle] = useState<string>("");
+  const [actionDesc, setActionDesc] = useState<string>("");
+  const [actionTx, setActionTx] = useState<string | null>(null);
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"wrap" | "deposit">("wrap");
@@ -92,8 +96,12 @@ export default function BlindpotDepositFlow() {
     }
 
     setErrorMsg(null);
+    setStatusMsg(null);
+    setActionTx(null);
     setIsApproving(true);
-    setStatusMsg("Approving cUSDCMock wrapper to spend your USDC...");
+    setActionPhase("wallet");
+    setActionTitle("Confirm Approval in Wallet");
+    setActionDesc("Please review and confirm the token approval transaction in MetaMask...");
 
     try {
       const amountToApprove = BigInt(1_000_000 * 10 ** 6); // Approve ample for wrapping
@@ -105,19 +113,31 @@ export default function BlindpotDepositFlow() {
         args: [TOKEN_WRAPPER_ADDRESS, amountToApprove],
       } as any);
 
-      if (publicClient) {
-        setStatusMsg("Waiting for approval confirmation on Sepolia...");
+      setActionTx(hash || null);
+      setActionPhase("mining");
+      setActionTitle("Mining Approval on Sepolia");
+      setActionDesc("Transaction broadcasted! Waiting for block inclusion on Sepolia (~12s)...");
+
+      if (publicClient && hash) {
         await publicClient.waitForTransactionReceipt({ hash });
       }
 
+      setActionPhase("syncing");
+      setActionTitle("Synchronizing Allowance");
+      setActionDesc("Block confirmed! Verifying wrapper allowance on-chain...");
+
       await refetchAllowance();
       setIsApproving(false);
-      setStatusMsg("Approval confirmed. Now click 'Wrap USDC to cUSDC'.");
+      setActionPhase("success");
+      setActionTitle("Approval Confirmed");
+      setActionDesc("Allowance verified! You can now proceed to wrap your USDC into confidential cUSDC.");
     } catch (e: any) {
       console.error("Approve error:", e);
       setIsApproving(false);
-      setErrorMsg(e?.message || "Approval failed or was rejected.");
-      setStatusMsg(null);
+      const isRejection = e?.message?.includes("rejected") || e?.message?.includes("denied") || e?.code === 4001;
+      setActionPhase("error");
+      setActionTitle(isRejection ? "Approval Cancelled" : "Approval Failed");
+      setActionDesc(isRejection ? "The approval request was cancelled in your wallet." : (e?.message || "Approval failed or was rejected."));
     }
   };
 
@@ -134,8 +154,12 @@ export default function BlindpotDepositFlow() {
     }
 
     setErrorMsg(null);
+    setStatusMsg(null);
+    setActionTx(null);
     setIsWrapping(true);
-    setStatusMsg(`Wrapping ${wrapAmount} USDC into confidential cUSDC on Sepolia...`);
+    setActionPhase("wallet");
+    setActionTitle("Confirm Wrap in Wallet");
+    setActionDesc(`Please review and sign the transaction to wrap ${wrapAmount} USDC into confidential cUSDC...`);
 
     try {
       const baseUnits = BigInt(Math.floor(Number(wrapAmount) * 1_000_000));
@@ -147,23 +171,36 @@ export default function BlindpotDepositFlow() {
         args: [account, baseUnits],
       } as any);
 
-      if (publicClient) {
-        setStatusMsg("Waiting for wrap block confirmation on Sepolia (~12s)...");
+      setActionTx(hash || null);
+      setActionPhase("mining");
+      setActionTitle("Mining Wrap on Sepolia");
+      setActionDesc(`Locking public USDC and minting confidential cUSDC on Sepolia (~12s)...`);
+
+      if (publicClient && hash) {
         await publicClient.waitForTransactionReceipt({ hash });
       }
 
+      setActionPhase("syncing");
+      setActionTitle("Synchronizing Balances");
+      setActionDesc("Block confirmed! Refreshing your confidential cUSDC balance...");
+
       await refetchPublicBalance();
       setIsWrapping(false);
-      setStatusMsg(`Successfully wrapped ${wrapAmount} USDC into confidential cUSDC.`);
+      setActionPhase("success");
+      setActionTitle("Wrap Confirmed");
+      setActionDesc(`Successfully shielded ${wrapAmount} USDC into confidential cUSDC! Switching to Step 2...`);
+
       setTimeout(() => {
         setActiveTab("deposit");
         setDepositAmount(wrapAmount);
-      }, 1500);
+      }, 2000);
     } catch (e: any) {
       console.error("Wrap error:", e);
       setIsWrapping(false);
-      setErrorMsg(e?.message || "Wrap transaction failed or rejected. Make sure you have enough public USDC.");
-      setStatusMsg(null);
+      const isRejection = e?.message?.includes("rejected") || e?.message?.includes("denied") || e?.code === 4001;
+      setActionPhase("error");
+      setActionTitle(isRejection ? "Wrap Cancelled" : "Wrap Failed");
+      setActionDesc(isRejection ? "The wrap request was cancelled in your wallet." : (e?.message || "Wrap transaction failed or was rejected."));
     }
   };
 
@@ -180,16 +217,30 @@ export default function BlindpotDepositFlow() {
     }
 
     setErrorMsg(null);
-    setStatusMsg(`Encrypting and transferring ${depositAmount} cUSDC to Blindpot Vault...`);
+    setStatusMsg(null);
+    setActionTx(null);
+    setActionPhase("wallet");
+    setActionTitle("Confirm Deposit in Wallet");
+    setActionDesc(`Please confirm the confidential transfer of ${depositAmount} cUSDC to Blindpot Vault...`);
 
     try {
       const baseUnits = BigInt(Math.floor(Number(depositAmount) * 1_000_000));
       const res = await depositToVault(VAULT_ADDRESS, baseUnits);
 
-      if (res?.txHash && publicClient) {
-        setStatusMsg("Waiting for vault deposit block confirmation on Sepolia...");
-        await publicClient.waitForTransactionReceipt({ hash: res.txHash });
+      if (res?.txHash) {
+        setActionTx(res.txHash);
+        setActionPhase("mining");
+        setActionTitle("Mining Confidential Deposit");
+        setActionDesc("Transferring encrypted tokens to Blindpot Vault on Sepolia (~12s)...");
+
+        if (publicClient) {
+          await publicClient.waitForTransactionReceipt({ hash: res.txHash });
+        }
       }
+
+      setActionPhase("syncing");
+      setActionTitle("Synchronizing State");
+      setActionDesc("Block confirmed! Updating encrypted tickets and recording audit log...");
 
       // Record to persistent database
       if (res?.txHash && account) {
@@ -210,14 +261,19 @@ export default function BlindpotDepositFlow() {
         }
       }
 
-      setStatusMsg("Confidential deposit confirmed. Redirecting to Dashboard...");
+      setActionPhase("success");
+      setActionTitle("Deposit Confirmed");
+      setActionDesc(`Successfully deposited ${depositAmount} cUSDC confidentially into the pool! Redirecting to Dashboard...`);
+
       setTimeout(() => {
         router.push('/dashboard');
-      }, 2000);
+      }, 2200);
     } catch (e: any) {
       console.error("Deposit error:", e);
-      setErrorMsg(e?.message || "Deposit transaction failed. Ensure you have wrapped sufficient cUSDC in Step 1.");
-      setStatusMsg(null);
+      const isRejection = e?.message?.includes("rejected") || e?.message?.includes("denied") || e?.code === 4001;
+      setActionPhase("error");
+      setActionTitle(isRejection ? "Deposit Cancelled" : "Deposit Failed");
+      setActionDesc(isRejection ? "The deposit request was cancelled in your wallet." : (e?.message || "Deposit transaction failed. Ensure you have wrapped sufficient cUSDC in Step 1."));
     }
   };
 
@@ -290,6 +346,15 @@ export default function BlindpotDepositFlow() {
               </div>
             </div>
 
+            {/* Synchronized On-Chain Action Card */}
+            <OnchainSyncCard
+              phase={actionPhase}
+              title={actionTitle}
+              description={actionDesc}
+              txHash={actionTx}
+              onDismiss={() => setActionPhase("idle")}
+            />
+
             {errorMsg && (
               <div className="bg-error-container border border-error text-error p-3 mb-4 text-xs font-mono break-words flex items-center gap-1.5">
                 <span className="material-symbols-outlined text-[16px]">error</span>
@@ -299,7 +364,7 @@ export default function BlindpotDepositFlow() {
 
             {statusMsg && (
               <div className="bg-surface-container-high border border-primary text-primary p-3 mb-4 text-xs font-mono flex items-center gap-2">
-                <CipherSpinner size="sm" />
+                <CircularLoader size="sm" />
                 <span>{statusMsg}</span>
               </div>
             )}
@@ -360,7 +425,7 @@ export default function BlindpotDepositFlow() {
                     >
                       {isApproving ? (
                         <>
-                          <CipherSpinner size="sm" />
+                          <CircularLoader size="sm" />
                           Approving Token Wrapper...
                         </>
                       ) : (
@@ -378,7 +443,7 @@ export default function BlindpotDepositFlow() {
                     >
                       {isWrapping ? (
                         <>
-                          <CipherSpinner size="sm" />
+                          <CircularLoader size="sm" />
                           Wrapping to cUSDC on Sepolia...
                         </>
                       ) : (
@@ -448,7 +513,7 @@ export default function BlindpotDepositFlow() {
                   >
                     {isDepositing ? (
                       <>
-                        <CipherSpinner size="sm" />
+                        <CircularLoader size="sm" />
                         Encrypting & Depositing...
                       </>
                     ) : (
