@@ -11,37 +11,35 @@ import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
 import { CircularLoader } from '../components/BlindpotLoader';
 import { Footer } from '../components/Footer';
+import { useToast } from '../components/Toast';
 
 export default function BlindpotFaucet() {
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync, isPending: isSwitchingChain } = useSwitchChain();
   const { writeContractAsync, isPending: isMinting } = useWriteContract();
+  const { success: toastSuccess, error: toastError, loading: toastLoading, info: toastInfo } = useToast();
   const publicClient = usePublicClient();
 
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [isMintSuccess, setIsMintSuccess] = useState<boolean>(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
 
   const handleSwitchNetwork = async () => {
-    setErrorMsg(null);
-    setStatusMsg("Prompting wallet to switch to Ethereum Sepolia...");
+    toastInfo("Prompting wallet to switch to Ethereum Sepolia...", { id: "network-toast", title: "NETWORK SWITCH" });
     try {
       await switchChainAsync({ chainId: sepolia.id });
-      setStatusMsg("Network switched to Sepolia! You can now mint test tokens.");
+      toastSuccess("Network switched to Sepolia! You can now mint test tokens.", { id: "network-toast", title: "NETWORK READY" });
     } catch (err: any) {
       console.error("Switch chain error:", err);
-      setErrorMsg(err?.message || "Failed to switch network. Please select Sepolia manually in MetaMask.");
-      setStatusMsg(null);
+      toastError(err?.message || "Failed to switch network.", { id: "network-toast", title: "SWITCH FAILED" });
     }
   };
 
   const handleDirectMint = async () => {
     if (!account) {
-      setErrorMsg("Please connect your wallet first.");
+      toastError("Please connect your wallet first.", { title: "WALLET NOT CONNECTED" });
       return;
     }
     if (chainId !== sepolia.id) {
@@ -49,9 +47,8 @@ export default function BlindpotFaucet() {
       return;
     }
 
-    setErrorMsg(null);
     setTxHash(null);
-    setStatusMsg("Submitting on-chain mint transaction on Sepolia (1,000 Test USDC)...");
+    toastLoading("Submitting on-chain mint transaction (1,000 Test USDC)...", { id: "mint-toast", title: "MINTING TOKENS" });
 
     try {
       const mintAmount = BigInt(1000 * 10 ** 6);
@@ -64,19 +61,25 @@ export default function BlindpotFaucet() {
       } as any);
 
       setTxHash(hash);
-      setStatusMsg("Waiting for block confirmation on Sepolia...");
+      toastLoading("Waiting for block confirmation on Sepolia...", { id: "mint-toast", title: "MINING TRANSACTION" });
 
       if (publicClient) {
         await publicClient.waitForTransactionReceipt({ hash });
       }
 
       setIsMintSuccess(true);
-      setStatusMsg("1,000 Test USDC successfully minted on Sepolia. You can now wrap and deposit.");
+      toastSuccess("1,000 Test USDC successfully minted! You can now wrap and deposit.", {
+        id: "mint-toast",
+        title: "MINT CONFIRMED",
+        duration: 7000,
+      });
     } catch (e: any) {
       console.error("Mint error:", e);
       setIsMintSuccess(false);
-      setErrorMsg(e?.message || "Mint transaction rejected or failed. Ensure you have Sepolia testnet ETH for gas.");
-      setStatusMsg(null);
+      toastError(e?.message || "Mint transaction failed. Ensure you have Sepolia ETH for gas.", {
+        id: "mint-toast",
+        title: "MINT FAILED",
+      });
     }
   };
 
@@ -152,29 +155,17 @@ export default function BlindpotFaucet() {
                   </div>
                 </div>
 
-                {errorMsg && (
-                  <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex items-center gap-1.5">
-                    <span className="material-symbols-outlined text-[16px]">error</span>
-                    <span>{errorMsg}</span>
-                  </div>
-                )}
-
-                {statusMsg && (
-                  <div className="bg-surface-container-high border border-primary text-primary p-3 text-xs font-mono flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <span className="material-symbols-outlined text-[16px] text-primary">check_circle</span>
-                      <span>{statusMsg}</span>
-                    </div>
-                    {txHash && (
-                      <a
-                        href={`https://sepolia.etherscan.io/tx/${txHash}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-secondary font-bold hover:underline flex items-center gap-1 text-[11px] pt-1"
-                      >
-                        View Mint Tx on Sepolia Etherscan →
-                      </a>
-                    )}
+                {txHash && (
+                  <div className="bg-surface-container-high border-2 border-primary p-3 text-xs font-mono flex items-center justify-between">
+                    <span className="text-on-surface-variant uppercase text-[10px] font-bold">Transaction Confirmed:</span>
+                    <a
+                      href={`https://sepolia.etherscan.io/tx/${txHash}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-secondary font-bold hover:underline flex items-center gap-1 text-[11px]"
+                    >
+                      View on Etherscan →
+                    </a>
                   </div>
                 )}
 

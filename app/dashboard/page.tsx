@@ -17,18 +17,16 @@ import { CircularLoader } from '../components/BlindpotLoader';
 import { Skeleton, SkeletonTableRow } from '../components/Skeleton';
 import { Footer } from '../components/Footer';
 import { useEpochCountdown } from '../hooks/useEpochCountdown';
+import { useToast } from '../components/Toast';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
   const { claim, isPending: isClaiming } = useClaim();
+  const { success: toastSuccess, error: toastError, info: toastInfo, loading: toastLoading, dismiss: toastDismiss } = useToast();
   const router = useRouter();
 
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [claimStatusMsg, setClaimStatusMsg] = useState<string | null>(null);
-  const [claimErrorMsg, setClaimErrorMsg] = useState<string | null>(null);
   const [isSigningPermit, setIsSigningPermit] = useState(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
@@ -172,23 +170,20 @@ export default function BlindpotDashboard() {
 
   // Decrypt handler
   const onDecryptClick = async () => {
-    setErrorMsg(null);
-    setStatusMsg(null);
-
     if (chainId !== sepolia.id) {
       try {
-        setStatusMsg("Switching to Ethereum Sepolia...");
+        toastInfo("Switching wallet network to Ethereum Sepolia...", { id: "network-toast", title: "NETWORK SWITCH" });
         await switchChainAsync({ chainId: sepolia.id });
+        toastSuccess("Connected to Sepolia Testnet.", { id: "network-toast", title: "NETWORK READY" });
       } catch (e: any) {
-        setErrorMsg("Please switch your wallet to Sepolia to sign decryption permits.");
-        setStatusMsg(null);
+        toastError("Please switch your wallet to Sepolia to sign decryption permits.", { title: "NETWORK MISMATCH" });
         return;
       }
     }
 
     try {
       setIsSigningPermit(true);
-      setStatusMsg("Revoking stale permits and re-signing fresh EIP-712 Decryption Permit...");
+      toastLoading("Signing EIP-712 Decryption Permit via wallet...", { id: "permit-toast", title: "DECRYPTION PERMIT" });
       // Revoke any cached permits from previous vault deployments
       try { await revokePermits(permitContracts); } catch (_) {}
       await grantPermit(permitContracts);
@@ -197,13 +192,11 @@ export default function BlindpotDashboard() {
       await refetchBalanceHandle();
       await refetchWinningsHandle();
       setIsSigningPermit(false);
-      setStatusMsg("Permit granted. Decrypting your confidential positions via Zama KMS...");
-      setTimeout(() => setStatusMsg(null), 4000);
+      toastSuccess("Permit granted! Decrypting your confidential positions via Zama KMS...", { id: "permit-toast", title: "PERMIT VERIFIED", duration: 6000 });
     } catch (e: any) {
       console.error("Permit grant error:", e);
       setIsSigningPermit(false);
-      setErrorMsg(e?.message || "Decryption permit signature was rejected or failed.");
-      setStatusMsg(null);
+      toastError(e?.message || "Decryption permit signature was rejected or failed.", { id: "permit-toast", title: "SIGNING FAILED" });
     }
   };
 
@@ -230,11 +223,14 @@ export default function BlindpotDashboard() {
 
   const handleClaimWinnings = async () => {
     if (!account) return;
-    setClaimErrorMsg(null);
-    setClaimStatusMsg("Submitting blinded claim transaction on Sepolia...");
+    toastLoading("Submitting blinded claim transaction on Sepolia...", { id: "claim-toast", title: "CLAIMING PRIZE" });
     try {
       const hash = await claim(vaultAddress, BigInt(displayDrawId));
-      setClaimStatusMsg("Blinded claim executed. Winnings have been transferred into your confidential balance.");
+      toastSuccess("Blinded claim executed! Winnings have been transferred into your confidential balance.", {
+        id: "claim-toast",
+        title: "PRIZE CLAIM CONFIRMED",
+        duration: 7000,
+      });
       
       // Log to database
       try {
@@ -246,7 +242,7 @@ export default function BlindpotDashboard() {
             poolId: 'pool-usdc-sepolia-01',
             action: 'CLAIM',
             drawId: displayDrawId,
-            txHash: hash || '0x_claimed',
+            txHash: hash || ('0x' + '0'.repeat(64)),
           }),
         });
         const refetchRes = await fetch(`/api/activity?user=${account}`);
@@ -259,8 +255,7 @@ export default function BlindpotDashboard() {
       await refetchBalanceHandle();
       await refetchWinningsHandle();
     } catch (e: any) {
-      setClaimErrorMsg(e?.message || "Claim failed.");
-      setClaimStatusMsg(null);
+      toastError(e?.message || "Claim failed.", { id: "claim-toast", title: "CLAIM FAILED" });
     }
   };
 
@@ -337,20 +332,6 @@ export default function BlindpotDashboard() {
                   <span className="opacity-80">{kmsError.message || String(kmsError)}</span>
                 </div>
               )}
-              {errorMsg && (
-                <div className="bg-error-container border border-error text-error p-3 text-xs font-mono break-words flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[16px]">error</span>
-                  <span>{errorMsg}</span>
-                </div>
-              )}
-
-              {statusMsg && (
-                <div className="bg-surface-container-high border border-primary text-primary p-3 text-xs font-mono flex items-center gap-2">
-                  <CircularLoader size="sm" />
-                  <span>{statusMsg}</span>
-                </div>
-              )}
-
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-1">
                 <div className="font-body-md text-xs text-on-surface-variant max-w-md">
                   Balances are encrypted end-to-end with Zama fhEVM. Decrypting uses a gasless EIP-712 permit to retrieve your private plaintext directly in your browser.
@@ -520,19 +501,6 @@ export default function BlindpotDashboard() {
               </div>
             )}
 
-            {claimStatusMsg && (
-              <div className="mt-4 w-full bg-surface-container-high border border-primary text-primary p-3 text-xs font-mono flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] text-primary">check_circle</span>
-                {claimStatusMsg}
-              </div>
-            )}
-
-            {claimErrorMsg && (
-              <div className="mt-4 w-full bg-error-container border border-error text-error p-3 text-xs font-mono flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">error</span>
-                {claimErrorMsg}
-              </div>
-            )}
 
             {/* Metrics Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">

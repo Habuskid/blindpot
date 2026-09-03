@@ -11,6 +11,7 @@ import { createConfig as createWagmiConfig } from "wagmi";
 import { indexedDBStorage, IndexedDBStorage } from "@zama-fhe/sdk";
 import { sepolia as fheSepolia, type FheChain } from "@zama-fhe/sdk/chains";
 import { web } from "@zama-fhe/sdk/web";
+import { ToastProvider } from "./components/Toast";
 
 const RPC = process.env.NEXT_PUBLIC_RPC_URL || fheSepolia.network;
 
@@ -49,7 +50,9 @@ export function Providers({ children }: { children: ReactNode }) {
   return (
     <WagmiProvider config={wagmiConfig}>
       <QueryClientProvider client={queryClient}>
-        <ZamaProvider config={zamaConfig}>{children}</ZamaProvider>
+        <ZamaProvider config={zamaConfig}>
+          <ToastProvider>{children}</ToastProvider>
+        </ZamaProvider>
       </QueryClientProvider>
     </WagmiProvider>
   );

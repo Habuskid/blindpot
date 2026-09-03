@@ -12,6 +12,7 @@ import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { CircularLoader, DossierLoader } from '../components/BlindpotLoader';
 import { Footer } from '../components/Footer';
+import { useToast } from '../components/Toast';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -23,9 +24,8 @@ function YouWonContent() {
   const { address: account, isConnected } = useAccount();
   const { decryptedWinnings, hasPermit, handleGrantPermit, isGrantingPermit, isDecrypting } = useGetMyWinnings(VAULT_ADDRESS, drawId);
   const { claim, isPending: isClaiming } = useClaim();
+  const { success: toastSuccess, error: toastError, loading: toastLoading, dismiss: toastDismiss } = useToast();
 
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isClaimed, setIsClaimed] = useState(false);
 
   useEffect(() => {
@@ -37,13 +37,26 @@ function YouWonContent() {
     }
   }, [account, drawParam]);
 
+  const onSignPermitClick = async () => {
+    toastLoading('Requesting EIP-712 decryption permit signature...', { id: 'permit-toast', title: 'DECRYPTION PERMIT' });
+    try {
+      await handleGrantPermit();
+      toastSuccess('Permit verified! Decrypting your round dossier...', { id: 'permit-toast', title: 'PERMIT GRANTED' });
+    } catch (e: any) {
+      toastError(e?.message || 'Permit signing failed.', { id: 'permit-toast', title: 'SIGNING FAILED' });
+    }
+  };
+
   const handleExecuteClaim = async () => {
-    setErrorMsg(null);
-    setStatusMsg(`Submitting claim transaction for Draw #${drawParam}...`);
+    toastLoading(`Submitting claim transaction for Draw #${drawParam}...`, { id: 'claim-toast', title: 'CLAIM TRANSACTION' });
     try {
       const tx = await claim(VAULT_ADDRESS, drawId);
       setIsClaimed(true);
-      setStatusMsg(`Claim transaction confirmed! Your winnings have been deposited into your confidential balance.`);
+      toastSuccess(`Claim transaction confirmed! Your winnings have been deposited into your confidential balance.`, {
+        id: 'claim-toast',
+        title: 'PRIZE CLAIM CONFIRMED',
+        duration: 7000,
+      });
       if (account) {
         sessionStorage.setItem(`claimed_${drawParam}_${account.toLowerCase()}`, 'true');
         try {
@@ -62,8 +75,7 @@ function YouWonContent() {
       }
     } catch (e: any) {
       console.error(e);
-      setErrorMsg(e?.message || `Claim failed for Draw #${drawParam}.`);
-      setStatusMsg(null);
+      toastError(e?.message || `Claim failed for Draw #${drawParam}.`, { id: 'claim-toast', title: 'CLAIM FAILED' });
     }
   };
 
@@ -140,32 +152,10 @@ function YouWonContent() {
           )}
         </div>
 
-        {errorMsg && (
-          <div className="bg-error-container border border-error text-error p-3 mb-6 text-xs font-mono break-words flex items-center gap-1.5">
-            <span className="material-symbols-outlined text-[16px]">error</span>
-            <span>{errorMsg}</span>
-          </div>
-        )}
-
-        {statusMsg && (
-          <div className={`border-2 p-3 mb-6 text-xs font-mono flex items-center gap-2.5 ${
-            isClaimed 
-              ? "bg-secondary-container border-secondary text-primary font-bold" 
-              : "bg-surface-container-high border-primary text-primary"
-          }`}>
-            {isClaimed ? (
-              <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
-            ) : (
-              <CircularLoader size="sm" />
-            )}
-            <span>{statusMsg}</span>
-          </div>
-        )}
-
         <div className="flex flex-col sm:flex-row gap-4 justify-between items-center pt-4 border-t-2 border-primary">
           {!hasPermit && (
             <button
-              onClick={handleGrantPermit}
+              onClick={onSignPermitClick}
               disabled={isGrantingPermit || isDecrypting}
               className="w-full sm:w-auto bg-surface text-primary border-2 border-primary px-6 py-3 font-label-mono text-xs uppercase font-bold hover:bg-surface-container-high hard-shadow-sm flex items-center justify-center gap-2"
             >
