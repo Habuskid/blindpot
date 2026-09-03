@@ -15,8 +15,9 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    if (!body.drawId) {
-      return NextResponse.json({ success: false, error: 'Missing drawId' }, { status: 400 });
+    const drawIdNum = Number(body.drawId);
+    if (!body.drawId || isNaN(drawIdNum) || drawIdNum < 0) {
+      return NextResponse.json({ success: false, error: 'Valid drawId is required' }, { status: 400 });
     }
     const draw = db.recordDraw({
       id: `draw-${body.drawId}`,

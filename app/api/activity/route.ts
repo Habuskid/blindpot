@@ -25,6 +25,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
 
+    const ethAddressRegex = /^0x[a-fA-F0-9]{40}$/;
+    const txHashRegex = /^0x[a-fA-F0-9]{64}$/;
+    const validActions = ['DEPOSIT', 'WITHDRAW', 'CLAIM'];
+
+    if (!ethAddressRegex.test(body.userAddress)) {
+      return NextResponse.json({ success: false, error: 'Invalid Ethereum address format' }, { status: 400 });
+    }
+
+    if (!txHashRegex.test(body.txHash)) {
+      return NextResponse.json({ success: false, error: 'Invalid transaction hash format' }, { status: 400 });
+    }
+
+    const actionUpper = String(body.action).toUpperCase();
+    if (!validActions.includes(actionUpper)) {
+      return NextResponse.json({ success: false, error: 'Invalid action type' }, { status: 400 });
+    }
+
     const record = db.recordActivity({
       id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       userAddress: body.userAddress.toLowerCase(),
