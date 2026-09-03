@@ -10,6 +10,8 @@ import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
 import { formatAddress } from '../../lib/formatters';
 import type { PoolRecord } from '../../lib/db';
 import { DossierLoader } from '../components/BlindpotLoader';
+import { SkeletonPoolCard } from '../components/Skeleton';
+import { Footer } from '../components/Footer';
 
 export default function PoolsDirectoryPage() {
   const { address: account } = useAccount();
@@ -108,12 +110,10 @@ export default function PoolsDirectoryPage() {
         {/* Pools Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {loading ? (
-            <div className="col-span-full py-6">
-              <DossierLoader
-                label="QUERYING ON-CHAIN REGISTRIES..."
-                sublabel="SYNCHRONIZING VERIFIED FHEVM POOLS"
-              />
-            </div>
+            <>
+              <SkeletonPoolCard />
+              <SkeletonPoolCard />
+            </>
           ) : (
             pools.map((pool) => (
               <div
@@ -206,15 +206,7 @@ export default function PoolsDirectoryPage() {
         </div>
       </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link href="/deposit" className="hover:underline">Deposit</Link>
-        </div>
-      </footer>
+      <Footer />
       </div>
     </AuthGuard>
   );

@@ -14,6 +14,8 @@ import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
 import { CipherSpinner, CircularLoader } from '../components/BlindpotLoader';
+import { Skeleton, SkeletonTableRow } from '../components/Skeleton';
+import { Footer } from '../components/Footer';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
@@ -234,10 +236,15 @@ export default function BlindpotDashboard() {
   };
 
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [loadingActivity, setLoadingActivity] = useState(true);
 
   // Fetch real persistent activity logs from database
   useEffect(() => {
-    if (!account) return;
+    if (!account) {
+      setLoadingActivity(false);
+      return;
+    }
+    setLoadingActivity(true);
     fetch(`/api/activity?user=${account}`)
       .then((res) => res.json())
       .then((data) => {
@@ -245,7 +252,8 @@ export default function BlindpotDashboard() {
           setActivityLogs(data.activity);
         }
       })
-      .catch((e) => console.warn('Activity fetch error:', e));
+      .catch((e) => console.warn('Activity fetch error:', e))
+      .finally(() => setLoadingActivity(false));
   }, [account]);
 
   const handleClaimWinnings = async () => {
@@ -566,9 +574,13 @@ export default function BlindpotDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
               <div className="border-2 border-primary bg-surface p-4 flex flex-col justify-between hard-shadow-sm">
                 <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Pool Capacity</div>
-                <div className="font-value-mono text-2xl font-bold text-primary mt-2">
-                  {displayMembers} <span className="text-sm font-normal text-on-surface-variant">/ 25</span>
-                </div>
+                {memberCount !== undefined ? (
+                  <div className="font-value-mono text-2xl font-bold text-primary mt-2">
+                    {displayMembers} <span className="text-sm font-normal text-on-surface-variant">/ 25</span>
+                  </div>
+                ) : (
+                  <Skeleton className="h-7 w-20 mt-2" />
+                )}
                 <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
                   Active Depositors
                 </div>
@@ -576,9 +588,13 @@ export default function BlindpotDashboard() {
 
               <div className="border-2 border-primary bg-surface p-4 flex flex-col justify-between hard-shadow-sm">
                 <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Active Round</div>
-                <div className="font-value-mono text-2xl font-bold text-primary mt-2">
-                  #{displayDrawId === 0 ? 1 : displayDrawId + 1}
-                </div>
+                {currentDrawId !== undefined ? (
+                  <div className="font-value-mono text-2xl font-bold text-primary mt-2">
+                    #{displayDrawId === 0 ? 1 : displayDrawId + 1}
+                  </div>
+                ) : (
+                  <Skeleton className="h-7 w-16 mt-2" />
+                )}
                 <div className="text-[11px] font-label-mono text-secondary font-bold mt-1">
                   {displayDrawId === 0 ? "Initial Epoch (Active)" : `Epoch #${displayDrawId + 1} (Active)`}
                 </div>
@@ -586,9 +602,13 @@ export default function BlindpotDashboard() {
 
               <div className="border-2 border-primary bg-surface p-4 flex flex-col justify-between hard-shadow-sm">
                 <div className="font-label-mono text-xs uppercase text-on-surface-variant font-bold">Next Epoch Draw</div>
-                <div className="font-value-mono text-2xl font-bold text-secondary mt-2">
-                  {formatCountdown(secondsRemaining)}
-                </div>
+                {nextDrawTimeRaw !== undefined ? (
+                  <div className="font-value-mono text-2xl font-bold text-secondary mt-2">
+                    {formatCountdown(secondsRemaining)}
+                  </div>
+                ) : (
+                  <Skeleton className="h-7 w-24 mt-2" />
+                )}
                 <div className="text-[11px] font-label-mono text-on-surface-variant mt-1">
                   Autonomous Cadence
                 </div>
@@ -637,7 +657,25 @@ export default function BlindpotDashboard() {
                 </div>
               </div>
 
-              {activityLogs.length === 0 ? (
+              {loadingActivity ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left font-mono text-xs border-collapse">
+                    <thead>
+                      <tr className="border-b border-primary/20 bg-surface-container-low font-bold text-on-surface-variant uppercase">
+                        <th className="p-2">Action</th>
+                        <th className="p-2">Details</th>
+                        <th className="p-2">Timestamp</th>
+                        <th className="p-2 text-right">Receipt</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-primary/10">
+                      <SkeletonTableRow cols={4} />
+                      <SkeletonTableRow cols={4} />
+                      <SkeletonTableRow cols={4} />
+                    </tbody>
+                  </table>
+                </div>
+              ) : activityLogs.length === 0 ? (
                 <div className="text-center py-6 font-label-mono text-xs text-on-surface-variant uppercase">
                   No previous transactions recorded in database for this address yet.
                 </div>
@@ -697,15 +735,7 @@ export default function BlindpotDashboard() {
             </div>
         </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/faucet" className="hover:underline">Faucet</Link>
-          <Link href="/how-it-works" className="hover:underline">Docs</Link>
-        </div>
-      </footer>
+        <Footer />
       </div>
     </AuthGuard>
   );

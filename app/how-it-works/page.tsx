@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { LandingNavbar } from '../components/LandingNavbar';
+import { Footer } from '../components/Footer';
 
 export default function BlindpotHowItWorks() {
   return (
@@ -139,15 +140,7 @@ export default function BlindpotHowItWorks() {
         </div>
       </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link href="/faucet" className="hover:underline">Faucet</Link>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }

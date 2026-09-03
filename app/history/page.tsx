@@ -10,6 +10,8 @@ import { formatTimestamp } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { CipherSpinner, CircularLoader } from '../components/BlindpotLoader';
+import { SkeletonTableRow } from '../components/Skeleton';
+import { Footer } from '../components/Footer';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -55,8 +57,10 @@ export default function BlindpotDrawHistory() {
   };
 
   const [dbDraws, setDbDraws] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     fetch('/api/draws')
       .then((res) => res.json())
       .then((data) => {
@@ -64,7 +68,8 @@ export default function BlindpotDrawHistory() {
           setDbDraws(data.draws);
         }
       })
-      .catch((e) => console.warn('Draws fetch error:', e));
+      .catch((e) => console.warn('Draws fetch error:', e))
+      .finally(() => setLoading(false));
   }, []);
 
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
@@ -187,7 +192,16 @@ export default function BlindpotDrawHistory() {
               </tr>
             </thead>
             <tbody className="divide-y divide-primary/20 font-value-mono text-sm">
-              {allDraws.map((draw) => {
+              {loading ? (
+                <>
+                  <SkeletonTableRow cols={7} />
+                  <SkeletonTableRow cols={7} />
+                  <SkeletonTableRow cols={7} />
+                  <SkeletonTableRow cols={7} />
+                  <SkeletonTableRow cols={7} />
+                </>
+              ) : (
+                allDraws.map((draw) => {
                 const drawId = draw.drawId.toString();
                 const isCurrent = Number(draw.drawId) === Number(currentDrawId);
                 const isClaiming = isPending && claimingDraw === drawId;
@@ -278,7 +292,7 @@ export default function BlindpotDrawHistory() {
                     </td>
                   </tr>
                 );
-              })}
+              }))}
             </tbody>
           </table>
         </div>
@@ -290,15 +304,7 @@ export default function BlindpotDrawHistory() {
         </div>
       </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold text-primary uppercase">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link href="/how-it-works" className="hover:underline">Documentation</Link>
-        </div>
-      </footer>
+      <Footer />
       </div>
     </AuthGuard>
   );

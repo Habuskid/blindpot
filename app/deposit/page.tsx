@@ -12,6 +12,8 @@ import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
 import { CircularLoader, OnchainSyncCard, type OnchainPhase } from '../components/BlindpotLoader';
+import { Skeleton } from '../components/Skeleton';
+import { Footer } from '../components/Footer';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -344,9 +346,13 @@ export default function BlindpotDepositFlow() {
             <div className="p-3 border border-primary bg-surface-container-low mb-6 flex justify-between items-center text-xs">
               <span className="font-label-mono uppercase text-on-surface-variant">Public ERC-20 USDC Balance:</span>
               <div className="flex items-center gap-2">
-                <span className="font-value-mono font-bold text-primary">
-                  {publicBalance.toLocaleString()} USDC
-                </span>
+                {publicBalanceRaw !== undefined ? (
+                  <span className="font-value-mono font-bold text-primary">
+                    {publicBalance.toLocaleString()} USDC
+                  </span>
+                ) : (
+                  <Skeleton className="h-4 w-20" />
+                )}
                 <Link href="/faucet" className="text-secondary font-bold hover:underline font-label-mono">
                   [Faucet]
                 </Link>
@@ -607,15 +613,7 @@ export default function BlindpotDepositFlow() {
           </div>
         </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-xs uppercase">
-          <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-          <Link href="/faucet" className="hover:underline">Faucet</Link>
-        </div>
-      </footer>
+        <Footer />
       </div>
     </AuthGuard>
   );

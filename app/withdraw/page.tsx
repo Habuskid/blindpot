@@ -15,6 +15,8 @@ import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
 import { CircularLoader, OnchainSyncCard, type OnchainPhase } from '../components/BlindpotLoader';
+import { Skeleton } from '../components/Skeleton';
+import { Footer } from '../components/Footer';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -519,15 +521,7 @@ export default function BlindpotWithdrawFlow() {
           </div>
         </main>
 
-        <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-          <div className="font-label-mono text-xs font-bold uppercase">
-            © BLINDPOT POOL. ALL RIGHTS RESERVED.
-          </div>
-          <div className="flex gap-6 font-label-mono text-xs uppercase">
-            <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-            <Link href="/deposit" className="hover:underline">Deposit</Link>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </AuthGuard>
   );

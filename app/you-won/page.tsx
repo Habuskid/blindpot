@@ -11,6 +11,7 @@ import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { CipherSpinner, DossierLoader } from '../components/BlindpotLoader';
+import { Footer } from '../components/Footer';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -177,15 +178,7 @@ export default function BlindpotYouWon() {
         }>
           <YouWonContent />
         </Suspense>
-        <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-          <div className="font-label-mono text-xs font-bold uppercase">
-            © BLINDPOT POOL. ALL RIGHTS RESERVED.
-          </div>
-          <div className="flex gap-6 font-label-mono text-xs uppercase">
-            <Link href="/dashboard" className="hover:underline">Dashboard</Link>
-            <Link href="/history" className="hover:underline">History</Link>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </AuthGuard>
   );

@@ -8,6 +8,8 @@ import { ConnectAndSignButton } from "./components/ConnectAndSignButton";
 import { injected } from 'wagmi/connectors';
 import { addresses } from '../sdk/src/config';
 import { LandingNavbar } from './components/LandingNavbar';
+import { Footer } from './components/Footer';
+import { Skeleton } from './components/Skeleton';
 
 const vaultAbi = [
   {
@@ -131,16 +133,24 @@ export default function BlindpotLandingPage() {
 
                 <div className="flex justify-between items-center hairline-b pb-2">
                   <span className="font-label-mono text-xs text-on-surface-variant uppercase">Pool Capacity</span>
-                  <span className="font-bold text-primary font-mono">
-                    {displayMembers} / 25 Active
-                  </span>
+                  {memberCount !== undefined ? (
+                    <span className="font-bold text-primary font-mono">
+                      {displayMembers} / 25 Active
+                    </span>
+                  ) : (
+                    <Skeleton className="h-4 w-20" />
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center hairline-b pb-2">
                   <span className="font-label-mono text-xs text-on-surface-variant uppercase">Active Epoch</span>
-                  <span className="font-bold text-primary font-mono">
-                    Round #{displayDrawId === 0 ? 1 : displayDrawId}
-                  </span>
+                  {currentDrawId !== undefined ? (
+                    <span className="font-bold text-primary font-mono">
+                      Round #{displayDrawId === 0 ? 1 : displayDrawId}
+                    </span>
+                  ) : (
+                    <Skeleton className="h-4 w-16" />
+                  )}
                 </div>
 
                 <div className="flex justify-between items-center">
@@ -148,9 +158,13 @@ export default function BlindpotLandingPage() {
                     <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse inline-block"></span>
                     Next Draw
                   </span>
-                  <span className="font-bold text-secondary font-mono">
-                    {formatCountdown(secondsRemaining)}
-                  </span>
+                  {nextDrawTimeRaw !== undefined ? (
+                    <span className="font-bold text-secondary font-mono">
+                      {formatCountdown(secondsRemaining)}
+                    </span>
+                  ) : (
+                    <Skeleton className="h-4 w-14" />
+                  )}
                 </div>
               </div>
 
@@ -206,16 +220,7 @@ export default function BlindpotLandingPage() {
         </section>
       </main>
 
-      <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center border-t-2 border-primary bg-surface mt-auto">
-        <div className="font-label-mono text-label-mono font-bold text-primary mb-4 md:mb-0">
-          © BLINDPOT POOL. ALL RIGHTS RESERVED.
-        </div>
-        <div className="flex gap-6 font-label-mono text-label-mono uppercase text-xs">
-          <Link href="/how-it-works" className="hover:underline">Documentation</Link>
-          <Link href="/faucet" className="hover:underline">Testnet Faucet</Link>
-          <Link href="/history" className="hover:underline">Draw Log</Link>
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
