@@ -203,77 +203,23 @@ export default function BlindpotDashboard() {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [loadingActivity, setLoadingActivity] = useState(true);
 
-  // Fetch real persistent activity logs from database, localStorage, and on-chain state
+  // Fetch real persistent activity logs from database
   useEffect(() => {
     if (!account) {
       setLoadingActivity(false);
       return;
     }
-
-    const storageKey = `blindpot_activity_${account.toLowerCase()}`;
-    let localRecords: any[] = [];
-    try {
-      localRecords = JSON.parse(localStorage.getItem(storageKey) || '[]');
-    } catch (_) {}
-
-    // Check if user claimed Draw #1 in this session
-    const isClaimed1 = typeof window !== 'undefined' ? sessionStorage.getItem(`claimed_1_${account.toLowerCase()}`) : null;
-    if (isClaimed1 && !localRecords.some(r => r.action === 'CLAIM' && (r.drawId === 1 || r.drawId === '1'))) {
-      localRecords.unshift({
-        id: `session-claim-1`,
-        userAddress: account.toLowerCase(),
-        poolId: 'pool-usdc-sepolia-01',
-        action: 'CLAIM',
-        amount: 10.0,
-        drawId: 1,
-        txHash: '0x' + '0'.repeat(64),
-        timestamp: Math.floor(Date.now() / 1000) - 1800,
-        status: 'CONFIRMED',
-      });
-    }
-
-    if (localRecords.length > 0) {
-      setActivityLogs(localRecords);
-      setLoadingActivity(false);
-    } else {
-      setLoadingActivity(true);
-    }
-
+    setLoadingActivity(true);
     fetch(`/api/activity?user=${account}`)
       .then((res) => res.json())
       .then((data) => {
-        const serverRecords = (data.success && data.activity) ? data.activity : [];
-        const mergedMap = new Map();
-        [...serverRecords, ...localRecords].forEach((item) => {
-          const key = item.txHash && !item.txHash.includes('00000000') ? item.txHash : item.id;
-          if (!mergedMap.has(key)) {
-            mergedMap.set(key, item);
-          }
-        });
-        const mergedList = Array.from(mergedMap.values()).sort((a, b) => b.timestamp - a.timestamp);
-
-        // If still empty but user is confirmed active depositor on-chain
-        if (mergedList.length === 0 && (isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0))) {
-          mergedList.push({
-            id: `onchain-dep-${account.slice(2, 8)}`,
-            userAddress: account.toLowerCase(),
-            poolId: 'pool-usdc-sepolia-01',
-            action: 'DEPOSIT',
-            amount: decryptedBalance !== undefined && decryptedBalance > 0 ? decryptedBalance : 100,
-            txHash: '0x' + '0'.repeat(64),
-            timestamp: Math.floor(Date.now() / 1000) - 3600,
-            status: 'CONFIRMED',
-          });
+        if (data.success && data.activity) {
+          setActivityLogs(data.activity);
         }
-
-        setActivityLogs(mergedList);
-        try {
-          localStorage.setItem(storageKey, JSON.stringify(mergedList));
-        } catch (_) {}
       })
       .catch((e) => console.warn('Activity fetch error:', e))
       .finally(() => setLoadingActivity(false));
-  }, [account, isUserMember, decryptedBalance]);
+  }, [account]);
 
   const handleClaimWinnings = async () => {
     if (!account) return;
@@ -298,15 +244,6 @@ export default function BlindpotDashboard() {
         status: 'CONFIRMED',
       };
 
-      // Save to local storage
-      try {
-        const storageKey = `blindpot_activity_${account.toLowerCase()}`;
-        const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
-        existing.unshift(newClaimRecord);
-        localStorage.setItem(storageKey, JSON.stringify(existing));
-        setActivityLogs(existing);
-      } catch (_) {}
-
       // Log to database
       try {
         await fetch('/api/activity', {
@@ -314,6 +251,9 @@ export default function BlindpotDashboard() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(newClaimRecord),
         });
+        const refetchRes = await fetch(`/api/activity?user=${account}`);
+        const refetchData = await refetchRes.json();
+        if (refetchData.success) setActivityLogs(refetchData.activity);
       } catch (logErr) {
         console.warn('Claim log error:', logErr);
       }

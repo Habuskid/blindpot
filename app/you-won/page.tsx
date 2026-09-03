@@ -72,23 +72,6 @@ function YouWonContent() {
             }),
           });
         } catch (e) {}
-
-        try {
-          const storageKey = `blindpot_activity_${account.toLowerCase()}`;
-          const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
-          existing.unshift({
-            id: `act-claim-${drawParam}-${Date.now()}`,
-            userAddress: account.toLowerCase(),
-            poolId: 'pool-usdc-sepolia-01',
-            action: 'CLAIM',
-            drawId: Number(drawParam),
-            amount: decryptedWinnings,
-            txHash: tx || ('0x' + '0'.repeat(64)),
-            timestamp: Math.floor(Date.now() / 1000),
-            status: 'CONFIRMED',
-          });
-          localStorage.setItem(storageKey, JSON.stringify(existing));
-        } catch (_) {}
       }
     } catch (e: any) {
       console.error(e);

@@ -1,0 +1,62 @@
+{
+  "pools": [
+    {
+      "id": "pool-usdc-sepolia-01",
+      "name": "Morpho Blue USDC Prime Saver",
+      "symbol": "cUSDC",
+      "network": "Ethereum Sepolia",
+      "chainId": 11155111,
+      "vaultAddress": "0x489f37147c8ba2554c14e385d8e5603f143635fd",
+      "tokenAddress": "0x17c919537d9959e1c36B4628E3589B96350B426f",
+      "underlyingAddress": "0x27244D42F8FDE86F623F62d08aE460bB1F4F9732",
+      "maxMembers": 25,
+      "drawInterval": 600,
+      "yieldEngine": "Morpho Blue",
+      "baseLendingApr": 3.99,
+      "prizeApr": 5.2,
+      "totalApr": 9.19,
+      "aprSource": "Morpho Blue Lending Market",
+      "status": "ACTIVE",
+      "createdAt": 1725360000
+    }
+  ],
+  "draws": [
+    {
+      "id": "draw-03",
+      "drawId": 3,
+      "poolId": "pool-usdc-sepolia-01",
+      "timestamp": 1788465490,
+      "blockNumber": 11628632,
+      "potSize": 10,
+      "grossYield": 11.11,
+      "protocolFee": 1.11,
+      "txHash": "0xcbd4a1fe37e31adbcc349d9abae935b50320de64c5354d7e2a53673c74bd77b1",
+      "status": "EXECUTED"
+    },
+    {
+      "id": "draw-02",
+      "drawId": 2,
+      "poolId": "pool-usdc-sepolia-01",
+      "timestamp": 1788464890,
+      "blockNumber": 11628580,
+      "potSize": 10,
+      "grossYield": 11.11,
+      "protocolFee": 1.11,
+      "txHash": "0xacac41315178eafedfb329da060fc4f6a4d48d66f42df1b6d0e31dcee0b274df",
+      "status": "EXECUTED"
+    },
+    {
+      "id": "draw-01",
+      "drawId": 1,
+      "poolId": "pool-usdc-sepolia-01",
+      "timestamp": 1788464290,
+      "blockNumber": 11628000,
+      "potSize": 10,
+      "grossYield": 11.11,
+      "protocolFee": 1.11,
+      "txHash": "0xe3b690ed3357b54e0b10d26f3d9c237b7dae8f6f1f8ebfdbeb7fa6901f6f4e62",
+      "status": "EXECUTED"
+    }
+  ],
+  "activity": []
+}
