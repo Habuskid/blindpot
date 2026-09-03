@@ -42,3 +42,9 @@ skills-lock.json
 Thumbs.db
 
 .vercel
+
+*.zip
+.foundry
+
+*.zip
+.foundry
