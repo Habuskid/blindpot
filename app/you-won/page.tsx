@@ -10,6 +10,7 @@ import { addresses } from '../../sdk/src/config';
 import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
+import { CipherSpinner, DossierLoader } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -76,7 +77,7 @@ function YouWonContent() {
 
           {(isDecrypting || isGrantingPermit) && decryptedWinnings === undefined && (
             <div className="font-value-mono text-lg text-secondary flex items-center gap-2">
-              <span className="material-symbols-outlined animate-spin text-[20px]">sync</span>
+              <CipherSpinner size="md" />
               Decrypting Winnings with KMS...
             </div>
           )}
@@ -103,7 +104,7 @@ function YouWonContent() {
 
         {statusMsg && (
           <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+            <CipherSpinner size="sm" />
             <span>{statusMsg}</span>
           </div>
         )}
@@ -139,7 +140,14 @@ export default function BlindpotYouWon() {
     <AuthGuard>
       <Navbar />
       <div className="md:pl-60 flex-grow flex flex-col">
-        <Suspense fallback={<div className="pt-32 text-center font-mono">Loading dossier...</div>}>
+        <Suspense fallback={
+          <div className="pt-32 pb-32 px-4 flex justify-center items-center">
+            <DossierLoader
+              label="AUTHENTICATING WINNING DOSSIER..."
+              sublabel="VERIFYING ON-CHAIN FHE TICKETS"
+            />
+          </div>
+        }>
           <YouWonContent />
         </Suspense>
         <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">

@@ -9,6 +9,7 @@ import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
+import { CipherSpinner } from '../components/BlindpotLoader';
 
 export default function BlindpotFaucet() {
   const { address: account, isConnected } = useAccount();
@@ -191,7 +192,7 @@ export default function BlindpotFaucet() {
                     >
                       {isMinting ? (
                         <>
-                          <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                          <CipherSpinner size="sm" />
                           Minting 1,000 USDC on Sepolia...
                         </>
                       ) : (

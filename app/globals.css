@@ -69,6 +69,29 @@
     color: transparent;
     user-select: none;
   }
+
+  /* Mechanical Tumbler Rotation (Discrete 90-degree clicks) */
+  @keyframes mechanical-tumbler {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(90deg); }
+    50% { transform: rotate(180deg); }
+    75% { transform: rotate(270deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  .animate-mechanical {
+    animation: mechanical-tumbler 0.9s infinite cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  /* Radar Pulse for FHE scanning */
+  @keyframes radar-pulse {
+    0%, 100% { opacity: 0.35; transform: scaleX(0.92); }
+    50% { opacity: 1; transform: scaleX(1); }
+  }
+
+  .animate-radar {
+    animation: radar-pulse 1.2s infinite ease-in-out;
+  }
 }
 
 body {

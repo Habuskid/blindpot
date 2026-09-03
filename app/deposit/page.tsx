@@ -11,6 +11,7 @@ import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
+import { CipherSpinner } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -298,7 +299,7 @@ export default function BlindpotDepositFlow() {
 
             {statusMsg && (
               <div className="bg-surface-container-high border border-primary text-primary p-3 mb-4 text-xs font-mono flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                <CipherSpinner size="sm" />
                 <span>{statusMsg}</span>
               </div>
             )}
@@ -359,7 +360,7 @@ export default function BlindpotDepositFlow() {
                     >
                       {isApproving ? (
                         <>
-                          <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                          <CipherSpinner size="sm" />
                           Approving Token Wrapper...
                         </>
                       ) : (
@@ -377,7 +378,7 @@ export default function BlindpotDepositFlow() {
                     >
                       {isWrapping ? (
                         <>
-                          <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                          <CipherSpinner size="sm" />
                           Wrapping to cUSDC on Sepolia...
                         </>
                       ) : (
@@ -447,7 +448,7 @@ export default function BlindpotDepositFlow() {
                   >
                     {isDepositing ? (
                       <>
-                        <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                        <CipherSpinner size="sm" />
                         Encrypting & Depositing...
                       </>
                     ) : (

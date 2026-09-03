@@ -9,6 +9,7 @@ import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
 import { formatTimestamp } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
+import { CipherSpinner } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -86,8 +87,8 @@ export default function BlindpotDrawHistory() {
 
         {statusMsg && (
           <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
-            <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
-            {statusMsg}
+            <CipherSpinner size="sm" />
+            <span>{statusMsg}</span>
           </div>
         )}
 

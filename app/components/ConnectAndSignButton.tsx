@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useAccount, useConnect, useSignMessage } from "wagmi";
 import { injected } from "wagmi/connectors";
 import { useRouter } from "next/navigation";
+import { CipherSpinner } from "./BlindpotLoader";
 
 export function ConnectAndSignButton({ className }: { className?: string }) {
   const { address, isConnected } = useAccount();
@@ -74,9 +75,13 @@ export function ConnectAndSignButton({ className }: { className?: string }) {
       disabled={loading}
       className={className || "bg-secondary-container text-primary border-2 border-primary px-4 py-1.5 text-xs font-label-mono uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1.5 disabled:opacity-70"}
     >
-      <span className={`material-symbols-outlined text-[16px] ${loading ? 'animate-spin' : ''}`}>
-        {getIcon()}
-      </span>
+      {loading ? (
+        <CipherSpinner size="sm" />
+      ) : (
+        <span className="material-symbols-outlined text-[16px]">
+          {getIcon()}
+        </span>
+      )}
       {getLabel()}
     </button>
   );

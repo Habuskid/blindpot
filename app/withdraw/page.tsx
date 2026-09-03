@@ -14,6 +14,7 @@ import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
+import { CipherSpinner } from '../components/BlindpotLoader';
 
 const VAULT_ADDRESS = addresses.vault;
 const TOKEN_WRAPPER_ADDRESS = addresses.token;
@@ -231,7 +232,7 @@ export default function BlindpotWithdrawFlow() {
                 >
                   {isWithdrawing ? (
                     <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                      <CipherSpinner size="sm" />
                       Withdrawing cUSDC...
                     </>
                   ) : isWrongNetwork ? (
@@ -262,7 +263,7 @@ export default function BlindpotWithdrawFlow() {
                 >
                   {isUnshielding ? (
                     <>
-                      <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
+                      <CipherSpinner size="sm" />
                       Unwrapping to Public USDC...
                     </>
                   ) : isWrongNetwork ? (
@@ -287,7 +288,7 @@ export default function BlindpotWithdrawFlow() {
 
             {statusMsg && (
               <div className="bg-surface-container-high border border-primary text-primary p-3 mb-4 text-xs font-mono flex items-center gap-2">
-                <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                <CipherSpinner size="sm" />
                 <span>{statusMsg}</span>
               </div>
             )}

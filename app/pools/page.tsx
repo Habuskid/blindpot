@@ -9,6 +9,7 @@ import { addresses } from '../../sdk/src/config';
 import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
 import { formatAddress } from '../../lib/formatters';
 import type { PoolRecord } from '../../lib/db';
+import { DossierLoader } from '../components/BlindpotLoader';
 
 export default function PoolsDirectoryPage() {
   const { address: account } = useAccount();
@@ -79,9 +80,11 @@ export default function PoolsDirectoryPage() {
         {/* Pools Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {loading ? (
-            <div className="col-span-full border-2 border-primary bg-surface p-12 text-center font-label-mono text-xs uppercase text-on-surface-variant">
-              <span className="material-symbols-outlined animate-spin text-[24px] mb-2 text-primary">sync</span>
-              <div>Querying database and on-chain registries...</div>
+            <div className="col-span-full py-6">
+              <DossierLoader
+                label="QUERYING ON-CHAIN REGISTRIES..."
+                sublabel="SYNCHRONIZING VERIFIED FHEVM POOLS"
+              />
             </div>
           ) : (
             pools.map((pool) => (

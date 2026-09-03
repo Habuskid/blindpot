@@ -13,6 +13,7 @@ import { formatUSDC, formatTimestamp, formatAddress } from '../../lib/formatters
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
+import { CipherSpinner } from '../components/BlindpotLoader';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
@@ -329,8 +330,8 @@ export default function BlindpotDashboard() {
                            </span>
                         )}
                         {isDecryptingActive && (
-                           <span className="font-label-mono text-xs text-secondary flex items-center gap-1 font-bold animate-pulse">
-                             <span className="material-symbols-outlined animate-spin text-[14px]">sync</span>
+                           <span className="font-label-mono text-xs text-secondary flex items-center gap-1.5 font-bold">
+                             <CipherSpinner size="sm" />
                              KMS
                            </span>
                         )}
@@ -370,7 +371,7 @@ export default function BlindpotDashboard() {
 
               {statusMsg && (
                 <div className="bg-surface-container-high border border-primary text-primary p-3 text-xs font-mono flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[16px] animate-spin">sync</span>
+                  <CipherSpinner size="sm" />
                   <span>{statusMsg}</span>
                 </div>
               )}
