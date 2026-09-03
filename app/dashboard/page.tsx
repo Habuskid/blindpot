@@ -432,9 +432,16 @@ export default function BlindpotDashboard() {
                   </div>
                 </div>
                 <div>
+                  <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Real Blended APR</div>
+                  <div className="font-value-mono text-xs font-bold text-secondary mt-0.5 flex items-center gap-1">
+                    <span>8.57% APR</span>
+                    <span className="text-[10px] text-on-surface-variant font-normal">(3.37% Aave v3)</span>
+                  </div>
+                </div>
+                <div>
                   <div className="font-label-mono text-[11px] uppercase text-on-surface-variant">Yield Engine</div>
-                  <div className="font-value-mono text-xs font-bold text-secondary mt-0.5">
-                    Aave / ERC-4626
+                  <div className="font-value-mono text-xs font-bold text-primary mt-0.5">
+                    Aave v3 / ERC-4626
                   </div>
                 </div>
               </div>

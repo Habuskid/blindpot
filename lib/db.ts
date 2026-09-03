@@ -13,6 +13,10 @@ export interface PoolRecord {
   maxMembers: number;
   drawInterval: number; // in seconds
   yieldEngine: string;
+  baseLendingApr?: number;
+  prizeApr?: number;
+  totalApr?: number;
+  aprSource?: string;
   status: 'ACTIVE' | 'PAUSED' | 'FINALIZED';
   createdAt: number;
 }

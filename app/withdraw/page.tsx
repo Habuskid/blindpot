@@ -23,6 +23,7 @@ const UNDERLYING_TOKEN_ADDRESS = addresses.underlyingToken;
 export default function BlindpotWithdrawFlow() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<"pool" | "unwrap">("pool");
+  const [withdrawAmount, setWithdrawAmount] = useState<string>("100");
   const [actionPhase, setActionPhase] = useState<OnchainPhase>("idle");
   const [actionTitle, setActionTitle] = useState<string>("");
   const [actionDesc, setActionDesc] = useState<string>("");
@@ -271,18 +272,76 @@ export default function BlindpotWithdrawFlow() {
             {/* Step 1 Content: Pool Exit */}
             {activeTab === "pool" && (
               <div className="flex flex-col">
-                <div className="py-2.5 border-l-4 border-primary pl-4 mb-6 bg-surface-container-low/50">
+                <div className="py-2.5 border-l-4 border-primary pl-4 mb-5 bg-surface-container-low/50">
                   <p className="font-body-md text-xs text-primary leading-relaxed">
-                    <strong>Step 1 (Pool Exit):</strong> Withdraws 100% of your initial capital from the Blindpot Vault into your wallet as confidential <strong>cUSDC</strong> tokens. Zero loss, no penalties.
+                    <strong>Step 1 (Pool Exit):</strong> Exits your capital from the Blindpot Vault into your wallet as confidential <strong>cUSDC</strong> tokens. Zero loss, no penalties.
                   </p>
                 </div>
 
+                {/* Amount Size Selector */}
+                <div className="mb-5">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="font-label-mono text-xs text-on-surface-variant uppercase font-bold">
+                      Amount of cUSDC to Withdraw:
+                    </label>
+                    {decryptedBalance !== undefined && (
+                      <span className="font-label-mono text-[11px] text-secondary font-bold">
+                        Pool Balance: {formatUSDC(decryptedBalance)} cUSDC
+                      </span>
+                    )}
+                  </div>
+                  <div className="border-2 border-primary flex items-center justify-between p-3 bg-surface-container-low">
+                    <input
+                      className="w-full bg-transparent font-value-mono text-xl text-primary outline-none pr-4 placeholder:text-on-surface-variant"
+                      placeholder="100.00"
+                      type="number"
+                      min="1"
+                      value={withdrawAmount}
+                      onChange={(e) => {
+                        setWithdrawAmount(e.target.value);
+                        setErrorMsg(null);
+                      }}
+                    />
+                    <span className="font-label-mono text-xs font-bold text-primary uppercase bg-surface px-2 py-1 border border-primary">
+                      cUSDC
+                    </span>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {["25%", "50%", "75%", "100%"].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => {
+                          if (decryptedBalance) {
+                            const factor = pct === "25%" ? 0.25 : pct === "50%" ? 0.5 : pct === "75%" ? 0.75 : 1;
+                            setWithdrawAmount((decryptedBalance * factor).toFixed(2));
+                          } else {
+                            setWithdrawAmount(pct === "25%" ? "25" : pct === "50%" ? "50" : pct === "75%" ? "75" : "100");
+                          }
+                        }}
+                        className="flex-1 py-1.5 text-xs font-label-mono border border-primary/40 hover:border-primary hover:bg-surface-container-high transition-colors font-bold uppercase"
+                      >
+                        {pct}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
-                  className="w-full bg-primary text-surface border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3"
+                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
+                    actionPhase === "success"
+                      ? "bg-[#C9A15A] text-surface font-black"
+                      : "bg-primary text-surface"
+                  }`}
                   onClick={handleWithdraw}
-                  disabled={isWithdrawing}
+                  disabled={isWithdrawing || actionPhase === "mining" || actionPhase === "syncing"}
                 >
-                  {isWithdrawing ? (
+                  {actionPhase === "success" ? (
+                    <>
+                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                      CONFIRMED ✓
+                    </>
+                  ) : isWithdrawing ? (
                     <>
                       <CircularLoader size="sm" />
                       Withdrawing cUSDC...
@@ -291,7 +350,7 @@ export default function BlindpotWithdrawFlow() {
                     "Switch to Sepolia & Withdraw"
                   ) : (
                     <>
-                      Step 1: Withdraw from Pool
+                      Step 1: Withdraw {withdrawAmount} cUSDC
                       <span className="material-symbols-outlined text-[16px]">file_download</span>
                     </>
                   )}
@@ -302,18 +361,71 @@ export default function BlindpotWithdrawFlow() {
             {/* Step 2 Content: Unwrap cUSDC to Public USDC */}
             {activeTab === "unwrap" && (
               <div className="flex flex-col">
-                <div className="py-2.5 border-l-4 border-secondary pl-4 mb-6 bg-surface-container-low/50">
+                <div className="py-2.5 border-l-4 border-secondary pl-4 mb-5 bg-surface-container-low/50">
                   <p className="font-body-md text-xs text-primary leading-relaxed">
-                    <strong>Step 2 (Unwrap Bridge):</strong> Unwraps your confidential <strong>cUSDC</strong> wallet tokens back into public <strong>USDC</strong>. Your MetaMask balance will be fully restored.
+                    <strong>Step 2 (Unwrap Bridge):</strong> Unwraps your confidential <strong>cUSDC</strong> tokens back into public <strong>USDC</strong>. Your MetaMask balance will be fully restored.
                   </p>
                 </div>
 
+                {/* Amount Size Selector for Unwrap */}
+                <div className="mb-5">
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="font-label-mono text-xs text-on-surface-variant uppercase font-bold">
+                      Amount of cUSDC to Unwrap:
+                    </label>
+                  </div>
+                  <div className="border-2 border-primary flex items-center justify-between p-3 bg-surface-container-low">
+                    <input
+                      className="w-full bg-transparent font-value-mono text-xl text-primary outline-none pr-4 placeholder:text-on-surface-variant"
+                      placeholder="100.00"
+                      type="number"
+                      min="1"
+                      value={withdrawAmount}
+                      onChange={(e) => {
+                        setWithdrawAmount(e.target.value);
+                        setErrorMsg(null);
+                      }}
+                    />
+                    <span className="font-label-mono text-xs font-bold text-primary uppercase bg-surface px-2 py-1 border border-primary">
+                      USDC
+                    </span>
+                  </div>
+                  <div className="flex gap-2 mt-2">
+                    {["25%", "50%", "75%", "100%"].map((pct) => (
+                      <button
+                        key={pct}
+                        type="button"
+                        onClick={() => {
+                          if (decryptedBalance) {
+                            const factor = pct === "25%" ? 0.25 : pct === "50%" ? 0.5 : pct === "75%" ? 0.75 : 1;
+                            setWithdrawAmount((decryptedBalance * factor).toFixed(2));
+                          } else {
+                            setWithdrawAmount(pct === "25%" ? "25" : pct === "50%" ? "50" : pct === "75%" ? "75" : "100");
+                          }
+                        }}
+                        className="flex-1 py-1.5 text-xs font-label-mono border border-primary/40 hover:border-primary hover:bg-surface-container-high transition-colors font-bold uppercase"
+                      >
+                        {pct}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button
-                  className="w-full bg-secondary-container text-primary border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3"
+                  className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
+                    actionPhase === "success"
+                      ? "bg-[#C9A15A] text-surface font-black"
+                      : "bg-secondary-container text-primary"
+                  }`}
                   onClick={handleUnwrap}
-                  disabled={isUnshielding}
+                  disabled={isUnshielding || actionPhase === "mining" || actionPhase === "syncing"}
                 >
-                  {isUnshielding ? (
+                  {actionPhase === "success" ? (
+                    <>
+                      <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                      CONFIRMED ✓
+                    </>
+                  ) : isUnshielding ? (
                     <>
                       <CircularLoader size="sm" />
                       Unwrapping to Public USDC...
@@ -322,7 +434,7 @@ export default function BlindpotWithdrawFlow() {
                     "Switch to Sepolia & Unwrap"
                   ) : (
                     <>
-                      Step 2: Unwrap to Public USDC
+                      Step 2: Unwrap {withdrawAmount} to Public USDC
                       <span className="material-symbols-outlined text-[16px]">lock_open</span>
                     </>
                   )}

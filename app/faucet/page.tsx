@@ -9,7 +9,7 @@ import { ERC20_ABI } from '../../sdk/src/abi';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { CipherSpinner } from '../components/BlindpotLoader';
+import { CircularLoader } from '../components/BlindpotLoader';
 
 export default function BlindpotFaucet() {
   const { address: account, isConnected } = useAccount();
@@ -21,6 +21,7 @@ export default function BlindpotFaucet() {
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [txHash, setTxHash] = useState<string | null>(null);
+  const [isMintSuccess, setIsMintSuccess] = useState<boolean>(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
 
@@ -68,9 +69,11 @@ export default function BlindpotFaucet() {
         await publicClient.waitForTransactionReceipt({ hash });
       }
 
+      setIsMintSuccess(true);
       setStatusMsg("1,000 Test USDC successfully minted on Sepolia. You can now wrap and deposit.");
     } catch (e: any) {
       console.error("Mint error:", e);
+      setIsMintSuccess(false);
       setErrorMsg(e?.message || "Mint transaction rejected or failed. Ensure you have Sepolia testnet ETH for gas.");
       setStatusMsg(null);
     }
@@ -188,11 +191,20 @@ export default function BlindpotFaucet() {
                     <button
                       onClick={handleDirectMint}
                       disabled={isMinting}
-                      className="w-full bg-secondary-container text-primary border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold text-center hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                      className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold text-center hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
+                        isMintSuccess
+                          ? "bg-[#C9A15A] text-surface font-black"
+                          : "bg-secondary-container text-primary"
+                      }`}
                     >
-                      {isMinting ? (
+                      {isMintSuccess ? (
                         <>
-                          <CipherSpinner size="sm" />
+                          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                          MINT CONFIRMED ✓
+                        </>
+                      ) : isMinting ? (
+                        <>
+                          <CircularLoader size="sm" />
                           Minting 1,000 USDC on Sepolia...
                         </>
                       ) : (

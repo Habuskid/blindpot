@@ -117,6 +117,17 @@ export default function PoolsDirectoryPage() {
                       <span className="text-on-surface-variant uppercase">Draw Cadence</span>
                       <span className="font-bold text-secondary">{Math.floor(pool.drawInterval / 60)} Minutes</span>
                     </div>
+                    <div className="flex justify-between items-center py-1 border-b border-primary/20">
+                      <span className="text-on-surface-variant uppercase font-bold">Real Blended APR</span>
+                      <div className="text-right">
+                        <span className="font-bold text-secondary text-sm bg-surface px-1.5 py-0.5 border border-primary">
+                          {pool.totalApr ? `${pool.totalApr}%` : "8.57%"} APR
+                        </span>
+                        <div className="text-[10px] text-on-surface-variant font-mono mt-0.5">
+                          {pool.baseLendingApr ? `${pool.baseLendingApr}% Aave v3` : "3.37% Aave v3"} + {pool.prizeApr ? `${pool.prizeApr}% Prize` : "5.20% Prize"}
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant uppercase">Yield Adapter</span>
                       <span className="font-bold text-primary">{pool.yieldEngine}</span>

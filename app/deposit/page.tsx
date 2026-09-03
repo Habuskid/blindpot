@@ -420,10 +420,19 @@ export default function BlindpotDepositFlow() {
                   {needsApproval ? (
                     <button
                       onClick={handleApprove}
-                      disabled={isApproving}
-                      className="w-full bg-secondary-container text-primary border-2 border-primary hard-shadow-primary py-3.5 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+                      disabled={isApproving || actionPhase === "mining" || actionPhase === "syncing"}
+                      className={`w-full border-2 border-primary hard-shadow-primary py-3.5 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${
+                        actionPhase === "success"
+                          ? "bg-[#C9A15A] text-surface font-black"
+                          : "bg-secondary-container text-primary"
+                      }`}
                     >
-                      {isApproving ? (
+                      {actionPhase === "success" ? (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                          APPROVED ✓
+                        </>
+                      ) : isApproving ? (
                         <>
                           <CircularLoader size="sm" />
                           Approving Token Wrapper...
@@ -438,10 +447,19 @@ export default function BlindpotDepositFlow() {
                   ) : (
                     <button
                       onClick={handleWrap}
-                      disabled={isWrapping}
-                      className="w-full bg-primary text-surface border-2 border-primary hard-shadow-primary py-3.5 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+                      disabled={isWrapping || actionPhase === "mining" || actionPhase === "syncing"}
+                      className={`w-full border-2 border-primary hard-shadow-primary py-3.5 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${
+                        actionPhase === "success"
+                          ? "bg-[#C9A15A] text-surface font-black"
+                          : "bg-primary text-surface"
+                      }`}
                     >
-                      {isWrapping ? (
+                      {actionPhase === "success" ? (
+                        <>
+                          <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                          WRAP CONFIRMED ✓
+                        </>
+                      ) : isWrapping ? (
                         <>
                           <CircularLoader size="sm" />
                           Wrapping to cUSDC on Sepolia...
@@ -508,10 +526,19 @@ export default function BlindpotDepositFlow() {
                 <div className="pt-2">
                   <button
                     onClick={handleDeposit}
-                    disabled={isDepositing}
-                    className="w-full bg-secondary-container text-primary border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50"
+                    disabled={isDepositing || actionPhase === "mining" || actionPhase === "syncing"}
+                    className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${
+                      actionPhase === "success"
+                        ? "bg-[#C9A15A] text-surface font-black"
+                        : "bg-secondary-container text-primary"
+                    }`}
                   >
-                    {isDepositing ? (
+                    {actionPhase === "success" ? (
+                      <>
+                        <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                        DEPOSIT CONFIRMED ✓
+                      </>
+                    ) : isDepositing ? (
                       <>
                         <CircularLoader size="sm" />
                         Encrypting & Depositing...
