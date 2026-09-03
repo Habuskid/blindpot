@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useAccount, useReadContract, useChainId, useSwitchChain } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { useRouter } from 'next/navigation';
-import { useHasPermit, useGrantPermit, useDecryptValues } from "@zama-fhe/react-sdk";
+import { useHasPermit, useGrantPermit, useDecryptValues, useRevokePermits } from "@zama-fhe/react-sdk";
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
 import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
@@ -95,6 +95,7 @@ export default function BlindpotDashboard() {
 
   const { data: hasPermit, refetch: refetchPermit } = useHasPermit({ contractAddresses: permitContracts });
   const { mutateAsync: grantPermit } = useGrantPermit();
+  const { mutateAsync: revokePermits } = useRevokePermits();
 
   // Format valid non-zero handles for KMS query
   const hasValidBalanceHandle = encryptedBalanceHandle !== undefined && encryptedBalanceHandle > 0n;
@@ -130,16 +131,27 @@ export default function BlindpotDashboard() {
   };
 
   
-  // Auto-log KMS errors
+  // Auto-log KMS errors with full debug context
   useEffect(() => {
     if (kmsError) {
+      const debugInfo = {
+        message: 'KMS Decryption Error',
+        details: JSON.stringify({
+          error: kmsError.message || String(kmsError),
+          balanceHandle: validBalanceHandleHex || 'none',
+          balanceContract: drawAddress || 'none',
+          winningsHandle: validWinningsHandleHex || 'none',
+          winningsContract: vaultAddress,
+          permitContracts: permitContracts,
+          hasPermit: hasPermit,
+          handlesCount: handlesToDecrypt.length,
+        }),
+      };
+      console.error("KMS Debug:", debugInfo);
       fetch('/api/bugs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: 'KMS Decryption Error',
-          details: kmsError.message || String(kmsError)
-        })
+        body: JSON.stringify(debugInfo)
       }).catch(console.error);
     }
   }, [kmsError]);
@@ -201,7 +213,9 @@ export default function BlindpotDashboard() {
 
     try {
       setIsSigningPermit(true);
-      setStatusMsg("Prompting wallet to sign EIP-712 Decryption Permit (gasless)...");
+      setStatusMsg("Revoking stale permits and re-signing fresh EIP-712 Decryption Permit...");
+      // Revoke any cached permits from previous vault deployments
+      try { await revokePermits(permitContracts); } catch (_) {}
       await grantPermit(permitContracts);
       await refetchPermit();
       await refetchIsMember();
