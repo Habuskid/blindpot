@@ -43,7 +43,6 @@
   - [4. Run the Autonomous Keeper Daemon](#4-run-the-autonomous-keeper-daemon)
   - [5. Run HCU & Gas Benchmarks](#5-run-hcu--gas-benchmarks)
 - [How to Use Blindpot (Step-by-Step)](#how-to-use-blindpot-step-by-step)
-- [Roadmap](#roadmap)
 - [Security & Trust Model](#security--trust-model)
 - [License](#license)
 
@@ -307,14 +306,6 @@ npm run benchmark
    - If you won: Claim your prize tokens into your wallet with one click.
    - If you didn't win: You keep 100% of your initial savings, and your tickets roll into the next draw automatically.
 7. **Withdraw Anytime**: Head to [Withdraw](https://blindpot.vercel.app/withdraw) whenever you want your money back. You get 100% of your deposit back into your wallet instantly. No lockup periods, no penalties, and no fees.
-
----
-
-## Roadmap
-
-- **Phase 1 (Live Now)**: Confidential USDC savings pools, automated 10-minute prize draws, Morpho Blue lending yield, and instant principal withdrawals.
-- **Phase 2**: Mobile wallet optimization, additional stablecoin pools (USDT, EURC), and flexible draw schedules (Daily, Weekly, Monthly).
-- **Phase 3**: Automated prize compounding, multi-asset yield routing, and community-created private savings pools.
 
 ---
 
