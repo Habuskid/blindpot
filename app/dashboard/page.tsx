@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useAccount, useReadContract, useChainId, useSwitchChain } from 'wagmi';
+import { useAccount, useReadContract, useChainId, useSwitchChain, useWriteContract } from 'wagmi';
 import { sepolia } from 'wagmi/chains';
 import { useRouter } from 'next/navigation';
 import { useHasPermit, useGrantPermit, useDecryptValues, useRevokePermits } from "@zama-fhe/react-sdk";
@@ -23,11 +23,13 @@ export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
   const { claim, isPending: isClaiming } = useClaim();
   const { success: toastSuccess, error: toastError, info: toastInfo, loading: toastLoading, dismiss: toastDismiss } = useToast();
   const router = useRouter();
 
   const [isSigningPermit, setIsSigningPermit] = useState(false);
+  const [isExecutingDraw, setIsExecutingDraw] = useState(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
   const vaultAddress = addresses.vault as `0x${string}`;
@@ -53,7 +55,7 @@ export default function BlindpotDashboard() {
     functionName: 'currentDrawId',
   });
 
-  const { data: nextDrawTimeRaw } = useReadContract({
+  const { data: nextDrawTimeRaw, refetch: refetchNextDrawTime } = useReadContract({
     address: vaultAddress,
     abi: BLINDPOT_VAULT_ABI,
     functionName: 'nextDrawTime',
@@ -256,6 +258,30 @@ export default function BlindpotDashboard() {
       await refetchWinningsHandle();
     } catch (e: any) {
       toastError(e?.message || "Claim failed.", { id: "claim-toast", title: "CLAIM FAILED" });
+    }
+  };
+
+  const handleTriggerDraw = async () => {
+    toastLoading("Triggering autonomous draw on Sepolia...", { id: "draw-toast", title: "EXECUTING DRAW" });
+    setIsExecutingDraw(true);
+    try {
+      const hash = await writeContractAsync({
+        address: vaultAddress,
+        abi: BLINDPOT_VAULT_ABI,
+        functionName: 'drawWinner',
+      } as any);
+      toastSuccess(`Confidential draw confirmed on-chain! New epoch started.`, {
+        id: "draw-toast",
+        title: "ROUND ADVANCED",
+        duration: 7000,
+      });
+      await refetchDrawId();
+      await refetchNextDrawTime();
+      await refetchMemberCount();
+      setIsExecutingDraw(false);
+    } catch (e: any) {
+      toastError(e?.message || "Draw trigger failed.", { id: "draw-toast", title: "DRAW FAILED" });
+      setIsExecutingDraw(false);
     }
   };
 
@@ -541,8 +567,21 @@ export default function BlindpotDashboard() {
                   </span>
                 </div>
                 {nextDrawTimeRaw !== undefined ? (
-                  <div className="font-value-mono text-2xl font-bold text-secondary mt-2 tracking-wider">
-                    {formattedCountdown}
+                  <div className="flex items-center justify-between mt-2">
+                    <div className="font-value-mono text-2xl font-bold text-secondary tracking-wider">
+                      {formattedCountdown}
+                    </div>
+                    {Number(nextDrawTimeRaw) <= Math.floor(Date.now() / 1000) && (
+                      <button
+                        onClick={handleTriggerDraw}
+                        disabled={isExecutingDraw}
+                        className="bg-secondary text-primary border-2 border-primary font-label-mono text-[10px] uppercase font-bold py-1 px-2 hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1"
+                        title="Permissionless execution: trigger matured draw"
+                      >
+                        <span className="material-symbols-outlined text-[13px]">bolt</span>
+                        {isExecutingDraw ? "Triggering..." : "Execute Draw"}
+                      </button>
+                    )}
                   </div>
                 ) : (
                   <Skeleton className="h-7 w-24 mt-2" />
