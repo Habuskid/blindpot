@@ -10,7 +10,7 @@ import { addresses } from '../../sdk/src/config';
 import { formatUSDC } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
-import { CipherSpinner, DossierLoader } from '../components/BlindpotLoader';
+import { CircularLoader, DossierLoader } from '../components/BlindpotLoader';
 import { Footer } from '../components/Footer';
 
 const VAULT_ADDRESS = addresses.vault;
@@ -81,7 +81,7 @@ function YouWonContent() {
 
           {(isDecrypting || isGrantingPermit) && decryptedWinnings === undefined && (
             <div className="font-value-mono text-lg text-secondary flex items-center gap-2">
-              <CipherSpinner size="md" />
+              <CircularLoader size="md" />
               Checking Your Ticket...
             </div>
           )}
@@ -122,7 +122,7 @@ function YouWonContent() {
 
         {statusMsg && (
           <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
-            <CipherSpinner size="sm" />
+            <CircularLoader size="sm" />
             <span>{statusMsg}</span>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
+import { db } from '../../../lib/db';
 
 export async function GET(req: Request) {
   try {
@@ -10,22 +10,10 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: true, activity: [] });
     }
 
-    if (!process.env.DATABASE_URL) {
-      return NextResponse.json({ success: true, activity: [] });
-    }
-
-    const sql = neon(process.env.DATABASE_URL);
-    // Use ILIKE for case-insensitive match
-    const activity = await sql`
-      SELECT * FROM "ActivityLog"
-      WHERE "userAddress" ILIKE ${user}
-      ORDER BY timestamp DESC
-      LIMIT 50
-    `;
-    
+    const activity = db.getActivity(user);
     return NextResponse.json({ success: true, activity });
   } catch (e: any) {
-    console.warn("Neon DB error on GET:", e?.message);
+    console.warn("DB error on GET /api/activity:", e?.message);
     return NextResponse.json({ success: true, activity: [] });
   }
 }
@@ -36,32 +24,22 @@ export async function POST(req: Request) {
     if (!body.userAddress || !body.action || !body.txHash) {
       return NextResponse.json({ success: false, error: 'Missing required fields' }, { status: 400 });
     }
-    
-    if (!process.env.DATABASE_URL) {
-      return NextResponse.json({ success: true, record: { ...body, id: 'fake' } });
-    }
 
-    const sql = neon(process.env.DATABASE_URL);
-    
-    const record = await sql`
-      INSERT INTO "ActivityLog" (
-        "id", "userAddress", "poolId", "action", "amount", "drawId", "txHash", "timestamp"
-      ) VALUES (
-        gen_random_uuid(),
-        ${body.userAddress},
-        ${body.poolId || 'pool-usdc-sepolia-01'},
-        ${body.action},
-        ${body.amount ? parseFloat(body.amount) : null},
-        ${body.drawId ? parseInt(body.drawId) : null},
-        ${body.txHash},
-        NOW()
-      )
-      RETURNING *
-    `;
+    const record = db.recordActivity({
+      id: `act-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      userAddress: body.userAddress.toLowerCase(),
+      poolId: body.poolId || 'pool-usdc-sepolia-01',
+      action: body.action.toUpperCase() as 'DEPOSIT' | 'WITHDRAW' | 'CLAIM',
+      amount: body.amount ? parseFloat(body.amount) : undefined,
+      drawId: body.drawId ? parseInt(body.drawId) : undefined,
+      txHash: body.txHash,
+      timestamp: body.timestamp || Math.floor(Date.now() / 1000),
+      status: 'CONFIRMED',
+    });
 
-    return NextResponse.json({ success: true, record: record[0] });
+    return NextResponse.json({ success: true, record });
   } catch (e: any) {
-    console.warn("Neon DB error on POST:", e?.message);
-    return NextResponse.json({ success: false, error: 'Database not connected' }, { status: 500 });
+    console.warn("DB error on POST /api/activity:", e?.message);
+    return NextResponse.json({ success: false, error: e?.message }, { status: 500 });
   }
 }

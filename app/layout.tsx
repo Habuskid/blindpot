@@ -1,8 +1,6 @@
 import './globals.css'
 import { Providers } from './providers'
 
-import { TelemetryTracker } from './components/TelemetryTracker'
-
 export const metadata = {
   title: 'BLINDPOT POOL',
   description: 'Confidential no-loss prize savings protocol',
@@ -23,7 +21,6 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>
-          <TelemetryTracker />
           {children}
         </Providers>
       </body>

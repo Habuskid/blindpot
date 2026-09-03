@@ -10,6 +10,7 @@ import { addresses } from '../sdk/src/config';
 import { LandingNavbar } from './components/LandingNavbar';
 import { Footer } from './components/Footer';
 import { Skeleton } from './components/Skeleton';
+import { useEpochCountdown } from './hooks/useEpochCountdown';
 
 const vaultAbi = [
   {
@@ -39,7 +40,6 @@ export default function BlindpotLandingPage() {
   const router = useRouter();
   const { isConnected } = useAccount();
   const { connect } = useConnect();
-  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
 
   const { data: memberCount } = useReadContract({
     address: addresses.vault as `0x${string}`,
@@ -62,32 +62,7 @@ export default function BlindpotLandingPage() {
   const displayMembers = memberCount !== undefined ? Number(memberCount) : 0;
   const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
 
-  useEffect(() => {
-    if (nextDrawTimeRaw === undefined) return;
-    const target = Number(nextDrawTimeRaw);
-    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
-
-    const tick = () => {
-      const now = Math.floor(Date.now() / 1000);
-      let diff = target - now;
-      if (diff <= 0) {
-        // Continuous rolling autonomous epoch cadence
-        const overdue = Math.abs(diff);
-        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
-      }
-      setSecondsRemaining(diff);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [nextDrawTimeRaw]);
-
-  const formatCountdown = (secs: number | null) => {
-    if (secs === null) return "--:--";
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  const { formattedCountdown } = useEpochCountdown(nextDrawTimeRaw);
 
   return (
     <>
@@ -167,7 +142,7 @@ export default function BlindpotLandingPage() {
                   </span>
                   {nextDrawTimeRaw !== undefined ? (
                     <span className="font-bold text-secondary font-mono">
-                      {formatCountdown(secondsRemaining)}
+                      {formattedCountdown}
                     </span>
                   ) : (
                     <Skeleton className="h-4 w-14" />

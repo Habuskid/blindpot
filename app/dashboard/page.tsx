@@ -13,9 +13,10 @@ import { formatUSDC, formatTimestamp, formatAddress } from '../../lib/formatters
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
 import { NetworkBanner } from '../components/NetworkBanner';
-import { CipherSpinner, CircularLoader } from '../components/BlindpotLoader';
+import { CircularLoader } from '../components/BlindpotLoader';
 import { Skeleton, SkeletonTableRow } from '../components/Skeleton';
 import { Footer } from '../components/Footer';
+import { useEpochCountdown } from '../hooks/useEpochCountdown';
 
 export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
@@ -28,7 +29,6 @@ export default function BlindpotDashboard() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [claimStatusMsg, setClaimStatusMsg] = useState<string | null>(null);
   const [claimErrorMsg, setClaimErrorMsg] = useState<string | null>(null);
-  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
   const [isSigningPermit, setIsSigningPermit] = useState(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
@@ -60,6 +60,8 @@ export default function BlindpotDashboard() {
     abi: BLINDPOT_VAULT_ABI,
     functionName: 'nextDrawTime',
   });
+
+  const { formattedCountdown } = useEpochCountdown(nextDrawTimeRaw);
 
   const { data: drawAddress } = useReadContract({
     address: vaultAddress,
@@ -134,28 +136,10 @@ export default function BlindpotDashboard() {
   };
 
   
-  // Auto-log KMS errors with full debug context
+  // Log KMS errors locally to console for debugging
   useEffect(() => {
     if (kmsError) {
-      const debugInfo = {
-        message: 'KMS Decryption Error',
-        details: JSON.stringify({
-          error: kmsError.message || String(kmsError),
-          balanceHandle: validBalanceHandleHex || 'none',
-          balanceContract: drawAddress || 'none',
-          winningsHandle: validWinningsHandleHex || 'none',
-          winningsContract: vaultAddress,
-          permitContracts: permitContracts,
-          hasPermit: hasPermit,
-          handlesCount: handlesToDecrypt.length,
-        }),
-      };
-      console.error("KMS Debug:", debugInfo);
-      fetch('/api/bugs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(debugInfo)
-      }).catch(console.error);
+      console.warn("KMS Decryption notice:", kmsError?.message || kmsError);
     }
   }, [kmsError]);
 
@@ -185,26 +169,6 @@ export default function BlindpotDashboard() {
     }
   }
 
-  // Countdown timer logic
-  useEffect(() => {
-    if (nextDrawTimeRaw === undefined) return;
-    const target = Number(nextDrawTimeRaw);
-    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
-
-    const tick = () => {
-      const now = Math.floor(Date.now() / 1000);
-      let diff = target - now;
-      if (diff <= 0) {
-        // Continuous rolling autonomous epoch cadence
-        const overdue = Math.abs(diff);
-        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
-      }
-      setSecondsRemaining(diff);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [nextDrawTimeRaw]);
 
   // Decrypt handler
   const onDecryptClick = async () => {
@@ -300,13 +264,6 @@ export default function BlindpotDashboard() {
     }
   };
 
-  const formatCountdown = (secs: number | null) => {
-    if (secs === null) return "--:--";
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
-
   const isDecryptingActive = isSigningPermit || (hasPermit && isKmsDecrypting && handlesToDecrypt.length > 0 && decryptedBalance === undefined);
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
 
@@ -389,7 +346,7 @@ export default function BlindpotDashboard() {
 
               {statusMsg && (
                 <div className="bg-surface-container-high border border-primary text-primary p-3 text-xs font-mono flex items-center gap-2">
-                  <CipherSpinner size="sm" />
+                  <CircularLoader size="sm" />
                   <span>{statusMsg}</span>
                 </div>
               )}
@@ -617,7 +574,7 @@ export default function BlindpotDashboard() {
                 </div>
                 {nextDrawTimeRaw !== undefined ? (
                   <div className="font-value-mono text-2xl font-bold text-secondary mt-2 tracking-wider">
-                    {formatCountdown(secondsRemaining)}
+                    {formattedCountdown}
                   </div>
                 ) : (
                   <Skeleton className="h-7 w-24 mt-2" />

@@ -9,9 +9,10 @@ import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
 import { formatTimestamp } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
-import { CipherSpinner, CircularLoader } from '../components/BlindpotLoader';
+import { CircularLoader } from '../components/BlindpotLoader';
 import { SkeletonTableRow } from '../components/Skeleton';
 import { Footer } from '../components/Footer';
+import { useEpochCountdown } from '../hooks/useEpochCountdown';
 
 const VAULT_ADDRESS = addresses.vault;
 
@@ -34,34 +35,7 @@ export default function BlindpotDrawHistory() {
     functionName: 'nextDrawTime',
   });
 
-  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (nextDrawTimeRaw === undefined) return;
-    const target = Number(nextDrawTimeRaw);
-    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
-
-    const tick = () => {
-      const now = Math.floor(Date.now() / 1000);
-      let diff = target - now;
-      if (diff <= 0) {
-        // Continuous rolling autonomous epoch cadence
-        const overdue = Math.abs(diff);
-        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
-      }
-      setSecondsRemaining(diff);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [nextDrawTimeRaw]);
-
-  const formatCountdown = (secs: number | null) => {
-    if (secs === null) return "--:--";
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  const { formattedCountdown } = useEpochCountdown(nextDrawTimeRaw);
 
   const [dbDraws, setDbDraws] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -180,7 +154,7 @@ export default function BlindpotDrawHistory() {
           <div className="flex items-center gap-2 bg-surface-container-high border border-primary px-3 py-1.5 font-mono text-xs">
             <span className="text-on-surface-variant uppercase text-[10px] font-bold">Epoch Countdown:</span>
             <span className="font-bold text-secondary font-value-mono text-sm bg-surface px-2 py-0.5 border border-primary">
-              {formatCountdown(secondsRemaining)}
+              {formattedCountdown}
             </span>
           </div>
         </div>

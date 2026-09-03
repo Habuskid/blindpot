@@ -70,9 +70,6 @@ export function CircularLoader({
   );
 }
 
-// Alias for backwards compatibility across existing pages
-export const CipherSpinner = CircularLoader;
-
 export type OnchainPhase = "idle" | "wallet" | "mining" | "syncing" | "success" | "error";
 
 export interface OnchainSyncCardProps {

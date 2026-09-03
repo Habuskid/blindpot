@@ -9,9 +9,9 @@ import { addresses } from '../../sdk/src/config';
 import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
 import { formatAddress } from '../../lib/formatters';
 import type { PoolRecord } from '../../lib/db';
-import { DossierLoader } from '../components/BlindpotLoader';
 import { SkeletonPoolCard } from '../components/Skeleton';
 import { Footer } from '../components/Footer';
+import { useEpochCountdown } from '../hooks/useEpochCountdown';
 
 export default function PoolsDirectoryPage() {
   const { address: account } = useAccount();
@@ -36,34 +36,7 @@ export default function PoolsDirectoryPage() {
     functionName: 'nextDrawTime',
   });
 
-  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (nextDrawTimeRaw === undefined) return;
-    const target = Number(nextDrawTimeRaw);
-    const DRAW_INTERVAL = 600; // 10-minute autonomous cadence
-
-    const tick = () => {
-      const now = Math.floor(Date.now() / 1000);
-      let diff = target - now;
-      if (diff <= 0) {
-        // Continuous rolling autonomous epoch cadence
-        const overdue = Math.abs(diff);
-        diff = DRAW_INTERVAL - (overdue % DRAW_INTERVAL);
-      }
-      setSecondsRemaining(diff);
-    };
-    tick();
-    const interval = setInterval(tick, 1000);
-    return () => clearInterval(interval);
-  }, [nextDrawTimeRaw]);
-
-  const formatCountdown = (secs: number | null) => {
-    if (secs === null) return "--:--";
-    const m = Math.floor(secs / 60).toString().padStart(2, '0');
-    const s = (secs % 60).toString().padStart(2, '0');
-    return `${m}:${s}`;
-  };
+  const { formattedCountdown } = useEpochCountdown(nextDrawTimeRaw);
 
   const { data: isUserMember } = useReadContract({
     address: addresses.vault as `0x${string}`,
@@ -158,7 +131,7 @@ export default function PoolsDirectoryPage() {
                         Next Epoch Draw
                       </span>
                       <span className="font-bold font-value-mono text-secondary text-sm bg-surface px-2 py-0.5 border border-primary">
-                        {formatCountdown(secondsRemaining)}
+                        {formattedCountdown}
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-1 border-b border-primary/20">
