@@ -79,7 +79,6 @@ const INITIAL_DRAWS: DrawRecord[] = [
     timestamp: 1725368400, // Recent 10-minute epoch
     blockNumber: 6641210,
     potSize: 50.0,
-    txHash: '0x8f19da32b13c774a008c2eb1fa0581452140a83e02613d5a49cb55eb1e93c12a',
     status: 'SETTLED',
   },
   {
@@ -88,8 +87,7 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725367800,
     blockNumber: 6641150,
-    potSize: 75.0,
-    txHash: '0x3a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef07',
+    potSize: 50.0,
     status: 'SETTLED',
   },
   {
@@ -99,7 +97,6 @@ const INITIAL_DRAWS: DrawRecord[] = [
     timestamp: 1725367200,
     blockNumber: 6641090,
     potSize: 50.0,
-    txHash: '0x4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef06',
     status: 'SETTLED',
   },
   {
@@ -108,8 +105,7 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725366600,
     blockNumber: 6641030,
-    potSize: 60.0,
-    txHash: '0x5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef05',
+    potSize: 50.0,
     status: 'SETTLED',
   },
   {
@@ -119,7 +115,6 @@ const INITIAL_DRAWS: DrawRecord[] = [
     timestamp: 1725366000,
     blockNumber: 6640970,
     potSize: 50.0,
-    txHash: '0x6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef04',
     status: 'SETTLED',
   },
   {
@@ -128,8 +123,7 @@ const INITIAL_DRAWS: DrawRecord[] = [
     poolId: 'pool-usdc-sepolia-01',
     timestamp: 1725365400,
     blockNumber: 6640910,
-    potSize: 85.0,
-    txHash: '0x7e8f90123456789abcdef0123456789abcdef0123456789abcdef03',
+    potSize: 50.0,
     status: 'SETTLED',
   },
   {
@@ -139,7 +133,6 @@ const INITIAL_DRAWS: DrawRecord[] = [
     timestamp: 1725364800,
     blockNumber: 6640850,
     potSize: 50.0,
-    txHash: '0x8f90123456789abcdef0123456789abcdef0123456789abcdef02',
     status: 'SETTLED',
   },
   {
@@ -149,7 +142,6 @@ const INITIAL_DRAWS: DrawRecord[] = [
     timestamp: 1725364200,
     blockNumber: 6640790,
     potSize: 50.0,
-    txHash: '0x90123456789abcdef0123456789abcdef0123456789abcdef01',
     status: 'SETTLED',
   }
 ];

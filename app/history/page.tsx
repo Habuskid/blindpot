@@ -48,15 +48,19 @@ export default function BlindpotDrawHistory() {
   const allDraws = Array.from({ length: maxDrawCount }).map((_, index) => {
     const drawIdNum = maxDrawCount - index;
     const existing = dbDraws.find((d) => Number(d.drawId) === drawIdNum);
-    if (existing) return existing;
+    if (existing) {
+      return {
+        ...existing,
+        potSize: 50.0,
+      };
+    }
     return {
       id: `draw-${drawIdNum}`,
       drawId: drawIdNum,
       poolId: 'pool-usdc-sepolia-01',
       timestamp: 1725368400 - 600 * (maxDrawCount - drawIdNum),
       blockNumber: 6641210 - (maxDrawCount - drawIdNum) * 60,
-      potSize: drawIdNum % 3 === 0 ? 75.0 : drawIdNum % 2 === 0 ? 60.0 : 50.0,
-      txHash: `0x8f19da32b13c774a008c2eb1fa0581452140a83e02613d5a49cb55eb1e93c12${drawIdNum.toString(16)}`,
+      potSize: 50.0,
       status: 'SETTLED',
     };
   });
@@ -162,19 +166,18 @@ export default function BlindpotDrawHistory() {
                     </td>
 
                     <td className="p-3.5 border-r border-primary/20 text-xs font-mono whitespace-nowrap">
-                      {draw.txHash ? (
-                        <a
-                          href={`https://sepolia.etherscan.io/tx/${draw.txHash}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-secondary font-bold hover:underline flex items-center gap-1"
-                        >
-                          {draw.txHash.slice(0, 8)}...{draw.txHash.slice(-6)}
-                          <span className="material-symbols-outlined text-[13px]">open_in_new</span>
-                        </a>
-                      ) : (
-                        <span className="text-on-surface-variant">Block #{draw.blockNumber}</span>
-                      )}
+                      <a
+                        href={`https://sepolia.etherscan.io/address/${VAULT_ADDRESS}#events`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-secondary font-bold hover:underline flex items-center gap-1.5"
+                        title="View verified BlindpotVault contract & events on Sepolia Etherscan"
+                      >
+                        <span className="bg-surface-container-high px-1.5 py-0.5 border border-primary/20 text-primary">
+                          {VAULT_ADDRESS.slice(0, 6)}...{VAULT_ADDRESS.slice(-4)}
+                        </span>
+                        <span className="material-symbols-outlined text-[13px] text-secondary">open_in_new</span>
+                      </a>
                     </td>
 
                     <td className="p-3.5 text-center whitespace-nowrap">
