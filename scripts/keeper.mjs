@@ -70,7 +70,10 @@ console.log(`• Keeper Address: ${account.address}`);
 console.log(`• Network: Ethereum Sepolia (11155111)`);
 console.log("=================================================\n");
 
+let isExecuting = false;
+
 async function checkAndExecuteDraw() {
+  if (isExecuting) return;
   try {
     const [memberCount, nextDrawTime, currentDrawId] = await Promise.all([
       publicClient.readContract({
@@ -102,6 +105,7 @@ async function checkAndExecuteDraw() {
     process.stdout.write(`\r[${new Date().toLocaleTimeString()}] Round #${round} | Depositors: ${members}/25 | Next Draw in: ${timeStr}   `);
 
     if (secondsRemaining === 0 && members > 0) {
+      isExecuting = true;
       console.log("\n\n⚡ Epoch matured and active depositors detected! Executing on-chain draw...");
       const hash = await walletClient.writeContract({
         address: vaultAddress,
@@ -113,6 +117,7 @@ async function checkAndExecuteDraw() {
       console.log("⏳ Waiting for Sepolia block confirmation...");
       const receipt = await publicClient.waitForTransactionReceipt({ hash });
       console.log(`🎉 Draw confirmed in block ${receipt.blockNumber}! Winner selected via FHE.randEuint32.\n`);
+      isExecuting = false;
 
       // Sync completed draw to protocol database
       try {
@@ -140,6 +145,7 @@ async function checkAndExecuteDraw() {
       }
     }
   } catch (error) {
+    isExecuting = false;
     console.error("\n⚠️ Keeper check error:", error.message || error);
   }
 }

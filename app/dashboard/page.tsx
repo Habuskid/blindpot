@@ -23,13 +23,11 @@ export default function BlindpotDashboard() {
   const { address: account, isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync } = useSwitchChain();
-  const { writeContractAsync } = useWriteContract();
   const { claim, isPending: isClaiming } = useClaim();
   const { success: toastSuccess, error: toastError, info: toastInfo, loading: toastLoading, dismiss: toastDismiss } = useToast();
   const router = useRouter();
 
   const [isSigningPermit, setIsSigningPermit] = useState(false);
-  const [isExecutingDraw, setIsExecutingDraw] = useState(false);
 
   const isWrongNetwork = isConnected && chainId !== sepolia.id;
   const vaultAddress = addresses.vault as `0x${string}`;
@@ -261,29 +259,33 @@ export default function BlindpotDashboard() {
     }
   };
 
-  const handleTriggerDraw = async () => {
-    toastLoading("Triggering autonomous draw on Sepolia...", { id: "draw-toast", title: "EXECUTING DRAW" });
-    setIsExecutingDraw(true);
-    try {
-      const hash = await writeContractAsync({
-        address: vaultAddress,
-        abi: BLINDPOT_VAULT_ABI,
-        functionName: 'drawWinner',
-      } as any);
-      toastSuccess(`Confidential draw confirmed on-chain! New epoch started.`, {
-        id: "draw-toast",
-        title: "ROUND ADVANCED",
-        duration: 7000,
-      });
-      await refetchDrawId();
-      await refetchNextDrawTime();
-      await refetchMemberCount();
-      setIsExecutingDraw(false);
-    } catch (e: any) {
-      toastError(e?.message || "Draw trigger failed.", { id: "draw-toast", title: "DRAW FAILED" });
-      setIsExecutingDraw(false);
+  // Autonomous Cadence: Silent auto-activation when epoch matures
+  useEffect(() => {
+    if (nextDrawTimeRaw === undefined) return;
+    const target = Number(nextDrawTimeRaw);
+    const now = Math.floor(Date.now() / 1000);
+
+    if (now >= target) {
+      let isMounted = true;
+      const autoTriggerDraw = async () => {
+        try {
+          const res = await fetch('/api/keeper');
+          const data = await res.json();
+          if (isMounted && data.success && data.executed) {
+            await refetchDrawId();
+            await refetchNextDrawTime();
+            await refetchMemberCount();
+            toastSuccess(`Epoch #${data.newDrawId} settled autonomously on-chain!`, {
+              title: "AUTONOMOUS DRAW SETTLED",
+              duration: 7000,
+            });
+          }
+        } catch (_) {}
+      };
+      autoTriggerDraw();
+      return () => { isMounted = false; };
     }
-  };
+  }, [nextDrawTimeRaw, formattedCountdown]);
 
   const isDecryptingActive = isSigningPermit || (hasPermit && isKmsDecrypting && handlesToDecrypt.length > 0 && decryptedBalance === undefined);
   const isEnrolled = !!isUserMember || (decryptedBalance !== undefined && decryptedBalance > 0);
@@ -567,21 +569,8 @@ export default function BlindpotDashboard() {
                   </span>
                 </div>
                 {nextDrawTimeRaw !== undefined ? (
-                  <div className="flex items-center justify-between mt-2">
-                    <div className="font-value-mono text-2xl font-bold text-secondary tracking-wider">
-                      {formattedCountdown}
-                    </div>
-                    {Number(nextDrawTimeRaw) <= Math.floor(Date.now() / 1000) && (
-                      <button
-                        onClick={handleTriggerDraw}
-                        disabled={isExecutingDraw}
-                        className="bg-secondary text-primary border-2 border-primary font-label-mono text-[10px] uppercase font-bold py-1 px-2 hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center gap-1"
-                        title="Permissionless execution: trigger matured draw"
-                      >
-                        <span className="material-symbols-outlined text-[13px]">bolt</span>
-                        {isExecutingDraw ? "Triggering..." : "Execute Draw"}
-                      </button>
-                    )}
+                  <div className="font-value-mono text-2xl font-bold text-secondary mt-2 tracking-wider">
+                    {formattedCountdown}
                   </div>
                 ) : (
                   <Skeleton className="h-7 w-24 mt-2" />
