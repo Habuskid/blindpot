@@ -26,10 +26,15 @@ function loadEnv() {
 loadEnv();
 
 const privateKey = process.env.PRIVATE_KEY;
-const rpcUrl = process.env.RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com';
+const rpcUrl = process.env.RPC_URL || process.env.NEXT_PUBLIC_RPC_URL;
 
 if (!privateKey) {
   console.error("❌ ERROR: Missing PRIVATE_KEY in .env file");
+  process.exit(1);
+}
+
+if (!rpcUrl) {
+  console.error("❌ ERROR: Missing RPC_URL in .env file");
   process.exit(1);
 }
 

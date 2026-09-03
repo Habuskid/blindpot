@@ -89,7 +89,7 @@ export default function BlindpotLandingPage() {
         <section className="flex flex-col md:flex-row hairline-b min-h-[60vh]">
           <div className="w-full md:w-[60%] p-margin-mobile md:p-margin-desktop flex flex-col justify-center hairline-r relative bg-surface">
             <div className="font-stamp-text text-stamp-text text-error opacity-80 mb-3 inline-block">
-              CONFIDENTIAL PRIZE SAVINGS PROTOCOL · ZAMA FHEVM
+              CONFIDENTIAL PRIZE SAVINGS POOL · ZAMA FHEVM
             </div>
             <h1 className="font-headline-lg text-headline-lg uppercase text-primary max-w-3xl mb-gutter break-words leading-none">
               YOUR SAVINGS.<br />
@@ -97,7 +97,7 @@ export default function BlindpotLandingPage() {
               EVEN US.
             </h1>
             <p className="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-margin-desktop leading-relaxed">
-              Deposit into a confidential prize pool powered by Fully Homomorphic Encryption (FHE). Your balance, tickets, and odds remain completely private on-chain. Withdraw 100% of your principal at any time with zero loss and zero fees.
+              Deposit into a confidential prize pool powered by Fully Homomorphic Encryption (FHE) and Morpho Blue continuous lending. Your balance, tickets, and odds remain completely private on-chain. Withdraw 100% of your principal at any time with zero loss and zero fees.
             </p>
             <div className="flex flex-wrap gap-4">
               <ConnectAndSignButton className="bg-secondary-container text-primary font-label-mono text-label-mono uppercase px-6 py-3.5 text-base font-bold border-2 border-primary hard-shadow-primary hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2" />
@@ -111,7 +111,7 @@ export default function BlindpotLandingPage() {
 
           </div>
 
-          {/* LIVE ON-CHAIN PROTOCOL LEDGER CARD */}
+          {/* LIVE ON-CHAIN POOL LEDGER CARD */}
           <div className="w-full md:w-[40%] bg-surface-container-high p-margin-mobile md:p-margin-desktop flex flex-col justify-center items-center relative overflow-hidden group">
             <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: "linear-gradient(rgba(15, 15, 18, 0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 15, 18, 0.5) 1px, transparent 1px)", backgroundSize: "10px 10px" }}></div>
             
@@ -139,12 +139,15 @@ export default function BlindpotLandingPage() {
                 <div className="flex justify-between items-center hairline-b pb-2">
                   <span className="font-label-mono text-xs text-on-surface-variant uppercase">Active Epoch</span>
                   <span className="font-bold text-primary font-mono">
-                    Round #{displayDrawId}
+                    Round #{displayDrawId === 0 ? 1 : displayDrawId}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="font-label-mono text-xs text-on-surface-variant uppercase">Next Draw</span>
+                  <span className="font-label-mono text-xs text-on-surface-variant uppercase flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse inline-block"></span>
+                    Next Draw
+                  </span>
                   <span className="font-bold text-secondary font-mono">
                     {formatCountdown(secondsRemaining)}
                   </span>
@@ -160,7 +163,7 @@ export default function BlindpotLandingPage() {
 
         {/* NETWORK STATUS BAR */}
         <div className="w-full bg-primary text-surface py-2.5 px-margin-mobile md:px-margin-desktop flex justify-center items-center font-label-mono text-label-mono uppercase text-xs tracking-widest text-center">
-          Built on Zama Protocol (fhEVM) · ERC-7984 Confidential Tokens · Sepolia Testnet
+          Built on Zama Protocol (fhEVM) · Morpho Blue Yield Engine · ERC-7984 Confidential Tokens · Sepolia Testnet
         </div>
 
         {/* 5-STAGE OPERATIONAL LIFECYCLE */}
@@ -205,7 +208,7 @@ export default function BlindpotLandingPage() {
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex flex-col md:flex-row justify-between items-center border-t-2 border-primary bg-surface mt-auto">
         <div className="font-label-mono text-label-mono font-bold text-primary mb-4 md:mb-0">
-          © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
+          © BLINDPOT POOL. ALL RIGHTS RESERVED.
         </div>
         <div className="flex gap-6 font-label-mono text-label-mono uppercase text-xs">
           <Link href="/how-it-works" className="hover:underline">Documentation</Link>

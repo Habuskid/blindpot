@@ -12,77 +12,117 @@ export default function BlindpotHowItWorks() {
       <main className="max-w-4xl mx-auto px-margin-mobile md:px-margin-desktop pt-24 pb-20">
         <header className="mb-12 border-b-2 border-primary pb-6">
           <div className="font-label-mono text-xs uppercase text-on-surface-variant mb-1">Architecture Dossier</div>
-          <h1 className="font-headline-lg text-2xl md:text-3xl text-primary uppercase font-bold">Protocol Overview &amp; Mechanics</h1>
-          <p className="font-value-mono text-xs text-on-surface-variant mt-2 uppercase tracking-widest">Document Ref: BPT-HIW-001</p>
+          <h1 className="font-headline-lg text-2xl md:text-3xl text-primary uppercase font-bold">Pool Architecture &amp; Mechanics</h1>
+          <p className="font-value-mono text-xs text-on-surface-variant mt-2 uppercase tracking-widest">Document Ref: BPT-HIW-001 · Morpho Blue Engine · Zama FHEVM</p>
         </header>
 
-        <section className="mb-12 border-2 border-primary bg-surface p-6 hard-shadow-primary">
+        {/* SECTION 1: NO-LOSS SAVINGS */}
+        <section className="mb-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
           <div className="flex items-center gap-3 mb-4 border-b border-primary/20 pb-2">
             <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 01</span>
-            <h2 className="font-headline-md text-lg text-primary uppercase font-bold">The No-Loss Prize Model</h2>
+            <h2 className="font-headline-md text-lg text-primary uppercase font-bold">100% No-Loss Principal Guarantee</h2>
           </div>
           <p className="font-body-md text-sm text-on-surface mb-3 leading-relaxed">
-            Deposit tokens into the shared <strong>BlindpotVault</strong>. Your deposit grants you entry tickets into periodic prize draws.
+            Deposit USDC into the shared <strong>BlindpotVault</strong>. Your principal is automatically wrapped into confidential ERC-7984 tokens (<code className="bg-surface px-1 text-xs">cUSDC</code>), granting you continuous entry tickets into every periodic prize epoch.
           </p>
           <p className="font-body-md text-sm text-on-surface leading-relaxed">
-            If you do not win the draw, you keep 100% of your initial deposit. Principal is always withdrawable at any time with <strong>no locks, no fees, and zero loss</strong>.
+            Unlike traditional lotteries where ticket costs are lost forever, your principal is <strong>never touched or risked</strong>. You can withdraw 100% of your deposited funds at any moment with <strong>zero lockups, zero exit fees, and zero loss</strong>.
           </p>
         </section>
 
-        <section className="mb-12 border-2 border-primary bg-surface p-6 hard-shadow-primary">
+        {/* SECTION 2: YIELD ENGINE & SUSTAINABLE PROTOCOL ECONOMICS */}
+        <section className="mb-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
           <div className="flex items-center gap-3 mb-4 border-b border-primary/20 pb-2">
             <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 02</span>
+            <h2 className="font-headline-md text-lg text-primary uppercase font-bold">Morpho Blue Yield &amp; Sustainable Revenue</h2>
+          </div>
+          <p className="font-body-md text-sm text-on-surface mb-4 leading-relaxed">
+            Blindpot operates on real decentralized lending yield, combined with a self-sustaining commercial business model:
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono mb-4">
+            <div className="border border-primary/40 bg-surface-container-low p-4">
+              <div className="font-bold text-secondary uppercase mb-2">Morpho Blue Continuous Lending</div>
+              <p className="text-on-surface-variant leading-relaxed">
+                Pooled deposits generate low-risk lending interest on Morpho Blue (~3.99% base APY). Yield is harvested permissionlessly at the boundary of each 10-minute epoch.
+              </p>
+            </div>
+            <div className="border border-primary/40 bg-surface-container-low p-4">
+              <div className="font-bold text-primary uppercase mb-2">Sustainable Economic Split</div>
+              <p className="text-on-surface-variant leading-relaxed">
+                A <strong>10% Protocol Take Rate</strong> accrues to the Blindpot DAO Treasury to fund keeper automation gas and protocol growth; <strong>90% + Floor Subsidy</strong> forms the dynamic prize pot.
+              </p>
+            </div>
+          </div>
+          <div className="p-3 bg-surface border border-primary/20 text-xs font-mono text-on-surface-variant">
+            <span className="text-secondary font-bold">Protocol Invariant:</span> No draw ever pays out zero or dust. An autonomous floor reserve guarantees meaningful prize rewards during testnet cold-starts.
+          </div>
+        </section>
+
+        {/* SECTION 3: CONFIDENTIALITY & WHY ZAMA FHEVM */}
+        <section className="mb-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
+          <div className="flex items-center gap-3 mb-4 border-b border-primary/20 pb-2">
+            <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 03</span>
             <h2 className="font-headline-md text-lg text-primary uppercase font-bold">Confidentiality: Why Zama fhEVM?</h2>
           </div>
           <p className="font-body-md text-sm text-on-surface mb-4 leading-relaxed">
-            Standard blockchain lottery and prize-savings systems expose every user's exact balance, deposit size, and win odds on public explorers. This leaks net worth and invites MEV front-running.
+            Public prize protocols expose every depositor's wallet balance and win odds. This intimidates retail savers, leaks personal net worth, and paints targets on winners for hackers and phishing drainers.
           </p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-mono">
             <div className="border border-error/40 bg-error-container/20 p-4">
-              <div className="font-bold text-error uppercase mb-2">Transparent Protocol (Leaky)</div>
+              <div className="font-bold text-error uppercase mb-2">Transparent Pools (Leaky)</div>
               <ul className="space-y-1 text-on-surface-variant">
                 <li>• Individual deposit size: <span className="text-error font-bold">PUBLIC</span></li>
                 <li>• Exact win probability: <span className="text-error font-bold">PUBLIC</span></li>
                 <li>• Losing user balances: <span className="text-error font-bold">EXPOSED</span></li>
+                <li>• Winner wallet address: <span className="text-error font-bold">DOXXED ON ETHERSCAN</span></li>
               </ul>
             </div>
 
             <div className="border border-primary bg-surface-container-low p-4">
-              <div className="font-bold text-primary uppercase mb-2">Blindpot Protocol (fhEVM)</div>
+              <div className="font-bold text-primary uppercase mb-2">Blindpot Pool (fhEVM)</div>
               <ul className="space-y-1 text-primary">
                 <li>• Individual deposit size: <span className="font-bold">ENCRYPTED (euint64)</span></li>
                 <li>• Exact win probability: <span className="font-bold">SEALED ON-CHAIN</span></li>
                 <li>• Losing user balances: <span className="font-bold">PERMANENTLY PRIVATE</span></li>
+                <li>• Winner wallet address: <span className="font-bold">SEALED IN CIPHERTEXT</span></li>
               </ul>
             </div>
           </div>
         </section>
 
-        <section className="mb-12 border-2 border-primary bg-surface p-6 hard-shadow-primary">
+        {/* SECTION 4: FHE DRAW MECHANICS */}
+        <section className="mb-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
           <div className="flex items-center gap-3 mb-4 border-b border-primary/20 pb-2">
-            <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 03</span>
+            <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 04</span>
             <h2 className="font-headline-md text-lg text-primary uppercase font-bold">On-Chain FHE Draw Mechanics</h2>
           </div>
           <div className="space-y-3 font-body-md text-sm text-on-surface leading-relaxed">
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">01</span>
               <div>
-                <strong>Deposit-Weighted Randomness:</strong> Winner selection uses Zama's native on-chain FHE pseudo-random number generator (<code className="bg-surface px-1 text-xs">FHE.randEuint32</code>), mathematically scaled to the active ticket pool.
+                <strong>Deposit-Weighted Randomness:</strong> Winner selection uses Zama's native on-chain FHE pseudo-random number generator (<code className="bg-surface px-1 text-xs">FHE.randEuint32</code>), scaled with proportional fixed-point arithmetic without modulo bias.
               </div>
             </div>
 
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">02</span>
               <div>
-                <strong>Encrypted Winner Selection:</strong> The winning address is computed over ciphertexts (<code className="bg-surface px-1 text-xs">eaddress</code>) using FHE conditional walks.
+                <strong>Encrypted Winner Selection:</strong> The winning address is computed over ciphertexts (<code className="bg-surface px-1 text-xs">eaddress</code>) using homomorphic prefix sums. No participant address is revealed on-chain.
               </div>
             </div>
 
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">03</span>
               <div>
-                <strong>Blinded Claims:</strong> Claims execute via <code className="bg-surface px-1 text-xs">FHE.select</code>. Nobody observing the mempool can deduce who claimed winnings or who walked away with zero.
+                <strong>Blinded Claims:</strong> Claims execute via <code className="bg-surface px-1 text-xs">FHE.select</code>. Third-party observers watching the blockchain cannot distinguish between a winning prize claim and a non-winning ticket claim.
+              </div>
+            </div>
+
+            <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
+              <span className="font-mono font-bold text-primary">04</span>
+              <div>
+                <strong>Winning Dossier Decryption:</strong> Savers decrypt their own outcomes client-side using gasless EIP-712 permits. Winners receive tokens into their confidential balance; non-winners see confirmation that their principal is 100% safe.
               </div>
             </div>
           </div>
@@ -101,7 +141,7 @@ export default function BlindpotHowItWorks() {
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
         <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
+          © BLINDPOT POOL. ALL RIGHTS RESERVED.
         </div>
         <div className="flex gap-6 font-label-mono text-xs uppercase">
           <Link href="/dashboard" className="hover:underline">Dashboard</Link>

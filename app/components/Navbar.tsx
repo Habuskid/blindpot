@@ -169,7 +169,7 @@ export function Navbar() {
             <div className="text-[10px]">ERC-7984 · Sepolia</div>
           </div>
           <div className="text-[10px] font-label-mono text-on-surface-variant text-center uppercase">
-            Blindpot Protocol
+            BLINDPOT POOL
           </div>
         </div>
       </aside>

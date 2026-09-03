@@ -2,7 +2,7 @@ import './globals.css'
 import { Providers } from './providers'
 
 export const metadata = {
-  title: 'Blindpot Protocol',
+  title: 'BLINDPOT POOL',
   description: 'Confidential no-loss prize savings protocol',
 }
 

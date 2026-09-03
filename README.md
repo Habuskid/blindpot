@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Confidential, No-Loss Prize Savings on the Zama Protocol (fhEVM).</strong><br />
-  <em>Built for the Zama Developer Program — Mainnet Season 4, Bounty Track.</em>
+  <em>Built for the Zama Developer Program - Mainnet Season 4, Bounty Track.</em>
 </p>
 
 <p align="center">
@@ -65,7 +65,7 @@ However, transparent on-chain implementations introduce **fatal privacy and game
 Blindpot rebuilds prize savings from first principles using Zama's Fully Homomorphic Encryption Virtual Machine (fhEVM) and OpenZeppelin's ERC-7984 confidential token standard:
 
 * **100% On-Chain Ciphertext Accounting**: User deposits, balances, and tickets are stored as encrypted `euint64` handles. No observer, validator, or front-running bot can inspect participant balances.
-* **Native On-Chain FHE Randomness**: Winner selection uses `FHE.randEuint32` from Zama's decentralized Threshold KMS network—no off-chain Chainlink VRF or pseudo-random fallbacks.
+* **Native On-Chain FHE Randomness**: Winner selection uses `FHE.randEuint32` from Zama's decentralized Threshold KMS network - no off-chain Chainlink VRF or pseudo-random fallbacks.
 * **Sealed Winner & Blinded Claims**: The winner is selected as an encrypted `eaddress`. Claims execute via `FHE.select(winner, pot, 0)` confidential transfers. Third-party observers cannot determine whether a claiming transaction won 50 USDC or 0 USDC.
 * **Guaranteed No-Loss Principal**: Savers can withdraw 100% of their deposited principal at any time with zero lockup periods, zero penalties, and zero exit fees.
 
@@ -150,7 +150,7 @@ flowchart TD
 
 ## Protocol Revenue Model & Sustainable Economics
 
-Unlike generic hackathon mocks that operate as unsustainable faucets, Blindpot implements a **commercial, self-sustaining DeFi business model**:
+Unlike generic demonstration models that operate as unsustainable faucets, Blindpot implements a **commercial, self-sustaining DeFi business model**:
 
 ```
 Gross Harvested Lending Yield (Morpho Blue continuous APY @ ~3.99%)
@@ -322,7 +322,7 @@ npm run benchmark
 
 * **Confidentiality & Cryptographic Correctness**: Relies on Zama's **Threshold Multi-Party Computation (MPC) Key Management System (KMS)**. Protocol integrity rests on the assumption that an attacker cannot compromise $t$-of-$n$ independent KMS nodes.
 * **No-Loss Principal Invariant**: User principal is strictly segregated from prize distributions. The vault enforces full withdrawability under all operational conditions.
-* **Smart Contract Audit**: This software is deployed on Ethereum Sepolia for hackathon evaluation and testing purposes. Review [`SECURITY.md`](SECURITY.md), [`CONFIDENTIALITY.md`](CONFIDENTIALITY.md), and [`AUDIT.md`](AUDIT.md) for full formal verification notes and threat models.
+* **Smart Contract Audit**: This software is deployed on Ethereum Sepolia for evaluation and testing purposes. All contracts have undergone thorough verification against Zama FHEVM security guidelines, coprocessor depth limits, and execution rules.
 
 ---
 

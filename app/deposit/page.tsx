@@ -609,7 +609,7 @@ export default function BlindpotDepositFlow() {
 
       <footer className="w-full py-gutter px-margin-mobile md:px-margin-desktop flex justify-between items-center border-t-2 border-primary bg-surface mt-auto">
         <div className="font-label-mono text-xs font-bold uppercase">
-          © BLINDPOT PROTOCOL. ALL RIGHTS RESERVED.
+          © BLINDPOT POOL. ALL RIGHTS RESERVED.
         </div>
         <div className="flex gap-6 font-label-mono text-xs uppercase">
           <Link href="/dashboard" className="hover:underline">Dashboard</Link>

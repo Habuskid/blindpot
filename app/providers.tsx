@@ -12,7 +12,7 @@ import { indexedDBStorage, IndexedDBStorage } from "@zama-fhe/sdk";
 import { sepolia as fheSepolia, type FheChain } from "@zama-fhe/sdk/chains";
 import { web } from "@zama-fhe/sdk/web";
 
-const RPC = process.env.NEXT_PUBLIC_RPC_URL || "https://eth-sepolia.g.alchemy.com/v2/alch_L2wY3FkGbWjhcNwEMBDXz";
+const RPC = process.env.NEXT_PUBLIC_RPC_URL || "";
 
 const wagmiConfig = createWagmiConfig({
   chains: [sepolia],
