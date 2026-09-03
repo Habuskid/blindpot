@@ -43,6 +43,7 @@
   - [4. Run the Autonomous Keeper Daemon](#4-run-the-autonomous-keeper-daemon)
   - [5. Run HCU & Gas Benchmarks](#5-run-hcu--gas-benchmarks)
 - [How to Use Blindpot (Step-by-Step)](#how-to-use-blindpot-step-by-step)
+- [Epoch Cadence & Withdrawal Rules](#epoch-cadence--withdrawal-rules)
 - [Security & Trust Model](#security--trust-model)
 - [License](#license)
 
@@ -306,6 +307,21 @@ npm run benchmark
    - If you won: Claim your prize tokens into your wallet with one click.
    - If you didn't win: You keep 100% of your initial savings, and your tickets roll into the next draw automatically.
 7. **Withdraw Anytime**: Head to [Withdraw](https://blindpot.vercel.app/withdraw) whenever you want your money back. You get 100% of your deposit back into your wallet instantly. No lockup periods, no penalties, and no fees.
+
+---
+
+## Epoch Cadence & Withdrawal Rules
+
+### 1. How Long Each Epoch Lasts
+* **10-Minute Cycles (`drawInterval = 600`)**: Each savings epoch runs on a fixed 10-minute automated cadence on Ethereum Sepolia.
+* **Autonomous Execution**: When the 10-minute window elapses, the autonomous keeper daemon (`scripts/keeper.mjs`) calls `drawWinner()` on-chain. The smart contract selects an encrypted winner using Zama's `FHE.randEuint32()`, credits the prize pot, and advances the timer for the next 10-minute epoch.
+* **Continuous Rollover**: Depositors do not need to re-deposit every round. Your confidential principal automatically rolls over into every subsequent epoch, compounding real lending yield and giving you continuous entries for every prize pot.
+
+### 2. What Happens if You Withdraw Before the Next Epoch?
+* **100% Principal Returned Instantly (Zero Loss)**: You can exit at any second before a draw occurs by calling `withdrawAll()`. The vault returns your full deposit back into your wallet as confidential tokens (`cUSDC`), which you can unwrap into standard ERC-20 USDC with zero fees, zero penalties, and zero lockups.
+* **Removed from That Round's Draw**: Your tickets are subtracted from the encrypted total pool (`draw.removeMember()`). Since you withdrew before the epoch matured, your address is excluded from that specific draw.
+* **Slot Frees Up Immediately**: The pool capacity count decrements (e.g. from 1/25 to 0/25), immediately making room for another saver to join.
+* **No Penalty**: Your principal is never put at risk. You keep all tokens you deposited.
 
 ---
 
