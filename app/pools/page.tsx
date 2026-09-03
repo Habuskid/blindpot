@@ -28,6 +28,34 @@ export default function PoolsDirectoryPage() {
     functionName: 'currentDrawId',
   });
 
+  const { data: nextDrawTimeRaw } = useReadContract({
+    address: addresses.vault as `0x${string}`,
+    abi: BLINDPOT_VAULT_ABI,
+    functionName: 'nextDrawTime',
+  });
+
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (nextDrawTimeRaw === undefined) return;
+    const target = Number(nextDrawTimeRaw);
+    const tick = () => {
+      const now = Math.floor(Date.now() / 1000);
+      setSecondsRemaining(Math.max(0, target - now));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [nextDrawTimeRaw]);
+
+  const formatCountdown = (secs: number | null) => {
+    if (secs === null) return "--:--";
+    if (secs === 0) return "DRAW IMMINENT";
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   const { data: isUserMember } = useReadContract({
     address: addresses.vault as `0x${string}`,
     abi: BLINDPOT_VAULT_ABI,
@@ -116,6 +144,15 @@ export default function PoolsDirectoryPage() {
                     <div className="flex justify-between">
                       <span className="text-on-surface-variant uppercase">Draw Cadence</span>
                       <span className="font-bold text-secondary">{Math.floor(pool.drawInterval / 60)} Minutes</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1 border-b border-primary/20">
+                      <span className="text-on-surface-variant uppercase flex items-center gap-1.5 font-bold">
+                        <span className="w-2 h-2 rounded-full bg-secondary animate-pulse inline-block"></span>
+                        Next Epoch Draw
+                      </span>
+                      <span className="font-bold font-value-mono text-secondary text-sm bg-surface px-2 py-0.5 border border-primary">
+                        {formatCountdown(secondsRemaining)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center py-1 border-b border-primary/20">
                       <span className="text-on-surface-variant uppercase font-bold">Real Blended APR</span>

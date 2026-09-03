@@ -26,6 +26,34 @@ export default function BlindpotDrawHistory() {
     functionName: 'currentDrawId',
   });
 
+  const { data: nextDrawTimeRaw } = useReadContract({
+    address: VAULT_ADDRESS as `0x${string}`,
+    abi: BLINDPOT_VAULT_ABI,
+    functionName: 'nextDrawTime',
+  });
+
+  const [secondsRemaining, setSecondsRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (nextDrawTimeRaw === undefined) return;
+    const target = Number(nextDrawTimeRaw);
+    const tick = () => {
+      const now = Math.floor(Date.now() / 1000);
+      setSecondsRemaining(Math.max(0, target - now));
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, [nextDrawTimeRaw]);
+
+  const formatCountdown = (secs: number | null) => {
+    if (secs === null) return "--:--";
+    if (secs === 0) return "DRAW IMMINENT";
+    const m = Math.floor(secs / 60).toString().padStart(2, '0');
+    const s = (secs % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+  };
+
   const [dbDraws, setDbDraws] = useState<any[]>([]);
 
   useEffect(() => {
@@ -39,8 +67,9 @@ export default function BlindpotDrawHistory() {
       .catch((e) => console.warn('Draws fetch error:', e));
   }, []);
 
+  const displayDrawId = currentDrawId !== undefined ? Number(currentDrawId) : 0;
   const maxDrawCount = Math.max(
-    currentDrawId !== undefined ? Number(currentDrawId) : 0,
+    displayDrawId,
     dbDraws.length,
     8
   );
@@ -119,6 +148,30 @@ export default function BlindpotDrawHistory() {
             <span>{statusMsg}</span>
           </div>
         )}
+
+        {/* Active Epoch Live Telemetry Banner */}
+        <div className="mb-6 border-2 border-primary bg-surface p-4 hard-shadow-primary flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="w-3 h-3 rounded-full bg-secondary animate-pulse inline-block"></span>
+            <div>
+              <div className="font-label-mono text-xs uppercase font-bold text-primary flex items-center gap-2">
+                <span>Active Epoch: Round #{displayDrawId === 0 ? 1 : displayDrawId + 1}</span>
+                <span className="text-[10px] bg-secondary-container text-primary border border-secondary px-1.5 py-0.5 font-mono font-bold">
+                  LIVE ACCRUAL
+                </span>
+              </div>
+              <div className="text-[11px] font-mono text-on-surface-variant mt-0.5">
+                Morpho Blue lending interest compounding continuously · Next draw triggered automatically
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 bg-surface-container-high border border-primary px-3 py-1.5 font-mono text-xs">
+            <span className="text-on-surface-variant uppercase text-[10px] font-bold">Epoch Countdown:</span>
+            <span className="font-bold text-secondary font-value-mono text-sm bg-surface px-2 py-0.5 border border-primary">
+              {formatCountdown(secondsRemaining)}
+            </span>
+          </div>
+        </div>
 
         <div className="border-2 border-primary bg-surface hard-shadow-primary overflow-x-auto">
           <table className="w-full text-left border-collapse">
