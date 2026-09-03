@@ -193,6 +193,7 @@ export default function BlindpotDepositFlow() {
       setTimeout(() => {
         setActiveTab("deposit");
         setDepositAmount(wrapAmount);
+        setActionPhase("idle");
       }, 2000);
     } catch (e: any) {
       console.error("Wrap error:", e);
@@ -305,7 +306,10 @@ export default function BlindpotDepositFlow() {
             {/* Stepper Tabs */}
             <div className="grid grid-cols-2 gap-2 mb-6">
               <button
-                onClick={() => setActiveTab("wrap")}
+                onClick={() => {
+                  setActiveTab("wrap");
+                  setActionPhase("idle");
+                }}
                 className={`py-3 px-2 border-2 border-primary font-label-mono text-xs uppercase font-bold transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === "wrap"
                     ? "bg-primary text-surface hard-shadow-sm"
@@ -319,7 +323,10 @@ export default function BlindpotDepositFlow() {
               </button>
 
               <button
-                onClick={() => setActiveTab("deposit")}
+                onClick={() => {
+                  setActiveTab("deposit");
+                  setActionPhase("idle");
+                }}
                 className={`py-3 px-2 border-2 border-primary font-label-mono text-xs uppercase font-bold transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === "deposit"
                     ? "bg-primary text-surface hard-shadow-sm"
@@ -446,18 +453,26 @@ export default function BlindpotDepositFlow() {
                     </button>
                   ) : (
                     <button
-                      onClick={handleWrap}
+                      onClick={
+                        actionPhase === "success"
+                          ? () => {
+                              setActiveTab("deposit");
+                              setDepositAmount(wrapAmount);
+                              setActionPhase("idle");
+                            }
+                          : handleWrap
+                      }
                       disabled={isWrapping || actionPhase === "mining" || actionPhase === "syncing"}
                       className={`w-full border-2 border-primary hard-shadow-primary py-3.5 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${
                         actionPhase === "success"
-                          ? "bg-[#C9A15A] text-surface font-black"
+                          ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                           : "bg-primary text-surface"
                       }`}
                     >
                       {actionPhase === "success" ? (
                         <>
                           <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                          WRAP CONFIRMED ✓
+                          WRAP CONFIRMED — PROCEED TO DEPOSIT →
                         </>
                       ) : isWrapping ? (
                         <>
@@ -525,18 +540,22 @@ export default function BlindpotDepositFlow() {
 
                 <div className="pt-2">
                   <button
-                    onClick={handleDeposit}
+                    onClick={
+                      actionPhase === "success"
+                        ? () => router.push('/dashboard')
+                        : handleDeposit
+                    }
                     disabled={isDepositing || actionPhase === "mining" || actionPhase === "syncing"}
                     className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 ${
                       actionPhase === "success"
-                        ? "bg-[#C9A15A] text-surface font-black"
+                        ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                         : "bg-secondary-container text-primary"
                     }`}
                   >
                     {actionPhase === "success" ? (
                       <>
                         <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                        DEPOSIT CONFIRMED ✓
+                        DEPOSIT CONFIRMED — VIEW ON DASHBOARD →
                       </>
                     ) : isDepositing ? (
                       <>

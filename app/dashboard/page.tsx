@@ -670,8 +670,8 @@ export default function BlindpotDashboard() {
                           <td className="p-2">
                             {log.amount ? `${log.amount} USDC` : log.drawId ? `Round #${log.drawId}` : 'Full Principal'}
                           </td>
-                          <td className="p-2 text-on-surface-variant">
-                            {new Date(log.timestamp * 1000).toLocaleString()}
+                          <td className="p-2 text-on-surface-variant font-mono">
+                            {formatTimestamp(log.timestamp)}
                           </td>
                           <td className="p-2 text-right">
                             {log.txHash.startsWith('0x') && log.txHash.length > 20 ? (

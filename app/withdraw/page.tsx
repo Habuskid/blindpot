@@ -119,6 +119,7 @@ export default function BlindpotWithdrawFlow() {
 
       setTimeout(() => {
         setActiveTab("unwrap");
+        setActionPhase("idle");
       }, 2500);
     } catch (e: any) {
       console.error("Withdraw error:", e);
@@ -210,7 +211,10 @@ export default function BlindpotWithdrawFlow() {
             <div className="grid grid-cols-2 gap-2 mb-6">
               <button
                 type="button"
-                onClick={() => setActiveTab("pool")}
+                onClick={() => {
+                  setActiveTab("pool");
+                  setActionPhase("idle");
+                }}
                 className={`py-2 px-3 border-2 border-primary font-label-mono text-xs uppercase font-bold transition-all text-center flex items-center justify-center gap-1.5 ${
                   activeTab === "pool"
                     ? "bg-primary text-surface hard-shadow-primary"
@@ -222,7 +226,10 @@ export default function BlindpotWithdrawFlow() {
               </button>
               <button
                 type="button"
-                onClick={() => setActiveTab("unwrap")}
+                onClick={() => {
+                  setActiveTab("unwrap");
+                  setActionPhase("idle");
+                }}
                 className={`py-2 px-3 border-2 border-primary font-label-mono text-xs uppercase font-bold transition-all text-center flex items-center justify-center gap-1.5 ${
                   activeTab === "unwrap"
                     ? "bg-primary text-surface hard-shadow-primary"
@@ -330,16 +337,23 @@ export default function BlindpotWithdrawFlow() {
                 <button
                   className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
                     actionPhase === "success"
-                      ? "bg-[#C9A15A] text-surface font-black"
+                      ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                       : "bg-primary text-surface"
                   }`}
-                  onClick={handleWithdraw}
+                  onClick={
+                    actionPhase === "success"
+                      ? () => {
+                          setActiveTab("unwrap");
+                          setActionPhase("idle");
+                        }
+                      : handleWithdraw
+                  }
                   disabled={isWithdrawing || actionPhase === "mining" || actionPhase === "syncing"}
                 >
                   {actionPhase === "success" ? (
                     <>
                       <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                      CONFIRMED ✓
+                      EXIT CONFIRMED — PROCEED TO UNWRAP →
                     </>
                   ) : isWithdrawing ? (
                     <>
@@ -414,16 +428,20 @@ export default function BlindpotWithdrawFlow() {
                 <button
                   className={`w-full border-2 border-primary hard-shadow-primary py-4 font-label-mono text-sm uppercase font-bold hover:translate-x-[2px] hover:translate-y-[2px] active:shadow-none transition-all flex justify-center items-center gap-2 disabled:opacity-50 mb-3 ${
                     actionPhase === "success"
-                      ? "bg-[#C9A15A] text-surface font-black"
+                      ? "bg-[#C9A15A] text-surface font-black hover:opacity-90"
                       : "bg-secondary-container text-primary"
                   }`}
-                  onClick={handleUnwrap}
+                  onClick={
+                    actionPhase === "success"
+                      ? () => router.push('/dashboard')
+                      : handleUnwrap
+                  }
                   disabled={isUnshielding || actionPhase === "mining" || actionPhase === "syncing"}
                 >
                   {actionPhase === "success" ? (
                     <>
                       <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                      CONFIRMED ✓
+                      UNWRAP CONFIRMED — VIEW ON DASHBOARD →
                     </>
                   ) : isUnshielding ? (
                     <>

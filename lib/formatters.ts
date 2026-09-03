@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Formats 6-decimal token amount to human-readable string.
  */
 export function formatUSDC(amount: number | bigint | undefined | null, decimals = 2): string {
@@ -11,10 +11,24 @@ export function formatUSDC(amount: number | bigint | undefined | null, decimals 
 }
 
 /**
- * Formats unix timestamp into standardized protocol receipt format.
+ * Formats unix timestamp (seconds or milliseconds) or ISO string into standardized protocol receipt format.
  */
-export function formatTimestamp(timestamp: number): string {
-  const d = new Date(timestamp * 1000);
+export function formatTimestamp(timestamp: number | string | Date | undefined | null): string {
+  if (!timestamp) return "—";
+  let d: Date;
+  if (typeof timestamp === "number") {
+    d = new Date(timestamp < 10_000_000_000 ? timestamp * 1000 : timestamp);
+  } else if (timestamp instanceof Date) {
+    d = timestamp;
+  } else {
+    const num = Number(timestamp);
+    if (!isNaN(num) && num > 0) {
+      d = new Date(num < 10_000_000_000 ? num * 1000 : num);
+    } else {
+      d = new Date(timestamp);
+    }
+  }
+  if (isNaN(d.getTime())) return "—";
   return d.toISOString().replace("T", " ").replace(/\.\d+Z$/, " UTC");
 }
 
