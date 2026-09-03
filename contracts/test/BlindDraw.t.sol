@@ -15,14 +15,18 @@ contract BlindDrawTest is FhevmTest, ZamaEthereumConfig {
         draw = new BlindDraw();
     }
 
+    function addMemberAsVault(address user, uint64 tickets) external {
+        euint64 balance = FHE.asEuint64(tickets);
+        FHE.allowTransient(balance, address(draw));
+        draw.addMember(user, balance);
+    }
+
     function test_drawWinner10() public {
         uint256 members = 10;
         
         for(uint160 i = 1; i <= members; i++) {
             // Allocate 10 tickets per member
-            euint64 balance = FHE.asEuint64(10);
-            FHE.allow(balance, address(draw));
-            draw.addMember(address(i), balance);
+            this.addMemberAsVault(address(i), 10);
         }
 
         uint256 gasStart = gasleft();

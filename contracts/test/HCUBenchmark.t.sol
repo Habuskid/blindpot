@@ -21,13 +21,17 @@ contract HCUBenchmarkTest is FhevmTest, ZamaEthereumConfig {
         draw = new BlindDraw();
     }
 
+    function addMemberToDraw(BlindDraw targetDraw, address user, uint64 tickets) external {
+        euint64 balance = FHE.asEuint64(tickets);
+        FHE.allowTransient(balance, address(targetDraw));
+        targetDraw.addMember(user, balance);
+    }
+
     function runBenchmarkForN(uint256 members) internal returns (uint256 gasUsed) {
         BlindDraw benchmarkDraw = new BlindDraw();
         
         for(uint160 i = 1; i <= members; i++) {
-            euint64 balance = FHE.asEuint64(10);
-            FHE.allow(balance, address(benchmarkDraw));
-            benchmarkDraw.addMember(address(i), balance);
+            this.addMemberToDraw(benchmarkDraw, address(i), 10);
         }
 
         uint256 gasStart = gasleft();

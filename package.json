@@ -10,6 +10,8 @@
     "keeper": "node scripts/keeper.mjs",
     "compile": "node compile.mjs",
     "deploy": "node deploy.mjs",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
     "postinstall": "prisma generate"
   },
   "keywords": [

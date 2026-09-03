@@ -9,15 +9,16 @@ import {BlindpotVault} from "../../src/vaults/BlindpotVault.sol";
 import {IERC7984Receiver} from "@openzeppelin/confidential-contracts/interfaces/IERC7984Receiver.sol";
 
 // Mock token for testing 
-contract MockERC7984 {
+contract MockERC7984 is ZamaEthereumConfig {
     function confidentialTransferFrom(address, address, euint64) external pure returns (bool) {
         return true;
     }
     function confidentialTransfer(address, euint64) external pure returns (bool) {
         return true;
     }
-    function confidentialTransferAndCall(address to, euint64 amount, bytes calldata data) external returns (bool) {
-        // Just call the hook on the vault
+    function confidentialTransferAndCall(address to, uint64 clearAmount, bytes calldata data) external returns (bool) {
+        euint64 amount = FHE.asEuint64(clearAmount);
+        FHE.allowTransient(amount, to);
         IERC7984Receiver(to).onConfidentialTransferReceived(msg.sender, msg.sender, amount, data);
         return true;
     }
@@ -34,12 +35,12 @@ contract BlindpotVaultTest is FhevmTest, ZamaEthereumConfig {
     }
 
     function test_vaultFlow() public {
-        euint64 amount = FHE.asEuint64(10);
-        FHE.allowTransient(amount, address(vault));
-        
         vm.prank(address(1));
         // Use the new hook!
-        mockToken.confidentialTransferAndCall(address(vault), amount, "");
+        mockToken.confidentialTransferAndCall(address(vault), 10, "");
+
+        // Advance past epoch interval (600s)
+        vm.warp(block.timestamp + 601);
 
         vault.drawWinner();
 
@@ -49,5 +50,18 @@ contract BlindpotVaultTest is FhevmTest, ZamaEthereumConfig {
         // And test withdrawAll
         vm.prank(address(1));
         vault.withdrawAll();
+    }
+
+    function test_withdrawMidDraw() public {
+        // Test withdraw succeeds without loss per contracts.md
+        vm.prank(address(2));
+        mockToken.confidentialTransferAndCall(address(vault), 25, "");
+
+        assertTrue(vault.isMember(address(2)));
+
+        vm.prank(address(2));
+        vault.withdrawAll();
+
+        assertFalse(vault.isMember(address(2)));
     }
 }
