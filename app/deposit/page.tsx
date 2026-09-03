@@ -386,7 +386,7 @@ export default function BlindpotDepositFlow() {
                     Why Wrap First?
                   </div>
                   <p className="text-on-surface-variant">
-                    Zama's fhEVM requires assets to be in confidential <strong>ERC-7984 format (cUSDC)</strong> before they can participate in private on-chain prize pools.
+                    To protect your privacy, regular USDC is wrapped 1:1 into private tokens (cUSDC) before entering the prize pool. You can unwrap back to regular USDC anytime.
                   </p>
                 </div>
 
@@ -473,7 +473,7 @@ export default function BlindpotDepositFlow() {
                       {actionPhase === "success" ? (
                         <>
                           <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                          WRAP CONFIRMED — PROCEED TO DEPOSIT →
+                          WRAP CONFIRMED: PROCEED TO DEPOSIT →
                         </>
                       ) : isWrapping ? (
                         <>
@@ -513,10 +513,10 @@ export default function BlindpotDepositFlow() {
                 <div className="bg-surface-container-low border border-primary/30 p-4 text-xs font-body-md space-y-2">
                   <div className="font-label-mono uppercase font-bold text-primary flex items-center gap-1.5">
                     <span className="material-symbols-outlined text-[16px]">lock_open</span>
-                    Zero-Knowledge Deposit
+                    100% Private Deposit
                   </div>
                   <p className="text-on-surface-variant">
-                    Your deposit amount is transferred directly to <strong>BlindpotVault</strong> via ERC-7984 <code className="bg-surface px-1">confidentialTransferAndCall</code>. The amount and your ticket count remain encrypted from all third parties.
+                    Your deposit amount and tickets are completely encrypted. Nobody on the blockchain, including other depositors and bots, can see how much you deposited.
                   </p>
                 </div>
 
@@ -558,7 +558,7 @@ export default function BlindpotDepositFlow() {
                   <button
                     onClick={
                       actionPhase === "success"
-                        ? () => router.push('/dashboard')
+                        ? () => router.push("/dashboard")
                         : handleDeposit
                     }
                     disabled={isDepositing || actionPhase === "mining" || actionPhase === "syncing"}
@@ -571,7 +571,7 @@ export default function BlindpotDepositFlow() {
                     {actionPhase === "success" ? (
                       <>
                         <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                        DEPOSIT CONFIRMED — VIEW ON DASHBOARD →
+                        DEPOSIT CONFIRMED: VIEW ON DASHBOARD →
                       </>
                     ) : isDepositing ? (
                       <>

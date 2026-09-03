@@ -91,38 +91,38 @@ export default function BlindpotHowItWorks() {
           </div>
         </section>
 
-        {/* SECTION 4: FHE DRAW MECHANICS */}
+        {/* SECTION 4: HOW DRAWS WORK */}
         <section className="mb-8 border-2 border-primary bg-surface p-6 hard-shadow-primary">
           <div className="flex items-center gap-3 mb-4 border-b border-primary/20 pb-2">
             <span className="font-stamp-text text-stamp-text text-error border border-error px-2 py-0.5 text-xs">§ 04</span>
-            <h2 className="font-headline-md text-lg text-primary uppercase font-bold">On-Chain FHE Draw Mechanics</h2>
+            <h2 className="font-headline-md text-lg text-primary uppercase font-bold">How the Draws Work (Simple &amp; Fair)</h2>
           </div>
           <div className="space-y-3 font-body-md text-sm text-on-surface leading-relaxed">
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">01</span>
               <div>
-                <strong>Deposit-Weighted Randomness:</strong> Winner selection uses Zama's native on-chain FHE pseudo-random number generator (<code className="bg-surface px-1 text-xs">FHE.randEuint32</code>), scaled with proportional fixed-point arithmetic without modulo bias.
+                <strong>Fair, Automated Draws:</strong> Every round, a winner is picked automatically and provably fairly using private on-chain randomness. The more you save, the more prize tickets you receive, but every single ticket has a chance to win.
               </div>
             </div>
 
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">02</span>
               <div>
-                <strong>Encrypted Winner Selection:</strong> The winning address is computed over ciphertexts (<code className="bg-surface px-1 text-xs">eaddress</code>) using homomorphic prefix sums. No participant address is revealed on-chain.
+                <strong>100% Secret Winner Selection:</strong> The winner is selected purely inside encrypted math. Nobody watching the blockchain, not even the app creators, can see who won.
               </div>
             </div>
 
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">03</span>
               <div>
-                <strong>Blinded Claims:</strong> Claims execute via <code className="bg-surface px-1 text-xs">FHE.select</code>. Third-party observers watching the blockchain cannot distinguish between a winning prize claim and a non-winning ticket claim.
+                <strong>Private Prize Claims:</strong> When you claim your winnings, the transfer is encrypted. Outside observers watching the network cannot tell if you claimed 50 USDC or 0 USDC, keeping your wallet safe from hackers.
               </div>
             </div>
 
             <div className="p-3 border border-primary/20 bg-surface-container-low flex items-start gap-3">
               <span className="font-mono font-bold text-primary">04</span>
               <div>
-                <strong>Winning Dossier Decryption:</strong> Savers decrypt their own outcomes client-side using gasless EIP-712 permits. Winners receive tokens into their confidential balance; non-winners see confirmation that their principal is 100% safe.
+                <strong>Instant Results in Your Dossier:</strong> Open the Winning Dossier anytime to check your results with a simple, free signature. If you won, claim your prize directly into your wallet. If not, your funds stay 100% safe and automatically enter the next draw.
               </div>
             </div>
           </div>

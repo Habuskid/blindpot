@@ -121,16 +121,16 @@ export default function BlindpotDrawHistory() {
       <div className="md:pl-60 flex-grow flex flex-col">
         <main className="flex-grow pt-24 md:pt-28 pb-20 px-margin-mobile md:px-margin-desktop max-w-[1100px] mx-auto w-full">
         <div className="mb-8 border-2 border-primary bg-surface p-6 md:p-8 hard-shadow-primary">
-          <div className="font-label-mono text-xs uppercase text-on-surface-variant mb-1">Protocol Audit Log</div>
+          <div className="font-label-mono text-xs uppercase text-on-surface-variant mb-1">Pool Draw Records</div>
           <h1 className="font-headline-lg text-2xl md:text-3xl text-primary uppercase border-b-2 border-primary pb-2 mb-4 tracking-tighter">
-            DRAW HISTORY &amp; CLAIM DOSSIER
+            DRAW HISTORY &amp; CLAIM PRIZES
           </h1>
           <div className="font-label-mono text-xs text-on-surface-variant uppercase bg-surface-container-low border border-primary border-dashed p-4 leading-relaxed flex flex-col gap-2">
             <div>
-              <span className="text-primary font-bold">TOTAL POOL POT SOURCE:</span> ACCRUED MORPHO BLUE LENDING YIELD + PROTOCOL GUARANTEED FLOOR RESERVE.
+              <span className="text-primary font-bold">Where Prizes Come From:</span> Earned Morpho Blue lending interest + guaranteed floor reserve.
             </div>
             <div>
-              <span className="text-error font-bold">INDIVIDUAL PRIVACY GUARANTEE:</span> WINNER IDENTITY AND INDIVIDUAL REWARD SHARES ARE 100% SEALED IN CIPHERTEXT. WINNERS RECEIVE 100% OF THE POT; NON-WINNERS RECEIVE 0 USDC. INDIVIDUAL OUTCOMES CAN ONLY BE DECRYPTED BY YOUR PRIVATE KEY IN YOUR WINNING DOSSIER.
+              <span className="text-secondary font-bold">100% Privacy Guarantee:</span> The winner and individual amounts are completely encrypted. Only you can unlock and check your own outcome in your Winning Dossier. Non-winners keep 100% of their savings.
             </div>
           </div>
         </div>

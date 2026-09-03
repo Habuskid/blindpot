@@ -363,7 +363,7 @@ export default function BlindpotWithdrawFlow() {
                   {actionPhase === "success" ? (
                     <>
                       <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                      EXIT CONFIRMED — PROCEED TO UNWRAP →
+                      EXIT CONFIRMED: PROCEED TO UNWRAP →
                     </>
                   ) : isWithdrawing ? (
                     <>
@@ -467,7 +467,7 @@ export default function BlindpotWithdrawFlow() {
                   {actionPhase === "success" ? (
                     <>
                       <span className="material-symbols-outlined text-[18px]">check_circle</span>
-                      UNWRAP CONFIRMED — VIEW ON DASHBOARD →
+                      UNWRAP CONFIRMED: VIEW ON DASHBOARD →
                     </>
                   ) : isUnshielding ? (
                     <>

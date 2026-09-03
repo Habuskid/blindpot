@@ -73,7 +73,7 @@ function YouWonContent() {
                 Confidential Winnings Encrypted
               </div>
               <p className="text-xs text-on-surface-variant max-w-sm mt-2 font-mono">
-                Sign with your connected wallet to decrypt your personal outcome via Zama KMS.
+                Sign with your wallet to privately check if you won this round.
               </p>
             </div>
           )}
@@ -81,7 +81,7 @@ function YouWonContent() {
           {(isDecrypting || isGrantingPermit) && decryptedWinnings === undefined && (
             <div className="font-value-mono text-lg text-secondary flex items-center gap-2">
               <CipherSpinner size="md" />
-              Decrypting Winnings with KMS...
+              Checking Your Ticket...
             </div>
           )}
 
@@ -100,12 +100,12 @@ function YouWonContent() {
                   ? "bg-secondary text-primary border-primary" 
                   : "bg-surface-container-high text-error border-error"
               }`}>
-                {decryptedWinnings > 0 ? "🏆 PRIZE CONFIRMED — YOU WON!" : "TRY AGAIN NEXT TIME — NON-WINNING TICKET"}
+                {decryptedWinnings > 0 ? "🏆 PRIZE CONFIRMED: YOU WON!" : "TRY AGAIN NEXT TIME: NON-WINNING TICKET"}
               </div>
 
               <p className="mt-4 text-xs font-mono text-on-surface-variant max-w-md leading-relaxed">
                 {decryptedWinnings > 0
-                  ? "Congratulations! Your ticket was chosen by FHE.randEuint32. Click below to claim your confidential tokens into your wallet."
+                  ? "Congratulations! You were selected as the winner for this round. Click below to claim your prize tokens directly into your wallet."
                   : "You did not win this round. Your deposited principal remains 100% safe and automatically rolls over into the next epoch draw!"}
               </p>
             </div>

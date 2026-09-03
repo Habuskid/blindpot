@@ -176,31 +176,31 @@ export default function BlindpotLandingPage() {
             <div className="flex-1 border-b md:border-b-0 md:border-r border-primary/30 p-gutter hover:bg-surface-container-high transition-colors">
               <div className="text-error mb-2 text-xl font-bold">01</div>
               <div className="uppercase mb-2 font-bold text-primary">DEPOSIT</div>
-              <div className="font-body-md text-sm text-on-surface-variant">Wrap ERC-20 USDC into confidential ERC-7984 tokens on Zama fhEVM.</div>
+              <div className="font-body-md text-sm text-on-surface-variant">Deposit USDC into the pool. Your amount is instantly encrypted so nobody can see it.</div>
             </div>
 
             <div className="flex-1 border-b md:border-b-0 md:border-r border-primary/30 p-gutter hover:bg-surface-container-high transition-colors">
               <div className="text-error mb-2 text-xl font-bold">02</div>
-              <div className="uppercase mb-2 font-bold text-primary">HOLD</div>
-              <div className="font-body-md text-sm text-on-surface-variant">Balances remain homomorphically encrypted while earning continuous prize tickets.</div>
+              <div className="uppercase mb-2 font-bold text-primary">HOLD &amp; EARN</div>
+              <div className="font-body-md text-sm text-on-surface-variant">Your savings stay 100% safe and private while earning tickets into every round.</div>
             </div>
 
             <div className="flex-1 border-b md:border-b-0 md:border-r border-primary/30 p-gutter hover:bg-surface-container-high transition-colors">
               <div className="text-error mb-2 text-xl font-bold">03</div>
-              <div className="uppercase mb-2 font-bold text-primary">DRAW</div>
-              <div className="font-body-md text-sm text-on-surface-variant">On-chain FHE randomness selects winner proportionally with zero modulo gap.</div>
+              <div className="uppercase mb-2 font-bold text-primary">PRIVATE DRAW</div>
+              <div className="font-body-md text-sm text-on-surface-variant">Every round, one saver is chosen at random using provably fair, private on-chain math.</div>
             </div>
 
             <div className="flex-1 border-b md:border-b-0 md:border-r border-primary/30 p-gutter hover:bg-surface-container-high transition-colors">
               <div className="text-error mb-2 text-xl font-bold">04</div>
-              <div className="uppercase mb-2 font-bold text-primary">CLAIM</div>
-              <div className="font-body-md text-sm text-on-surface-variant">Winners claim prize via blinded FHE.select conditional transfers.</div>
+              <div className="uppercase mb-2 font-bold text-primary">CLAIM PRIZE</div>
+              <div className="font-body-md text-sm text-on-surface-variant">If you win, claim your prize into your wallet. If not, your tickets roll into the next draw.</div>
             </div>
 
             <div className="flex-1 p-gutter hover:bg-surface-container-high transition-colors">
               <div className="text-error mb-2 text-xl font-bold">05</div>
-              <div className="uppercase mb-2 font-bold text-primary">WITHDRAW</div>
-              <div className="font-body-md text-sm text-on-surface-variant">Withdraw 100% of deposited principal at any time without fees or loss.</div>
+              <div className="uppercase mb-2 font-bold text-primary">WITHDRAW ANYTIME</div>
+              <div className="font-body-md text-sm text-on-surface-variant">Withdraw 100% of your deposit at any moment. No lockups, no fees, and zero loss.</div>
             </div>
           </div>
         </section>
