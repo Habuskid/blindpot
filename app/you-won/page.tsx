@@ -1,6 +1,6 @@
 "use client";
 
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { useAccount } from 'wagmi';
@@ -20,19 +20,46 @@ function YouWonContent() {
   const drawParam = searchParams.get('draw') || searchParams.get('drawId') || '1';
   const drawId = BigInt(drawParam);
 
-  const { isConnected } = useAccount();
+  const { address: account, isConnected } = useAccount();
   const { decryptedWinnings, hasPermit, handleGrantPermit, isGrantingPermit, isDecrypting } = useGetMyWinnings(VAULT_ADDRESS, drawId);
   const { claim, isPending: isClaiming } = useClaim();
 
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isClaimed, setIsClaimed] = useState(false);
+
+  useEffect(() => {
+    if (account && drawParam) {
+      const stored = sessionStorage.getItem(`claimed_${drawParam}_${account.toLowerCase()}`);
+      if (stored === 'true') {
+        setIsClaimed(true);
+      }
+    }
+  }, [account, drawParam]);
 
   const handleExecuteClaim = async () => {
     setErrorMsg(null);
     setStatusMsg(`Submitting claim transaction for Draw #${drawParam}...`);
     try {
-      await claim(VAULT_ADDRESS, drawId);
-      setStatusMsg(`Claim transaction confirmed. If you won Draw #${drawParam}, your winnings have been deposited into your confidential balance.`);
+      const tx = await claim(VAULT_ADDRESS, drawId);
+      setIsClaimed(true);
+      setStatusMsg(`Claim transaction confirmed! Your winnings have been deposited into your confidential balance.`);
+      if (account) {
+        sessionStorage.setItem(`claimed_${drawParam}_${account.toLowerCase()}`, 'true');
+        try {
+          await fetch('/api/activity', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userAddress: account,
+              action: 'CLAIM',
+              drawId: Number(drawParam),
+              amount: decryptedWinnings,
+              txHash: tx || ('0x' + '0'.repeat(64)),
+            }),
+          });
+        } catch (e) {}
+      }
     } catch (e: any) {
       console.error(e);
       setErrorMsg(e?.message || `Claim failed for Draw #${drawParam}.`);
@@ -121,8 +148,16 @@ function YouWonContent() {
         )}
 
         {statusMsg && (
-          <div className="bg-surface-container-high border border-primary text-primary p-3 mb-6 text-xs font-mono flex items-center gap-2">
-            <CircularLoader size="sm" />
+          <div className={`border-2 p-3 mb-6 text-xs font-mono flex items-center gap-2.5 ${
+            isClaimed 
+              ? "bg-secondary-container border-secondary text-primary font-bold" 
+              : "bg-surface-container-high border-primary text-primary"
+          }`}>
+            {isClaimed ? (
+              <span className="material-symbols-outlined text-secondary text-[20px]">check_circle</span>
+            ) : (
+              <CircularLoader size="sm" />
+            )}
             <span>{statusMsg}</span>
           </div>
         )}
@@ -139,7 +174,15 @@ function YouWonContent() {
             </button>
           )}
 
-          {decryptedWinnings !== undefined && decryptedWinnings > 0 ? (
+          {isClaimed ? (
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto bg-secondary text-primary border-2 border-primary px-8 py-3 font-label-mono text-xs uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px]">task_alt</span>
+              Prize Claimed · Return to Dashboard
+            </Link>
+          ) : decryptedWinnings !== undefined && decryptedWinnings > 0 ? (
             <button
               onClick={handleExecuteClaim}
               disabled={isClaiming}
