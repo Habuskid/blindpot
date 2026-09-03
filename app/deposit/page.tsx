@@ -262,6 +262,22 @@ export default function BlindpotDepositFlow() {
         } catch (dbErr) {
           console.warn('Activity logging warning:', dbErr);
         }
+
+        try {
+          const storageKey = `blindpot_activity_${account.toLowerCase()}`;
+          const existing = JSON.parse(localStorage.getItem(storageKey) || '[]');
+          existing.unshift({
+            id: `act-${Date.now()}`,
+            userAddress: account.toLowerCase(),
+            poolId: 'pool-usdc-sepolia-01',
+            action: 'DEPOSIT',
+            amount: Number(depositAmount),
+            txHash: res.txHash,
+            timestamp: Math.floor(Date.now() / 1000),
+            status: 'CONFIRMED',
+          });
+          localStorage.setItem(storageKey, JSON.stringify(existing));
+        } catch (_) {}
       }
 
       setActionPhase("success");

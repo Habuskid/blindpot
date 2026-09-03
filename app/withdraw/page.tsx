@@ -105,7 +105,7 @@ export default function BlindpotWithdrawFlow() {
             userAddress: account,
             poolId: 'pool-usdc-sepolia-01',
             action: 'WITHDRAW',
-            txHash: hash || '0x_withdrawn',
+            txHash: hash || ('0x' + '0'.repeat(64)),
           }),
         });
       } catch (dbErr) {
