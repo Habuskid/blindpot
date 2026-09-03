@@ -61,7 +61,8 @@ interface DatabaseSchema {
   telemetry?: TelemetryRecord[];
 }
 
-const DB_DIR = path.join(process.cwd(), 'data');
+const isServerless = !!process.env.VERCEL || (typeof process !== 'undefined' && process.env.NODE_ENV === 'production' && !fs.existsSync(path.join(process.cwd(), 'data')));
+const DB_DIR = isServerless ? '/tmp' : path.join(process.cwd(), 'data');
 const DB_FILE = path.join(DB_DIR, 'protocol_db.json');
 
 const INITIAL_POOLS: PoolRecord[] = [
@@ -174,42 +175,56 @@ const INITIAL_DRAWS: DrawRecord[] = [
   }
 ];
 
+let memoryCache: DatabaseSchema | null = null;
+
 function initDb(): DatabaseSchema {
+  if (memoryCache) return memoryCache;
+
   if (!fs.existsSync(DB_DIR)) {
     try {
       fs.mkdirSync(DB_DIR, { recursive: true });
-    } catch (e) {
-      // In read-only serverless environments, fallback to memory
-    }
+    } catch (e) {}
   }
 
   if (!fs.existsSync(DB_FILE)) {
-    const initialData: DatabaseSchema = {
+    let initialData: DatabaseSchema = {
       pools: INITIAL_POOLS,
       draws: INITIAL_DRAWS,
       activity: [],
+      telemetry: [],
     };
+    const seedPath = path.join(process.cwd(), 'data', 'protocol_db.json');
+    if (fs.existsSync(seedPath)) {
+      try {
+        initialData = JSON.parse(fs.readFileSync(seedPath, 'utf-8'));
+      } catch (e) {}
+    }
     try {
       fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
-    } catch (e) {
-      // Read-only fallback
-    }
+    } catch (e) {}
+    memoryCache = initialData;
     return initialData;
   }
 
   try {
     const raw = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(raw) as DatabaseSchema;
+    const parsed = JSON.parse(raw) as DatabaseSchema;
+    memoryCache = parsed;
+    return parsed;
   } catch (e) {
-    return {
+    const fallback: DatabaseSchema = {
       pools: INITIAL_POOLS,
       draws: INITIAL_DRAWS,
       activity: [],
+      telemetry: [],
     };
+    memoryCache = fallback;
+    return fallback;
   }
 }
 
 function saveDb(data: DatabaseSchema) {
+  memoryCache = data;
   try {
     if (!fs.existsSync(DB_DIR)) {
       fs.mkdirSync(DB_DIR, { recursive: true });
