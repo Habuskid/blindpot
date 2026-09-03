@@ -93,9 +93,13 @@ export default function BlindpotDrawHistory() {
           <h1 className="font-headline-lg text-2xl md:text-3xl text-primary uppercase border-b-2 border-primary pb-2 mb-4 tracking-tighter">
             DRAW HISTORY &amp; CLAIM DOSSIER
           </h1>
-          <div className="font-label-mono text-xs text-on-surface-variant uppercase bg-surface-container-low border border-primary border-dashed p-3 leading-relaxed">
-            <span className="text-primary font-bold">PUBLIC DISCLOSURE:</span> DRAW ID · BLOCK TIMESTAMP · AGGREGATE POT · PROOF OF KMS CALL.<br />
-            <span className="text-error font-bold">SEALED IN CIPHERTEXT:</span> WINNER IDENTITY · LOSING BALANCES · CLAIM AMOUNTS.
+          <div className="font-label-mono text-xs text-on-surface-variant uppercase bg-surface-container-low border border-primary border-dashed p-4 leading-relaxed flex flex-col gap-2">
+            <div>
+              <span className="text-primary font-bold">TOTAL POOL POT SOURCE:</span> ACCRUED MORPHO BLUE LENDING YIELD + PROTOCOL GUARANTEED FLOOR RESERVE.
+            </div>
+            <div>
+              <span className="text-error font-bold">INDIVIDUAL PRIVACY GUARANTEE:</span> WINNER IDENTITY AND INDIVIDUAL REWARD SHARES ARE 100% SEALED IN CIPHERTEXT. WINNERS RECEIVE 100% OF THE POT; NON-WINNERS RECEIVE 0 USDC. INDIVIDUAL OUTCOMES CAN ONLY BE DECRYPTED BY YOUR PRIVATE KEY IN YOUR WINNING DOSSIER.
+            </div>
           </div>
         </div>
 
@@ -119,10 +123,11 @@ export default function BlindpotDrawHistory() {
               <tr className="border-b-2 border-primary bg-surface-container font-label-mono text-xs text-primary uppercase tracking-widest">
                 <th className="p-3.5 border-r border-primary/20">Round #</th>
                 <th className="p-3.5 border-r border-primary/20">Timestamp</th>
-                <th className="p-3.5 border-r border-primary/20">Prize Pot</th>
+                <th className="p-3.5 border-r border-primary/20">Total Epoch Pot</th>
                 <th className="p-3.5 border-r border-primary/20">Winner Selection</th>
-                <th className="p-3.5 border-r border-primary/20">On-Chain Audit</th>
-                <th className="p-3.5 text-center">Claim &amp; Dossier</th>
+                <th className="p-3.5 border-r border-primary/20">Your Outcome</th>
+                <th className="p-3.5 border-r border-primary/20">Vault Audit</th>
+                <th className="p-3.5 text-center">Verify &amp; Claim</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-primary/20 font-value-mono text-sm">
@@ -150,8 +155,9 @@ export default function BlindpotDrawHistory() {
                       {formatTimestamp(draw.timestamp)}
                     </td>
 
-                    <td className="p-3.5 border-r border-primary/20 font-bold text-secondary whitespace-nowrap">
-                      {Number(draw.potSize).toFixed(2)} USDC
+                    <td className="p-3.5 border-r border-primary/20 whitespace-nowrap">
+                      <div className="font-bold text-secondary">{Number(draw.potSize).toFixed(2)} USDC</div>
+                      <div className="text-[10px] text-on-surface-variant font-mono uppercase">Floor + Yield</div>
                     </td>
 
                     <td className="p-3.5 border-r border-primary/20 whitespace-nowrap">
@@ -161,6 +167,17 @@ export default function BlindpotDrawHistory() {
                         </span>
                         <span className="font-label-mono text-[10px] text-error font-bold">
                           SEALED
+                        </span>
+                      </div>
+                    </td>
+
+                    <td className="p-3.5 border-r border-primary/20 whitespace-nowrap">
+                      <div className="flex flex-col">
+                        <span className="font-label-mono text-[11px] text-on-surface-variant">
+                          🔒 Sealed Ciphertext
+                        </span>
+                        <span className="text-[10px] text-on-surface-variant/70 font-mono">
+                          (0 or 100% Share)
                         </span>
                       </div>
                     </td>
@@ -182,6 +199,13 @@ export default function BlindpotDrawHistory() {
 
                     <td className="p-3.5 text-center whitespace-nowrap">
                       <div className="flex items-center justify-center gap-2">
+                        <Link
+                          href={`/you-won?draw=${drawId}`}
+                          className="font-label-mono text-xs bg-surface border border-primary px-2.5 py-1 text-primary font-bold hover:bg-surface-container-high flex items-center gap-1 hard-shadow-sm"
+                        >
+                          <span className="material-symbols-outlined text-[13px]">key</span>
+                          Decrypt
+                        </Link>
                         <button
                           onClick={() => handleClaim(drawId)}
                           disabled={isClaiming}
@@ -189,12 +213,6 @@ export default function BlindpotDrawHistory() {
                         >
                           {isClaiming ? "Claiming..." : "Blinded Claim"}
                         </button>
-                        <Link
-                          href={`/you-won?drawId=${drawId}`}
-                          className="font-label-mono text-xs text-secondary font-bold underline hover:text-primary"
-                        >
-                          Dossier →
-                        </Link>
                       </div>
                     </td>
                   </tr>

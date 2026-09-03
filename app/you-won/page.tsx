@@ -16,7 +16,7 @@ const VAULT_ADDRESS = addresses.vault;
 
 function YouWonContent() {
   const searchParams = useSearchParams();
-  const drawParam = searchParams.get('draw') || '1';
+  const drawParam = searchParams.get('draw') || searchParams.get('drawId') || '1';
   const drawId = BigInt(drawParam);
 
   const { isConnected } = useAccount();
@@ -64,14 +64,17 @@ function YouWonContent() {
           <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: "repeating-linear-gradient(0deg, transparent, transparent 19px, #000 19px, #000 20px)" }}></div>
 
           {!hasPermit && decryptedWinnings === undefined && (
-            <div className="flex flex-col items-center justify-center gap-3">
-              <div className="bg-primary text-surface px-6 py-3 font-value-mono text-2xl tracking-widest hard-shadow-sm">
+            <div className="flex flex-col items-center justify-center gap-3 text-center">
+              <div className="bg-primary text-surface px-6 py-3 font-value-mono text-xl tracking-widest hard-shadow-sm">
                 SEALED CIPHERTEXT
               </div>
               <div className="font-label-mono text-xs uppercase text-on-surface-variant flex items-center gap-1">
                 <span className="material-symbols-outlined text-[14px]">lock</span>
                 Confidential Winnings Encrypted
               </div>
+              <p className="text-xs text-on-surface-variant max-w-sm mt-2 font-mono">
+                Sign with your connected wallet to decrypt your personal outcome via Zama KMS.
+              </p>
             </div>
           )}
 
@@ -83,14 +86,28 @@ function YouWonContent() {
           )}
 
           {decryptedWinnings !== undefined && (
-            <div className="flex flex-col items-center justify-center relative">
-              <div className="font-value-mono text-4xl md:text-5xl font-bold text-secondary tracking-tight">
-                {decryptedWinnings > 0 ? `${formatUSDC(decryptedWinnings)} USDC` : "0.00 USDC"}
+            <div className="flex flex-col items-center justify-center relative text-center">
+              <div className="font-value-mono text-4xl md:text-5xl font-bold tracking-tight mb-2">
+                {decryptedWinnings > 0 ? (
+                  <span className="text-secondary">+{formatUSDC(decryptedWinnings)} USDC</span>
+                ) : (
+                  <span className="text-on-surface-variant">0.00 USDC</span>
+                )}
               </div>
 
-              <div className="mt-4 stamp-decrypt font-stamp-text text-stamp-text text-sm">
-                {decryptedWinnings > 0 ? "PRIZE CONFIRMED" : "NON-WINNING TICKET"}
+              <div className={`mt-2 font-label-mono text-xs uppercase px-3 py-1 font-bold border-2 ${
+                decryptedWinnings > 0 
+                  ? "bg-secondary text-primary border-primary" 
+                  : "bg-surface-container-high text-error border-error"
+              }`}>
+                {decryptedWinnings > 0 ? "🏆 PRIZE CONFIRMED — YOU WON!" : "TRY AGAIN NEXT TIME — NON-WINNING TICKET"}
               </div>
+
+              <p className="mt-4 text-xs font-mono text-on-surface-variant max-w-md leading-relaxed">
+                {decryptedWinnings > 0
+                  ? "Congratulations! Your ticket was chosen by FHE.randEuint32. Click below to claim your confidential tokens into your wallet."
+                  : "You did not win this round. Your deposited principal remains 100% safe and automatically rolls over into the next epoch draw!"}
+              </p>
             </div>
           )}
         </div>
@@ -121,14 +138,24 @@ function YouWonContent() {
             </button>
           )}
 
-          <button
-            onClick={handleExecuteClaim}
-            disabled={isClaiming}
-            className="w-full sm:w-auto bg-secondary-container text-primary border-2 border-primary px-8 py-3 font-label-mono text-xs uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            <span className="material-symbols-outlined text-[16px]">emoji_events</span>
-            {isClaiming ? "Submitting Claim..." : "Execute Claim"}
-          </button>
+          {decryptedWinnings !== undefined && decryptedWinnings > 0 ? (
+            <button
+              onClick={handleExecuteClaim}
+              disabled={isClaiming}
+              className="w-full sm:w-auto bg-secondary text-primary border-2 border-primary px-8 py-3 font-label-mono text-xs uppercase font-bold hard-shadow-primary hover:translate-x-[1px] hover:translate-y-[1px] active:shadow-none transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <span className="material-symbols-outlined text-[16px]">emoji_events</span>
+              {isClaiming ? "Submitting Claim..." : "Claim Prize Tokens"}
+            </button>
+          ) : (
+            <Link
+              href="/dashboard"
+              className="w-full sm:w-auto bg-surface text-primary border-2 border-primary px-8 py-3 font-label-mono text-xs uppercase font-bold hover:bg-surface-container-high text-center hard-shadow-sm flex items-center justify-center gap-2"
+            >
+              <span className="material-symbols-outlined text-[16px]">arrow_back</span>
+              Return to Dashboard
+            </Link>
+          )}
         </div>
       </div>
     </main>
