@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation';
 import { useHasPermit, useGrantPermit, useDecryptValues, useRevokePermits } from "@zama-fhe/react-sdk";
 import { useClaim } from '../../sdk/src/claim';
 import { addresses } from '../../sdk/src/config';
-import { BLINDPOT_VAULT_ABI } from '../../sdk/src/abi';
+import { BLINDPOT_VAULT_ABI, CUSDC_WRAPPER_ABI } from '../../sdk/src/abi';
 import { formatUSDC, formatTimestamp, formatAddress } from '../../lib/formatters';
 import { Navbar } from '../components/Navbar';
 import { AuthGuard } from '../components/AuthGuard';
@@ -91,10 +91,21 @@ export default function BlindpotDashboard() {
     query: { enabled: !!account && isConnected && activeDrawId > 0 },
   });
 
+  // Read Wallet Encrypted cUSDC Balance Handle (holds claimed prize winnings)
+  const { data: walletEncryptedHandle, refetch: refetchWalletHandle } = useReadContract({
+    address: addresses.token as `0x${string}`,
+    abi: CUSDC_WRAPPER_ABI,
+    functionName: 'confidentialBalanceOf',
+    args: account ? [account] : undefined,
+    query: { enabled: !!account && isConnected },
+  });
+
   // Zama EIP-712 Permit & Multi-Value Decryption
-  const permitContracts = drawAddress
-    ? [vaultAddress, drawAddress as `0x${string}`]
-    : [vaultAddress];
+  const permitContracts = [
+    vaultAddress,
+    ...(drawAddress ? [drawAddress as `0x${string}`] : []),
+    addresses.token as `0x${string}`,
+  ];
 
   const { data: hasPermit, refetch: refetchPermit } = useHasPermit({ contractAddresses: permitContracts });
   const { mutateAsync: grantPermit } = useGrantPermit();
@@ -103,6 +114,7 @@ export default function BlindpotDashboard() {
   // Format valid non-zero handles for KMS query
   const hasValidBalanceHandle = encryptedBalanceHandle !== undefined && encryptedBalanceHandle > 0n;
   const hasValidWinningsHandle = encryptedWinningsHandle !== undefined && encryptedWinningsHandle > 0n;
+  const hasValidWalletHandle = walletEncryptedHandle !== undefined && walletEncryptedHandle > 0n;
 
   const validBalanceHandleHex = hasValidBalanceHandle
     ? (`0x${encryptedBalanceHandle.toString(16).padStart(64, '0')}` as `0x${string}`)
@@ -112,12 +124,19 @@ export default function BlindpotDashboard() {
     ? (`0x${encryptedWinningsHandle.toString(16).padStart(64, '0')}` as `0x${string}`)
     : undefined;
 
+  const validWalletHandleHex = hasValidWalletHandle
+    ? (`0x${walletEncryptedHandle.toString(16).padStart(64, '0')}` as `0x${string}`)
+    : undefined;
+
   const handlesToDecrypt: { encryptedValue: `0x${string}`; contractAddress: `0x${string}` }[] = [];
   if (validBalanceHandleHex && drawAddress) {
     handlesToDecrypt.push({ encryptedValue: validBalanceHandleHex, contractAddress: drawAddress as `0x${string}` });
   }
   if (validWinningsHandleHex) {
     handlesToDecrypt.push({ encryptedValue: validWinningsHandleHex, contractAddress: vaultAddress });
+  }
+  if (validWalletHandleHex) {
+    handlesToDecrypt.push({ encryptedValue: validWalletHandleHex, contractAddress: addresses.token as `0x${string}` });
   }
 
   const { data: decryptedValues, isLoading: isKmsDecrypting, error: kmsError } = useDecryptValues(
@@ -133,7 +152,6 @@ export default function BlindpotDashboard() {
     return Number(val);
   };
 
-  
   // Log KMS errors locally to console for debugging
   useEffect(() => {
     if (kmsError) {
@@ -141,7 +159,7 @@ export default function BlindpotDashboard() {
     }
   }, [kmsError]);
 
-  // Compute final display balance
+  // Compute final display balance (Vault Staked Principal)
   let decryptedBalance: number | undefined = undefined;
   if (hasPermit) {
     if (isUserMember === false || encryptedBalanceHandle === 0n || !hasValidBalanceHandle) {
@@ -154,7 +172,7 @@ export default function BlindpotDashboard() {
     }
   }
 
-  // Compute final display winnings
+  // Compute final display winnings (For Selected/Active Draw)
   let decryptedWinnings: number | undefined = undefined;
   if (hasPermit) {
     if (encryptedWinningsHandle === 0n || !hasValidWinningsHandle) {
@@ -166,6 +184,24 @@ export default function BlindpotDashboard() {
       }
     }
   }
+
+  // Compute wallet cUSDC balance (Claimed Prize Winnings in Wallet)
+  let decryptedWalletBalance: number | undefined = undefined;
+  if (hasPermit) {
+    if (walletEncryptedHandle === 0n || !hasValidWalletHandle) {
+      decryptedWalletBalance = 0;
+    } else if (validWalletHandleHex) {
+      const num = getDecryptedNumber(validWalletHandleHex);
+      if (num !== undefined) {
+        decryptedWalletBalance = num >= 1_000_000 ? num / 1_000_000 : num;
+      }
+    }
+  }
+
+  // Total Combined Confidential Wealth (Vault Principal + Claimed Winnings in Wallet)
+  const totalCombinedBalance = (decryptedBalance !== undefined || decryptedWalletBalance !== undefined)
+    ? ((decryptedBalance || 0) + (decryptedWalletBalance || 0))
+    : undefined;
 
 
   // Decrypt handler
@@ -191,6 +227,7 @@ export default function BlindpotDashboard() {
       await refetchIsMember();
       await refetchBalanceHandle();
       await refetchWinningsHandle();
+      await refetchWalletHandle();
       setIsSigningPermit(false);
       toastSuccess("Permit granted! Decrypting your confidential positions via Zama KMS...", { id: "permit-toast", title: "PERMIT VERIFIED", duration: 6000 });
     } catch (e: any) {
@@ -260,6 +297,7 @@ export default function BlindpotDashboard() {
 
       await refetchBalanceHandle();
       await refetchWinningsHandle();
+      await refetchWalletHandle();
     } catch (e: any) {
       toastError(e?.message || "Claim failed.", { id: "claim-toast", title: "CLAIM FAILED" });
     }
@@ -343,14 +381,18 @@ export default function BlindpotDashboard() {
                       </button>
                     </>
                   ) : (
-                    <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm">
-                      <span className="font-value-mono text-2xl md:text-3xl text-secondary font-bold">
-                        {decryptedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
-                      </span>
-                      <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[13px]">check_circle</span>
-                        DECRYPTED
-                      </span>
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                      <div className="flex items-center gap-3 bg-surface-container-low border-2 border-primary px-4 py-2 hard-shadow-sm">
+                        <span className="font-value-mono text-2xl md:text-3xl text-secondary font-bold">
+                          {totalCombinedBalance !== undefined
+                            ? totalCombinedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+                            : decryptedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                        </span>
+                        <span className="stamp-decrypt font-stamp-text text-[11px] bg-secondary-container border border-secondary text-secondary px-2 py-0.5 font-bold uppercase flex items-center gap-1">
+                          <span className="material-symbols-outlined text-[13px]">check_circle</span>
+                          DECRYPTED
+                        </span>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -366,6 +408,43 @@ export default function BlindpotDashboard() {
                   <span className="opacity-80">{kmsError.message || String(kmsError)}</span>
                 </div>
               )}
+
+              {/* CONFIDENTIAL ASSET POSITION BREAKDOWN */}
+              {decryptedBalance !== undefined && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 bg-surface-container-low border border-primary p-4 hard-shadow-sm">
+                  <div>
+                    <div className="font-label-mono text-[11px] uppercase text-on-surface-variant font-bold">Vault Savings Principal</div>
+                    <div className="font-value-mono text-base font-bold text-primary mt-0.5">
+                      {decryptedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC
+                    </div>
+                    <div className="text-[11px] text-on-surface-variant font-mono mt-0.5">Active Tickets in Epoch Draws</div>
+                  </div>
+                  <div>
+                    <div className="font-label-mono text-[11px] uppercase text-on-surface-variant font-bold">Claimed Prize Winnings (Wallet)</div>
+                    <div className="font-value-mono text-base font-bold text-secondary mt-0.5">
+                      {decryptedWalletBalance !== undefined && decryptedWalletBalance > 0
+                        ? `+${decryptedWalletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} cUSDC`
+                        : "0.00 cUSDC"}
+                    </div>
+                    <div className="text-[11px] text-secondary font-mono mt-0.5">
+                      <Link href="/withdraw" className="hover:underline inline-flex items-center gap-1 font-bold">
+                        <span>Unwrap to USDC</span>
+                        <span className="material-symbols-outlined text-[12px]">arrow_forward</span>
+                      </Link>
+                    </div>
+                  </div>
+                  <div>
+                    <div className="font-label-mono text-[11px] uppercase text-on-surface-variant font-bold">Total Confidential Wealth</div>
+                    <div className="font-value-mono text-base font-bold text-secondary mt-0.5">
+                      {totalCombinedBalance !== undefined
+                        ? `${totalCombinedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`
+                        : `${decryptedBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USDC`}
+                    </div>
+                    <div className="text-[11px] text-on-surface-variant font-mono mt-0.5">100% Zero-Loss Capital Protected</div>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-1">
                 <div className="font-body-md text-xs text-on-surface-variant max-w-md">
                   Balances are encrypted end-to-end with Zama fhEVM. Decrypting uses a gasless EIP-712 permit to retrieve your private plaintext directly in your browser.
