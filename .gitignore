@@ -5,18 +5,7 @@
 *.pem
 *.key
 
-# Internal Agent & IDE documentation
-AGENTS.md
-LOGS.md
-SPEC.md
-contracts.md
-frontend.md
-sdk.md
-ARCHITECTURE.md
-CONFIDENTIALITY.md
-SECURITY.md
-AUDIT.md
-BRAND.md
+# Temporary files & scripts
 bureau_document_system/
 llm.txt
 llms-full.txt
