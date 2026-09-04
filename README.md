@@ -293,6 +293,18 @@ Execute the automated benchmark telemetry generator:
 npm run benchmark
 ```
 
+### 6. Deployment Scripts (Foundry on Sepolia)
+
+To deploy the protocol core contracts to Ethereum Sepolia using Foundry:
+```bash
+cd contracts
+forge script script/DeployBlindpot.s.sol:DeployBlindpot \
+  --rpc-url $RPC_URL \
+  --broadcast \
+  --verify
+```
+The script deploys `BlindpotVault.sol`, initializes `BlindDraw.sol`, configures `cUSDCMock`, and exports verified contract artifacts.
+
 ---
 
 ## How to Use Blindpot (Step-by-Step)
