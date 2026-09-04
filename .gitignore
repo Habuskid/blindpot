@@ -11,6 +11,19 @@ llm.txt
 llms-full.txt
 convert.js
 
+# Internal Development & Specification Notes
+AGENTS.md
+LOGS.md
+SPEC.md
+contracts.md
+frontend.md
+sdk.md
+ARCHITECTURE.md
+CONFIDENTIALITY.md
+SECURITY.md
+AUDIT.md
+BRAND.md
+
 # Dependencies & Build artifacts
 .next/
 node_modules/
